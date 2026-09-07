@@ -1,0 +1,285 @@
+// --- 1. KHỞI TẠO SCENE, CAMERA, RENDERER CÓ ĐỔ BÓNG SHADOWS ---
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050811);
+
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 1.2, 7.5);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+document.body.appendChild(renderer.domElement);
+
+// --- HỆ THỐNG ÁNH SÁNG 3D MÔ MỎNG CHIỀU SÂU ---
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+scene.add(ambientLight);
+
+const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+mainLight.position.set(5, 8, 5);
+mainLight.castShadow = true;
+scene.add(mainLight);
+
+const blueRimLight = new THREE.PointLight(0x00b4d8, 2, 10);
+blueRimLight.position.set(-4, 3, -2);
+scene.add(blueRimLight);
+
+// --- 2. QUÁI VẬT 1: REALISTIC LONG-LEGGED GOLEM ---
+function createRealisticLongLegMonster() {
+    const group = new THREE.Group();
+
+    // Material da mềm đỏ
+    const bodyMat = new THREE.MeshStandardMaterial({
+        color: 0xe63946,
+        roughness: 0.3,
+        metalness: 0.1
+    });
+
+    const body = new THREE.Mesh(new THREE.BoxGeometry(2.0, 1.3, 1.0), bodyMat);
+    body.position.y = 0.5;
+    body.castShadow = true;
+    group.add(body);
+
+    // Chân khớp 3D chân thực
+    const legMat = new THREE.MeshStandardMaterial({ color: 0x2a9d8f, roughness: 0.4 });
+    const jointMat = new THREE.MeshStandardMaterial({ color: 0xf6c90e, roughness: 0.2 });
+
+    function createLeg(isLeft) {
+        const legGroup = new THREE.Group();
+        const sign = isLeft ? -1 : 1;
+
+        // Đùi
+        const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.06, 1.2, 16), legMat);
+        thigh.position.set(sign * 0.1, -0.6, 0);
+        thigh.rotation.z = sign * -0.15;
+
+        // Khớp gối
+        const knee = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 16), jointMat);
+        knee.position.set(sign * 0.2, -1.2, 0);
+
+        // Cẳng chân
+        const shin = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 1.1, 16), legMat);
+        shin.position.set(sign * 0.1, -1.7, 0);
+        shin.rotation.z = sign * 0.1;
+
+        // Bàn chân
+        const foot = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), jointMat);
+        foot.scale.set(1.2, 0.5, 1.2);
+        foot.position.set(0, -2.25, 0.05);
+
+        legGroup.add(thigh, knee, shin, foot);
+        return legGroup;
+    }
+
+    const legL = createLeg(true);
+    legL.position.set(-0.6, 0.3, 0);
+
+    const legR = createLeg(false);
+    legR.position.set(0.6, 0.3, 0);
+
+    group.add(legL, legR);
+
+    // Sừng 3D có đệm tròn phát sáng
+    const hornStickMat = new THREE.MeshStandardMaterial({ color: 0xd4a373, roughness: 0.5 });
+    const hornTipMat = new THREE.MeshStandardMaterial({ color: 0xf6c90e, emissive: 0xf6c90e, emissiveIntensity: 0.5 });
+
+    function createHorn() {
+        const hGroup = new THREE.Group();
+        const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.04, 0.8, 16), hornStickMat);
+        stick.position.y = 0.4;
+        const tip = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), hornTipMat);
+        tip.position.y = 0.8;
+        hGroup.add(stick, tip);
+        return hGroup;
+    }
+
+    const hL = createHorn();
+    hL.position.set(-0.7, 1.15, 0);
+    hL.rotation.z = -0.35;
+
+    const hR = createHorn();
+    hR.position.set(0.7, 1.15, 0);
+    hR.rotation.z = 0.35;
+
+    group.add(hL, hR);
+
+    // Mắt thủy tinh 3D long lanh
+    const eyeWhiteMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 });
+    const irisMat = new THREE.MeshStandardMaterial({ color: 0x2a9d8f, roughness: 0.1 });
+    const pupilMat = new THREE.MeshBasicMaterial({ color: 0x111111 });
+    const sparkleMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+
+    function create3DEye() {
+        const eGroup = new THREE.Group();
+        const white = new THREE.Mesh(new THREE.SphereGeometry(0.24, 24, 24), eyeWhiteMat);
+        const iris = new THREE.Mesh(new THREE.SphereGeometry(0.14, 24, 24), irisMat);
+        iris.position.z = 0.12;
+
+        const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 16), pupilMat);
+        pupil.position.z = 0.2;
+
+        const sparkle = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 12), sparkleMat);
+        sparkle.position.set(0.05, 0.05, 0.25);
+
+        eGroup.add(white, iris, pupil, sparkle);
+        return eGroup;
+    }
+
+    const eyeL = create3DEye();
+    eyeL.position.set(-0.42, 0.65, 0.42);
+
+    const eyeR = create3DEye();
+    eyeR.position.set(0.42, 0.65, 0.42);
+
+    group.add(eyeL, eyeR);
+
+    // Miệng mỉm cười 3D
+    const smileGeo = new THREE.TorusGeometry(0.2, 0.025, 12, 24, Math.PI);
+    const smileMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
+    const smile = new THREE.Mesh(smileGeo, smileMat);
+    smile.position.set(0, 0.32, 0.52);
+    smile.rotation.z = Math.PI;
+    group.add(smile);
+
+    return group;
+}
+
+// --- 3. QUÁI VẬT 2: REALISTIC OCTOPUS CREATURE (DA BÓNG & ĐĨA HÚT) ---
+function createRealisticOctopusMonster() {
+    const group = new THREE.Group();
+
+    // Chất liệu da căng bóng
+    const skinMat = new THREE.MeshStandardMaterial({
+        color: 0x0077b6,
+        roughness: 0.15,
+        metalness: 0.05
+    });
+
+    const suctionMat = new THREE.MeshStandardMaterial({ color: 0xcaf0f8, roughness: 0.3 });
+    const hornMat = new THREE.MeshStandardMaterial({ color: 0x7209b7, emissive: 0x3a0ca3, emissiveIntensity: 0.8 });
+
+    // Thân đầu mập mạp
+    const body = new THREE.Mesh(new THREE.SphereGeometry(1.0, 32, 32), skinMat);
+    body.scale.set(1.1, 1.0, 1.0);
+    body.position.y = 0.6;
+    body.castShadow = true;
+    group.add(body);
+
+    // 8 Chân bạch tuộc 3D có đĩa hút bám dính
+    const tentacles = [];
+    const count = 8;
+
+    for (let i = 0; i < count; i++) {
+        const angle = (i / count) * Math.PI * 2;
+        const tentacleGroup = new THREE.Group();
+
+        const curve = new THREE.CubicBezierCurve3(
+            new THREE.Vector3(0, 0, 0),
+            new THREE.Vector3(Math.cos(angle) * 0.6, -0.4, Math.sin(angle) * 0.6),
+            new THREE.Vector3(Math.cos(angle) * 1.2, -0.8, Math.sin(angle) * 1.2),
+            new THREE.Vector3(Math.cos(angle) * 1.7, -1.1, Math.sin(angle) * 1.7)
+        );
+
+        const tubeGeo = new THREE.TubeGeometry(curve, 20, 0.11, 12, false);
+        const tentacleMesh = new THREE.Mesh(tubeGeo, skinMat);
+        tentacleGroup.add(tentacleMesh);
+
+        // Gắn các đĩa hút (Suction Cups) dọc theo chân
+        for (let t = 0.3; t <= 0.9; t += 0.25) {
+            const point = curve.getPoint(t);
+            const suction = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.03, 12), suctionMat);
+            suction.position.copy(point);
+            tentacleGroup.add(suction);
+        }
+
+        tentacleGroup.position.set(0, 0.2, 0);
+        group.add(tentacleGroup);
+        tentacles.push(tentacleGroup);
+    }
+
+    // 2 Sừng phát sáng mỏng
+    const hornL = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.6, 16), hornMat);
+    hornL.position.set(-0.35, 1.55, 0.2);
+    hornL.rotation.z = -0.3;
+
+    const hornR = hornL.clone();
+    hornR.position.x = 0.35;
+    hornR.rotation.z = 0.3;
+
+    group.add(hornL, hornR);
+
+    // Mắt thủy tinh long lanh 3D
+    function createEye() {
+        const eGroup = new THREE.Group();
+        const white = new THREE.Mesh(new THREE.SphereGeometry(0.22, 24, 24), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 }));
+        const iris = new THREE.Mesh(new THREE.SphereGeometry(0.13, 24, 24), new THREE.MeshStandardMaterial({ color: 0x00b4d8, roughness: 0.1 }));
+        iris.position.z = 0.12;
+
+        const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), new THREE.MeshBasicMaterial({ color: 0x03045e }));
+        pupil.position.z = 0.2;
+
+        const sparkle = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffffff }));
+        sparkle.position.set(0.04, 0.04, 0.24);
+
+        eGroup.add(white, iris, pupil, sparkle);
+        return eGroup;
+    }
+
+    const leftEye = createEye();
+    leftEye.position.set(-0.3, 0.75, 0.85);
+
+    const rightEye = createEye();
+    rightEye.position.set(0.3, 0.75, 0.85);
+
+    group.add(leftEye, rightEye);
+
+    // Miệng chúm chím bóng
+    const mouth = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.04, 16), new THREE.MeshStandardMaterial({ color: 0xf72585, roughness: 0.2 }));
+    mouth.rotation.x = Math.PI / 2;
+    mouth.position.set(0, 0.45, 0.98);
+    group.add(mouth);
+
+    group.userData = { tentacles: tentacles, time: 0 };
+    return group;
+}
+
+// --- 4. HIỂN THỊ VÀ ANIMATION CHUYỂN ĐỘNG SỐNG ĐỘNG ---
+const monster1 = createRealisticLongLegMonster();
+monster1.position.set(-2.2, 0.5, 0);
+
+const monster2 = createRealisticOctopusMonster();
+monster2.position.set(2.2, 0.3, 0);
+
+scene.add(monster1, monster2);
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    const time = Date.now() * 0.0015;
+
+    // Quái vật 1 nhún nhảy nhẹ nhàng trên đôi chân dài
+    monster1.position.y = 0.5 + Math.sin(time * 2) * 0.08;
+    monster1.rotation.y = Math.sin(time) * 0.15;
+
+    // Quái vật 2 uốn lượn tua rua chân bạch tuộc sinh động
+    monster2.position.y = 0.3 + Math.cos(time * 2) * 0.06;
+    monster2.rotation.y = Math.cos(time) * 0.15;
+
+    if (monster2.userData.tentacles) {
+        monster2.userData.tentacles.forEach((t, i) => {
+            t.rotation.z = Math.sin(time * 3 + i) * 0.08;
+            t.rotation.x = Math.cos(time * 2 + i) * 0.05;
+        });
+    }
+
+    renderer.render(scene, camera);
+}
+
+window.addEventListener('resize', () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+
+animate();

@@ -1,0 +1,205 @@
+// ==========================================
+// 1. SCENE, CAMERA, RENDERER & LIGHTING
+// ==========================================
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x050811);
+
+const camera = new THREE.PerspectiveCamera(55, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 2, 9);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
+renderer.shadowMap.enabled = true;
+document.body.appendChild(renderer.domElement);
+
+const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+scene.add(ambientLight);
+
+const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+mainLight.position.set(5, 8, 5);
+scene.add(mainLight);
+
+// ==========================================
+// 2. HỆ THỐNG TÍNH LUCK & TỶ LỆ DROP KIẾM
+// ==========================================
+let combatTimeMinutes = 0; // Thời gian đánh quái (phút)
+let luckBonusRatio = 0;    // Tỷ lệ may mắn tích lũy (0.01 = 1%, 0.03 = 3%)
+
+// Cập nhật Luck mỗi phút (dưới 60 phút sẽ tăng đến max 3%)
+setInterval(() => {
+    if (combatTimeMinutes < 60) {
+        combatTimeMinutes++;
+        // Tăng tuyến tính từ 0.001% lên đến 3% sau 60 phút
+        luckBonusRatio = Math.min(0.03, (combatTimeMinutes / 60) * 0.03);
+        console.log(`[BUFF LUCK] Thời gian chiến đấu: ${combatTimeMinutes} phút | Luck Legendary hiện tại: ${(luckBonusRatio * 100).toFixed(2)}%`);
+    }
+}, 60000); // 1 phút = 60000ms
+
+// Bảng cấu hình 8 Thanh Kiếm Vũ Trụ
+const SWORD_DATABASE = {
+    RED: {
+        COMMON: { name: "Hồng Xạ Kiếm", power: 50, color: 0xff4d4d, coreColor: 0xff8080 },
+        RARE: { name: "Huyết Nguyệt Vũ Trụ", power: 150, color: 0xff0055, coreColor: 0xff6699 },
+        EPIC: { name: "Xích Tinh Tinh Hà", power: 450, color: 0xd90429, coreColor: 0xffb703 },
+        LEGENDARY: { name: "Vô Hạn Hắc Động - Red", power: 1500, color: 0x050505, coreColor: 0xff0000 }
+    },
+    BLUE: {
+        COMMON: { name: "Lam Băng Xạ Kiếm", power: 120, color: 0x00b4d8, coreColor: 0x90e0ef },
+        RARE: { name: "Hải Vương Vũ Trụ", power: 400, color: 0x0077b6, coreColor: 0x48cae4 },
+        EPIC: { name: "Thái Không Tinh Hải", power: 1200, color: 0x3a0ca3, color2: 0x4cc9f0, coreColor: 0x7209b7 },
+        LEGENDARY: { name: "Vô Hạn Hắc Động - Cosmic Void", power: 5000, color: 0x020205, coreColor: 0x00f5d4 }
+    }
+};
+
+// Hàm tính Rarity khi đánh gục quái
+function rollSwordDrop(monsterType) {
+    const roll = Math.random() * 100; // Tỷ lệ từ 0 đến 100%
+
+    if (monsterType === 'RED') {
+        // Cấu hình Quái Đỏ
+        const legRate = 0.001 + (luckBonusRatio * 100);
+        const epicRate = 1.999;
+        const rareRate = 38.0;
+
+        if (roll < legRate) return SWORD_DATABASE.RED.LEGENDARY;
+        if (roll < legRate + epicRate) return SWORD_DATABASE.RED.EPIC;
+        if (roll < legRate + epicRate + rareRate) return SWORD_DATABASE.RED.RARE;
+        return SWORD_DATABASE.RED.COMMON;
+    } else {
+        // Cấu hình Quái Xanh (Rơi đồ cực mạnh)
+        const legRate = 0.00001 + (luckBonusRatio * 100);
+        const epicRate = 0.00999;
+        const rareRate = 9.9;
+
+        if (roll < legRate) return SWORD_DATABASE.BLUE.LEGENDARY;
+        if (roll < legRate + epicRate) return SWORD_DATABASE.BLUE.EPIC;
+        if (roll < legRate + epicRate + rareRate) return SWORD_DATABASE.BLUE.RARE;
+        return SWORD_DATABASE.BLUE.COMMON;
+    }
+}
+
+// ==========================================
+// 3. TẠO MODEL 3D THANH KIẾM VŨ TRỤ (COSMIC SWORD)
+// ==========================================
+function createCosmic3DSword(swordData) {
+    const swordGroup = new THREE.Group();
+
+    const isLegendary = swordData.power >= 1500;
+
+    // Chất liệu Lưỡi kiếm (Đen vô hạn nếu là Legendary)
+    const bladeMaterial = new THREE.MeshStandardMaterial({
+        color: swordData.color,
+        roughness: isLegendary ? 0.05 : 0.2,
+        metalness: isLegendary ? 0.95 : 0.6,
+        emissive: isLegendary ? 0x000000 : swordData.color,
+        emissiveIntensity: isLegendary ? 0 : 0.3
+    });
+
+    // Chất liệu Lõi năng lượng / Hạt phát sáng
+    const coreMaterial = new THREE.MeshBasicMaterial({
+        color: swordData.coreColor
+    });
+
+    // Lưỡi Kiếm (Blade)
+    const bladeGeo = new THREE.BoxGeometry(0.12, 2.8, 0.03);
+    const blade = new THREE.Mesh(bladeGeo, bladeMaterial);
+    blade.position.y = 1.6;
+    swordGroup.add(blade);
+
+    // Mũi Kiếm Nhọn
+    const tipGeo = new THREE.ConeGeometry(0.085, 0.5, 4);
+    const tip = new THREE.Mesh(tipGeo, bladeMaterial);
+    tip.position.y = 3.25;
+    tip.rotation.y = Math.PI / 4;
+    swordGroup.add(tip);
+
+    // Lõi Năng Lượng Vũ Trụ Chạy Dọc Lưỡi Kiếm
+    const coreGeo = new THREE.CylinderGeometry(0.02, 0.02, 2.5, 16);
+    const core = new THREE.Mesh(coreGeo, coreMaterial);
+    core.position.y = 1.6;
+    swordGroup.add(core);
+
+    // Chuôi & Chuôi Bột Bảo Vệ (Guard & Hilt)
+    const guardGeo = new THREE.BoxGeometry(0.6, 0.08, 0.12);
+    const guardMat = new THREE.MeshStandardMaterial({ color: isLegendary ? 0x111111 : 0x4a4e69, metalness: 0.8 });
+    const guard = new THREE.Mesh(guardGeo, guardMat);
+    guard.position.y = 0.2;
+    swordGroup.add(guard);
+
+    const hiltGeo = new THREE.CylinderGeometry(0.04, 0.04, 0.5, 16);
+    const hilt = new THREE.Mesh(hiltGeo, guardMat);
+    hilt.position.y = -0.1;
+    swordGroup.add(hilt);
+
+    // Ring Tinh Hà Phát Sáng Xoay Tận Cùng Chuôi
+    const ringGeo = new THREE.TorusGeometry(0.15, 0.02, 16, 32);
+    const ring = new THREE.Mesh(ringGeo, coreMaterial);
+    ring.position.y = -0.38;
+    ring.rotation.x = Math.PI / 2;
+    swordGroup.add(ring);
+
+    // Hiệu ứng hạt Hắc Động/Vũ trụ nếu là LEGENDARY
+    if (isLegendary) {
+        const auraGeo = new THREE.SphereGeometry(0.3, 16, 16);
+        const auraMat = new THREE.MeshBasicMaterial({ color: swordData.coreColor, wireframe: true, transparent: true, opacity: 0.6 });
+        const aura = new THREE.Mesh(auraGeo, auraMat);
+        aura.position.y = 1.6;
+        swordGroup.add(aura);
+        swordGroup.userData.aura = aura;
+    }
+
+    swordGroup.userData.core = ring;
+    return swordGroup;
+}
+
+// ==========================================
+// 4. KHỞI TẠO TẠO HÌNH CẢ 2 QUÁI VẬT & HIỂN THỊ KIẾM
+// ==========================================
+let currentSwordMesh = null;
+
+function spawnSwordDrop(monsterType, positionX) {
+    if (currentSwordMesh) scene.remove(currentSwordMesh);
+
+    const droppedSwordData = rollSwordDrop(monsterType);
+    console.log(`[DROP RỚT ĐỒ] Quái ${monsterType} rớt kiếm: ${droppedSwordData.name} | Sức mạnh: ${droppedSwordData.power}`);
+
+    currentSwordMesh = createCosmic3DSword(droppedSwordData);
+    currentSwordMesh.position.set(positionX, 0, 1.5);
+    currentSwordMesh.scale.set(0.7, 0.7, 0.7);
+    scene.add(currentSwordMesh);
+}
+
+// Giả lập thả Kiếm rơi ngẫu nhiên khi click chuột vào Màn hình
+window.addEventListener('click', (e) => {
+    const type = e.clientX < window.innerWidth / 2 ? 'RED' : 'BLUE';
+    const posX = type === 'RED' ? -2.2 : 2.2;
+    spawnSwordDrop(type, posX);
+});
+
+// Thả 1 cây kiếm mặc định lên màn hình
+spawnSwordDrop('BLUE', 0);
+
+// ==========================================
+// 5. ANIMATION LOOP 3D
+// ==========================================
+function animate() {
+    requestAnimationFrame(animate);
+
+    const time = Date.now() * 0.002;
+
+    // Xoay kiếm hiệu ứng vũ trụ lơ lửng
+    if (currentSwordMesh) {
+        currentSwordMesh.rotation.y = time;
+        currentSwordMesh.position.y = 0.2 + Math.sin(time * 2) * 0.15;
+
+        if (currentSwordMesh.userData.aura) {
+            currentSwordMesh.userData.aura.rotation.x = time * 2;
+            currentSwordMesh.userData.aura.rotation.z = time * 1.5;
+        }
+    }
+
+    renderer.render(scene, camera);
+}
+
+animate();
