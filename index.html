@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>King of the Blade 3D - Full Single File</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            overflow: hidden;
+        }
+        body {
+            background-color: #0e0c1a;
+            font-family: Arial, sans-serif;
+        }
+        #game-canvas {
+            width: 100vw;
+            height: 100vh;
+            display: block;
+        }
+        #instructions {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: #ffffff;
+            font-size: 14px;
+            background: rgba(0, 0, 0, 0.7);
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            pointer-events: none;
+            text-align: center;
+            z-index: 10;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
+    </style>
+    <!-- Thư viện Three.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div id="instructions">
+        ⚔️ <b>KING OF THE BLADE 3D</b> ⚔️<br>
+        • Click <b>nửa trái</b> màn hình: Đánh Quái Đỏ rớt Kiếm<br>
+        • Click <b>nửa phải</b> màn hình: Đánh Quái Xanh rớt Kiếm
+    </div>
+    <div id="game-canvas"></div>
+
+    <script>
+        // ==========================================
+        // 1. SCENE, CAMERA ISOMETRIC, RENDERER & LIGHTING
+        // ==========================================
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x0e0c1a);
+        scene.fog = new THREE.FogExp2(0x0e0c1a, 0.025);
+
+        const aspect = window.innerWidth / window.innerHeight;
+        const d = 10;
+        const camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
+        camera.position.set(12, 12, 12);
+        camera.lookAt(0, 0, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        renderer.shadowMap.enabled = true;
+        renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+        document.getElementById('game-canvas').appendChild(renderer.domElement);
+
+        // LIGHTING
+        const ambientLight = new THREE.AmbientLight(0xdce0eb, 0.6);
+        scene.add(ambientLight);
+
+        const mainLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        mainLight.position.set(15, 25, 15);
+        mainLight.castShadow = true;
+        mainLight.shadow.mapSize.width = 2048;
+        mainLight.shadow.mapSize.height = 2048;
+        scene.add(mainLight);
+
+        const blueRimLight = new THREE.PointLight(0x00b4d8, 2, 12);
+        blueRimLight.position.set(-4, 3, -2);
+        scene.add(blueRimLight);
+
+        const rotatingWorldItems = [];
+
+        // ==========================================
+        // 2. MÔI TRƯỜNG ĐÀI ĐÁ & KIM CƯƠNG ISOMETRIC
+        // ==========================================
+        function createWorldEnvironment() {
+            const worldGroup = new THREE.Group();
+
+            const stoneMat = new THREE.MeshStandardMaterial({ color: 0x5a5e6b, roughness: 0.85 });
+            const darkStoneMat = new THREE.MeshStandardMaterial({ color: 0x363942, roughness: 0.9 });
+            const mossMat = new THREE.MeshStandardMaterial({ color: 0x486b43, roughness: 0.95 });
+            const crystalMat = new THREE.MeshStandardMaterial({ 
+                color: 0x00d2ff, emissive: 0x0077ff, emissiveIntensity: 0.8, roughness: 0.1 
+            });
+            const diamondMat = new THREE.MeshStandardMaterial({ 
+                color: 0x00ffaa, emissive: 0x00cc77, emissiveIntensity: 0.9, roughness: 0.05, metalness: 0.2
+            });
+
+            // Mặt sàn chính
+            const mainFloor = new THREE.Mesh(new THREE.BoxGeometry(10, 1.5, 14), stoneMat);
+            mainFloor.position.set(0, -0.75, 0);
+            mainFloor.receiveShadow = true;
+            worldGroup.add(mainFloor);
+
+            // Mảng rêu & vết nứt
+            const detailGeo = new THREE.BoxGeometry(1.2, 0.05, 1.2);
+            const detailPositions = [
+                { x: -2, z: -3, mat: mossMat }, { x: 2.5, z: 1, mat: mossMat },
+                { x: -3, z: 3, mat: darkStoneMat }, { x: 1.5, z: -4, mat: darkStoneMat }
+            ];
+            detailPositions.forEach(item => {
+                const patch = new THREE.Mesh(detailGeo, item.mat);
+                patch.position.set(item.x, 0.03, item.z);
+                patch.rotation.y = Math.random() * Math.PI;
+                patch.receiveShadow = true;
+                worldGroup.add(patch);
+            });
+
+            // Cầu đá
+            const bridge = new THREE.Mesh(new THREE.BoxGeometry(4, 1.2, 6), darkStoneMat);
+            bridge.position.set(-5, -0.9, 6);
+            bridge.receiveShadow = true;
+            worldGroup.add(bridge);
+
+            // Cổng vòm
+            const gateGroup = new THREE.Group();
+            const leftPillar = new THREE.Mesh(new THREE.BoxGeometry(1.4, 6.5, 1.4), darkStoneMat);
+            leftPillar.position.set(-3.2, 3.25, -6.5); leftPillar.castShadow = true;
+            const rightPillar = new THREE.Mesh(new THREE.BoxGeometry(1.4, 6.5, 1.4), darkStoneMat);
+            rightPillar.position.set(3.2, 3.25, -6.5); rightPillar.castShadow = true;
+            const gateTop = new THREE.Mesh(new THREE.BoxGeometry(8, 1.5, 1.6), darkStoneMat);
+            gateTop.position.set(0, 6, -6.5); gateTop.castShadow = true;
+
+            const leftDoor = new THREE.Mesh(new THREE.BoxGeometry(2.2, 5, 0.2), stoneMat);
+            leftDoor.position.set(-1.2, 2.5, -6.5);
+            const rightDoor = new THREE.Mesh(new THREE.BoxGeometry(2.2, 5, 0.2), stoneMat);
+            rightDoor.position.set(1.2, 2.5, -6.5);
+
+            const gateCrystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.7), crystalMat);
+            gateCrystal.position.set(0, 6, -5.6);
+            rotatingWorldItems.push(gateCrystal);
+
+            gateGroup.add(leftPillar, rightPillar, gateTop, leftDoor, rightDoor, gateCrystal);
+            worldGroup.add(gateGroup);
+
+            // Cột đá
+            const pillarGeo = new THREE.CylinderGeometry(0.4, 0.5, 4.5, 8);
+            const pillarCapGeo = new THREE.BoxGeometry(1.1, 0.4, 1.1);
+            const pillarPositions = [
+                [-4.2, 2.25, -4], [-4.2, 2.25, -1], [-4.2, 2.25, 2],
+                [4.2, 2.25, -1], [4.2, 2.25, 2], [4.2, 2.25, 5]
+            ];
+            pillarPositions.forEach(pos => {
+                const pillar = new THREE.Mesh(pillarGeo, stoneMat);
+                pillar.position.set(...pos); pillar.castShadow = true;
+                const topCap = new THREE.Mesh(pillarCapGeo, darkStoneMat);
+                topCap.position.set(pos[0], 4.4, pos[2]); topCap.castShadow = true;
+                const baseCap = new THREE.Mesh(pillarCapGeo, darkStoneMat);
+                baseCap.position.set(pos[0], 0.2, pos[2]);
+                worldGroup.add(pillar, topCap, baseCap);
+            });
+
+            // Kim cương xoay
+            const diamondGeo = new THREE.OctahedronGeometry(0.35, 0);
+            const diamondPositions = [
+                { x: 0, y: 0.8, z: -3 }, { x: -3.5, y: 0.8, z: 1 },
+                { x: 3.5, y: 0.8, z: 1 }, { x: -5, y: 0.8, z: 6 }
+            ];
+            diamondPositions.forEach(pos => {
+                const diamond = new THREE.Mesh(diamondGeo, diamondMat);
+                diamond.position.set(pos.x, pos.y, pos.z);
+                diamond.scale.set(1, 1.3, 1);
+                worldGroup.add(diamond);
+                rotatingWorldItems.push(diamond);
+            });
+
+            return worldGroup;
+        }
+
+        // ==========================================
+        // 3. TẠO MODEL 2 QUÁI VẬT
+        // ==========================================
+        function createRealisticLongLegMonster() {
+            const group = new THREE.Group();
+            const bodyMat = new THREE.MeshStandardMaterial({ color: 0xe63946, roughness: 0.3, metalness: 0.1 });
+            const body = new THREE.Mesh(new THREE.BoxGeometry(2.0, 1.3, 1.0), bodyMat);
+            body.position.y = 0.5; body.castShadow = true;
+            group.add(body);
+
+            const legMat = new THREE.MeshStandardMaterial({ color: 0x2a9d8f, roughness: 0.4 });
+            const jointMat = new THREE.MeshStandardMaterial({ color: 0xf6c90e, roughness: 0.2 });
+
+            function createLeg(isLeft) {
+                const legGroup = new THREE.Group();
+                const sign = isLeft ? -1 : 1;
+                const thigh = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.06, 1.2, 16), legMat);
+                thigh.position.set(sign * 0.1, -0.6, 0); thigh.rotation.z = sign * -0.15;
+                const knee = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 16), jointMat);
+                knee.position.set(sign * 0.2, -1.2, 0);
+                const shin = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.05, 1.1, 16), legMat);
+                shin.position.set(sign * 0.1, -1.7, 0); shin.rotation.z = sign * 0.1;
+                const foot = new THREE.Mesh(new THREE.SphereGeometry(0.18, 16, 16), jointMat);
+                foot.scale.set(1.2, 0.5, 1.2); foot.position.set(0, -2.25, 0.05);
+                legGroup.add(thigh, knee, shin, foot);
+                return legGroup;
+            }
+
+            const legL = createLeg(true); legL.position.set(-0.6, 0.3, 0);
+            const legR = createLeg(false); legR.position.set(0.6, 0.3, 0);
+            group.add(legL, legR);
+
+            const hornStickMat = new THREE.MeshStandardMaterial({ color: 0xd4a373, roughness: 0.5 });
+            const hornTipMat = new THREE.MeshStandardMaterial({ color: 0xf6c90e, emissive: 0xf6c90e, emissiveIntensity: 0.5 });
+            function createHorn() {
+                const hGroup = new THREE.Group();
+                const stick = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.04, 0.8, 16), hornStickMat);
+                stick.position.y = 0.4;
+                const tip = new THREE.Mesh(new THREE.SphereGeometry(0.12, 16, 16), hornTipMat);
+                tip.position.y = 0.8;
+                hGroup.add(stick, tip);
+                return hGroup;
+            }
+            const hL = createHorn(); hL.position.set(-0.7, 1.15, 0); hL.rotation.z = -0.35;
+            const hR = createHorn(); hR.position.set(0.7, 1.15, 0); hR.rotation.z = 0.35;
+            group.add(hL, hR);
+
+            function create3DEye() {
+                const eGroup = new THREE.Group();
+                const white = new THREE.Mesh(new THREE.SphereGeometry(0.24, 24, 24), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 }));
+                const iris = new THREE.Mesh(new THREE.SphereGeometry(0.14, 24, 24), new THREE.MeshStandardMaterial({ color: 0x2a9d8f, roughness: 0.1 })); iris.position.z = 0.12;
+                const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.07, 16, 16), new THREE.MeshBasicMaterial({ color: 0x111111 })); pupil.position.z = 0.2;
+                const sparkle = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffffff })); sparkle.position.set(0.05, 0.05, 0.25);
+                eGroup.add(white, iris, pupil, sparkle);
+                return eGroup;
+            }
+            const eyeL = create3DEye(); eyeL.position.set(-0.42, 0.65, 0.42);
+            const eyeR = create3DEye(); eyeR.position.set(0.42, 0.65, 0.42);
+            group.add(eyeL, eyeR);
+
+            const smileGeo = new THREE.TorusGeometry(0.2, 0.025, 12, 24, Math.PI);
+            const smile = new THREE.Mesh(smileGeo, new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 }));
+            smile.position.set(0, 0.32, 0.52); smile.rotation.z = Math.PI;
+            group.add(smile);
+
+            return group;
+        }
+
+        function createRealisticOctopusMonster() {
+            const group = new THREE.Group();
+            const skinMat = new THREE.MeshStandardMaterial({ color: 0x0077b6, roughness: 0.15, metalness: 0.05 });
+            const suctionMat = new THREE.MeshStandardMaterial({ color: 0xcaf0f8, roughness: 0.3 });
+            const hornMat = new THREE.MeshStandardMaterial({ color: 0x7209b7, emissive: 0x3a0ca3, emissiveIntensity: 0.8 });
+
+            const body = new THREE.Mesh(new THREE.SphereGeometry(1.0, 32, 32), skinMat);
+            body.scale.set(1.1, 1.0, 1.0); body.position.y = 0.6; body.castShadow = true;
+            group.add(body);
+
+            const tentacles = [];
+            for (let i = 0; i < 8; i++) {
+                const angle = (i / 8) * Math.PI * 2;
+                const tentacleGroup = new THREE.Group();
+                const curve = new THREE.CubicBezierCurve3(
+                    new THREE.Vector3(0, 0, 0),
+                    new THREE.Vector3(Math.cos(angle) * 0.6, -0.4, Math.sin(angle) * 0.6),
+                    new THREE.Vector3(Math.cos(angle) * 1.2, -0.8, Math.sin(angle) * 1.2),
+                    new THREE.Vector3(Math.cos(angle) * 1.7, -1.1, Math.sin(angle) * 1.7)
+                );
+                const tubeGeo = new THREE.TubeGeometry(curve, 20, 0.11, 12, false);
+                const tentacleMesh = new THREE.Mesh(tubeGeo, skinMat);
+                tentacleGroup.add(tentacleMesh);
+
+                for (let t = 0.3; t <= 0.9; t += 0.25) {
+                    const point = curve.getPoint(t);
+                    const suction = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.03, 12), suctionMat);
+                    suction.position.copy(point);
+                    tentacleGroup.add(suction);
+                }
+                tentacleGroup.position.set(0, 0.2, 0);
+                group.add(tentacleGroup);
+                tentacles.push(tentacleGroup);
+            }
+
+            const hornL = new THREE.Mesh(new THREE.ConeGeometry(0.08, 0.6, 16), hornMat);
+            hornL.position.set(-0.35, 1.55, 0.2); hornL.rotation.z = -0.3;
+            const hornR = hornL.clone(); hornR.position.x = 0.35; hornR.rotation.z = 0.3;
+            group.add(hornL, hornR);
+
+            function createEye() {
+                const eGroup = new THREE.Group();
+                const white = new THREE.Mesh(new THREE.SphereGeometry(0.22, 24, 24), new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.1 }));
+                const iris = new THREE.Mesh(new THREE.SphereGeometry(0.13, 24, 24), new THREE.MeshStandardMaterial({ color: 0x00b4d8, roughness: 0.1 })); iris.position.z = 0.12;
+                const pupil = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), new THREE.MeshBasicMaterial({ color: 0x03045e })); pupil.position.z = 0.2;
+                const sparkle = new THREE.Mesh(new THREE.SphereGeometry(0.035, 12, 12), new THREE.MeshBasicMaterial({ color: 0xffffff })); sparkle.position.set(0.04, 0.04, 0.24);
+                eGroup.add(white, iris, pupil, sparkle);
+                return eGroup;
+            }
+            const leftEye = createEye(); leftEye.position.set(-0.3, 0.75, 0.85);
+            const rightEye = createEye(); rightEye.position.set(0.3, 0.75, 0.85);
+            group.add(leftEye, rightEye);
+
+            const mouth = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.04, 16), new THREE.MeshStandardMaterial({ color: 0xf72585, roughness: 0.2 }));
+            mouth.rotation.x = Math.PI / 2; mouth.position.set(0, 0.45, 0.98);
+            group.add(mouth);
+
+            group.userData = { tentacles: tentacles };
+            return group;
+        }
+
+        // ==========================================
+        // 4. LUCK BUFF & HỆ THỐNG DROP KIẾM VŨ TRỤ
+        // ==========================================
+        let combatTimeMinutes = 0;
+        let luckBonusRatio = 0;
+
+        setInterval(() => {
+            if (combatTimeMinutes < 60) {
+                combatTimeMinutes++;
+                luckBonusRatio = Math.min(0.03, (combatTimeMinutes / 60) * 0.03);
+                console.log(`[BUFF LUCK] Thời gian chiến đấu: ${combatTimeMinutes} phút | Luck Legendary hiện tại: ${(luckBonusRatio * 100).toFixed(2)}%`);
+            }
+        }, 60000);
+
+        const SWORD_DATABASE = {
+            RED: {
+                COMMON: { name: "Hồng Xạ Kiếm", power: 50, color: 0xff4d4d, coreColor: 0xff8080 },
+                RARE: { name: "Huyết Nguyệt Vũ Trụ", power: 150, color: 0xff0055, coreColor: 0xff6699 },
+                EPIC: { name: "Xích Tinh Tinh Hà", power: 450, color: 0xd90429, coreColor: 0xffb703 },
+                LEGENDARY: { name: "Vô Hạn Hắc Động - Red", power: 1500, color: 0x050505, coreColor: 0xff0000 }
+            },
+            BLUE: {
+                COMMON: { name: "Lam Băng Xạ Kiếm", power: 120, color: 0x00b4d8, coreColor: 0x90e0ef },
+                RARE: { name: "Hải Vương Vũ Trụ", power: 400, color: 0x0077b6, coreColor: 0x48cae4 },
+                EPIC: { name: "Thái Không Tinh Hải", power: 1200, color: 0x3a0ca3, coreColor: 0x7209b7 },
+                LEGENDARY: { name: "Vô Hạn Hắc Động - Cosmic Void", power: 5000, color: 0x020205, coreColor: 0x00f5d4 }
+            }
+        };
+
+        function rollSwordDrop(monsterType) {
+            const roll = Math.random() * 100;
+            if (monsterType === 'RED') {
+                const legRate = 0.001 + (luckBonusRatio * 100);
+                const epicRate = 1.999;
+                const rareRate = 38.0;
+
+                if (roll < legRate) return SWORD_DATABASE.RED.LEGENDARY;
+                if (roll < legRate + epicRate) return SWORD_DATABASE.RED.EPIC;
+                if (roll < legRate + epicRate + rareRate) return SWORD_DATABASE.RED.RARE;
+                return SWORD_DATABASE.RED.COMMON;
+            } else {
+                const legRate = 0.00001 + (luckBonusRatio * 100);
+                const epicRate = 0.00999;
+                const rareRate = 9.9;
+
+                if (roll < legRate) return SWORD_DATABASE.BLUE.LEGENDARY;
+                if (roll < legRate + epicRate) return SWORD_DATABASE.BLUE.EPIC;
+                if (roll < legRate + epicRate + rareRate) return SWORD_DATABASE.BLUE.RARE;
+                return SWORD_DATABASE.BLUE.COMMON;
+            }
+        }
+
+        function createCosmic3DSword(swordData) {
+            const swordGroup = new THREE.Group();
+            const isLegendary = swordData.power >= 1500;
+
+            const bladeMaterial = new THREE.MeshStandardMaterial({
+                color: swordData.color,
+                roughness: isLegendary ? 0.05 : 0.2,
+                metalness: isLegendary ? 0.95 : 0.6,
+                emissive: isLegendary ? 0x000000 : swordData.color,
+                emissiveIntensity: isLegendary ? 0 : 0.3
+            });
+
+            const coreMaterial = new THREE.MeshBasicMaterial({ color: swordData.coreColor });
+
+            const blade = new THREE.Mesh(new THREE.BoxGeometry(0.12, 2.8, 0.03), bladeMaterial);
+            blade.position.y = 1.6; swordGroup.add(blade);
+
+            const tip = new THREE.Mesh(new THREE.ConeGeometry(0.085, 0.5, 4), bladeMaterial);
+            tip.position.y = 3.25; tip.rotation.y = Math.PI / 4; swordGroup.add(tip);
+
+            const core = new THREE.Mesh(new THREE.CylinderGeometry(0.02, 0.02, 2.5, 16), coreMaterial);
+            core.position.y = 1.6; swordGroup.add(core);
+
+            const guardMat = new THREE.MeshStandardMaterial({ color: isLegendary ? 0x111111 : 0x4a4e69, metalness: 0.8 });
+            const guard = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.08, 0.12), guardMat);
+            guard.position.y = 0.2; swordGroup.add(guard);
+
+            const hilt = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.5, 16), guardMat);
+            hilt.position.y = -0.1; swordGroup.add(hilt);
+
+            const ring = new THREE.Mesh(new THREE.TorusGeometry(0.15, 0.02, 16, 32), coreMaterial);
+            ring.position.y = -0.38; ring.rotation.x = Math.PI / 2; swordGroup.add(ring);
+
+            if (isLegendary) {
+                const aura = new THREE.Mesh(
+                    new THREE.SphereGeometry(0.3, 16, 16),
+                    new THREE.MeshBasicMaterial({ color: swordData.coreColor, wireframe: true, transparent: true, opacity: 0.6 })
+                );
+                aura.position.y = 1.6;
+                swordGroup.add(aura);
+                swordGroup.userData.aura = aura;
+            }
+
+            return swordGroup;
+        }
+
+        let currentSwordMesh = null;
+        function spawnSwordDrop(monsterType, positionX) {
+            if (currentSwordMesh) scene.remove(currentSwordMesh);
+
+            const droppedSwordData = rollSwordDrop(monsterType);
+            console.log(`[DROP RỚT ĐỒ] Quái ${monsterType} rớt kiếm: ${droppedSwordData.name} | Sức mạnh: ${droppedSwordData.power}`);
+
+            currentSwordMesh = createCosmic3DSword(droppedSwordData);
+            currentSwordMesh.position.set(positionX, 0.8, 1.5);
+            currentSwordMesh.scale.set(0.6, 0.6, 0.6);
+            scene.add(currentSwordMesh);
+        }
+
+        window.addEventListener('click', (e) => {
+            const type = e.clientX < window.innerWidth / 2 ? 'RED' : 'BLUE';
+            const posX = type === 'RED' ? -2.5 : 2.5;
+            spawnSwordDrop(type, posX);
+        });
+
+        // ==========================================
+        // 5. KHỞI TẠO WORLD & ANIMATION LOOP
+        // ==========================================
+        const world = createWorldEnvironment();
+        scene.add(world);
+
+        const monster1 = createRealisticLongLegMonster();
+        monster1.position.set(-2.5, 1.8, -1);
+        monster1.scale.set(0.7, 0.7, 0.7);
+
+        const monster2 = createRealisticOctopusMonster();
+        monster2.position.set(2.5, 0.5, -1);
+        monster2.scale.set(0.7, 0.7, 0.7);
+
+        scene.add(monster1, monster2);
+
+        spawnSwordDrop('BLUE', 0);
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const time = Date.now() * 0.002;
+
+            rotatingWorldItems.forEach(item => { item.rotation.y += 0.02; });
+
+            monster1.position.y = 1.8 + Math.sin(time * 2) * 0.08;
+            monster1.rotation.y = Math.sin(time) * 0.15;
+
+            monster2.position.y = 0.5 + Math.cos(time * 2) * 0.06;
+            monster2.rotation.y = Math.cos(time) * 0.15;
+
+            if (monster2.userData.tentacles) {
+                monster2.userData.tentacles.forEach((t, i) => {
+                    t.rotation.z = Math.sin(time * 3 + i) * 0.08;
+                    t.rotation.x = Math.cos(time * 2 + i) * 0.05;
+                });
+            }
+
+            if (currentSwordMesh) {
+                currentSwordMesh.rotation.y = time;
+                currentSwordMesh.position.y = 0.8 + Math.sin(time * 2) * 0.15;
+
+                if (currentSwordMesh.userData.aura) {
+                    currentSwordMesh.userData.aura.rotation.x = time * 2;
+                    currentSwordMesh.userData.aura.rotation.z = time * 1.5;
+                }
+            }
+
+            renderer.render(scene, camera);
+        }
+
+        window.addEventListener('resize', () => {
+            const aspect = window.innerWidth / window.innerHeight;
+            camera.left = -d * aspect;
+            camera.right = d * aspect;
+            camera.top = d;
+            camera.bottom = -d;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+
+        animate();
+    </script>
+</body>
+</html>
