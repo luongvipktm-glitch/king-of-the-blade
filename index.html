@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mystic Temple 3D - Advanced Inventory & Customization</title>
+    <title>Mystic Temple 3D - Custom Drop & Combat Edition</title>
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; overflow: hidden; background: #05020a; font-family: 'Segoe UI', sans-serif; user-select: none; }
@@ -21,7 +21,6 @@
         
         #instructions { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); background: rgba(10, 5, 20, 0.85); color: #ddd; padding: 10px 20px; border-radius: 15px; font-size: 13px; text-align: center; border: 1px solid #a335ee; pointer-events: none; z-index: 10; }
         
-        /* Modals for TAB & O */
         .modal-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(10,5,20,0.95); border: 2px solid #a335ee; padding: 25px; border-radius: 15px; color: #fff; z-index: 100; width: 360px; display: none; box-shadow: 0 0 25px rgba(163,53,238,0.6); }
         .modal-box h3 { margin-top: 0; color: #ffd700; text-align: center; }
         .modal-box button { width: 100%; background: #a335ee; color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; }
@@ -65,7 +64,7 @@
         <div id="boss-hp-text" style="font-size:11px; margin-top:2px;">333000 / 333000</div>
     </div>
 
-    <!-- MODAL TÚI ĐỒ (Bấm TAB) -->
+    <!-- MODAL TÚI ĐỒ (TAB) -->
     <div id="inventory-modal" class="modal-box">
         <h3>🎒 TÚI ĐỒ VẬT PHẨM</h3>
         <p>📦 Common: <span id="inv-common">0</span></p>
@@ -76,7 +75,7 @@
         <div style="text-align:center; font-size:11px; margin-top:10px; color:#aaa;">Bấm [TAB] để đóng</div>
     </div>
 
-    <!-- MODAL TÙY CHỈNH MÀU (Bấm O) -->
+    <!-- MODAL TÙY CHỈNH MÀU (O) -->
     <div id="color-modal" class="modal-box" style="border-color:#00ffcc;">
         <h3 style="color:#00ffcc;">🎨 TÙY CHỈNH TRANG PHỤC</h3>
         <label>Màu áo nhân vật: <input type="color" id="picker-body" value="#1a1a24"></label>
@@ -130,10 +129,10 @@
                 const swordColors = [0xaaaaaa, 0x0088ff, 0xa335ee, 0xffd700];
                 const swordDmgs = [10, 50, 250, 1000];
 
-                // Inventory system
                 const inventory = { common: 0, rare: 0, epic: 0, legendary: 0 };
 
                 let gameStage = 1;
+                let redMonsterHP = 50; // Quái đỏ 50 máu
                 let octopusHP = 3000;
                 let bossHP = 333000;
                 let isVictory = false;
@@ -147,13 +146,11 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 document.body.appendChild(renderer.domElement);
 
-                // ÁNH SÁNG & ĐỀN THỜ 3D
                 scene.add(new THREE.AmbientLight(0x3a2b5e, 1.5));
                 const dirLight = new THREE.DirectionalLight(0x9966ff, 1.8);
                 dirLight.position.set(15, 25, 10);
                 scene.add(dirLight);
 
-                // BẦU TRỜI SAO
                 const starsGeo = new THREE.BufferGeometry();
                 const starsCnt = 500;
                 const posArr = new Float32Array(starsCnt * 3);
@@ -162,7 +159,6 @@
                 const starField = new THREE.Points(starsGeo, new THREE.PointsMaterial({color: 0xaa88ff, size: 0.6}));
                 scene.add(starField);
 
-                // SÀN ĐỀN & CỘT TRỤ
                 const platformGroup = new THREE.Group();
                 const stoneMat = new THREE.MeshStandardMaterial({ color: 0x2e293d, roughness: 0.8 });
                 const floorMesh = new THREE.Mesh(new THREE.BoxGeometry(36, 2, 36), stoneMat);
@@ -189,7 +185,6 @@
                     if(z !== 0) { createPillar(-15, z); createPillar(15, z); }
                 }
 
-                // CỔNG
                 const gateGroup = new THREE.Group();
                 const archPillar1 = new THREE.Mesh(new THREE.BoxGeometry(1.2, 8, 1.2), pillarMat); archPillar1.position.set(-4, 3, -16);
                 const archPillar2 = new THREE.Mesh(new THREE.BoxGeometry(1.2, 8, 1.2), pillarMat); archPillar2.position.set(4, 3, -16);
@@ -203,7 +198,6 @@
                 platformGroup.add(gateGroup);
                 scene.add(platformGroup);
 
-                // --- 1. NHÂN VẬT CHÍNH ---
                 const playerGroup = new THREE.Group();
                 const playerBodyMat = new THREE.MeshStandardMaterial({ color: 0x1a1a24 });
                 const skinMat = new THREE.MeshStandardMaterial({ color: 0xd4a373 });
@@ -236,7 +230,6 @@
                 playerGroup.position.set(0, 0, 6);
                 scene.add(playerGroup);
 
-                // --- 2. QUÁI VẬT 1: QUỶ ĐỎ ---
                 function createRedMonster() {
                     const group = new THREE.Group();
                     const rBody = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.0, 0.8), new THREE.MeshLambertMaterial({ color: 0xff4d4d }));
@@ -269,7 +262,6 @@
                 redMonster.position.set(0, 0, -4);
                 scene.add(redMonster);
 
-                // --- 3. QUÁI VẬT 2: BẠCH TUỘC ---
                 function createOctopusMonster() {
                     const group = new THREE.Group();
                     const bodyMat = new THREE.MeshLambertMaterial({ color: 0x3399ff });
@@ -300,7 +292,6 @@
                 octopusMonster.visible = false;
                 scene.add(octopusMonster);
 
-                // --- 4. BOSS MA VƯƠNG (333.000 HP) ---
                 const bossMonster = createOctopusMonster();
                 bossMonster.scale.set(3.5, 3.5, 3.5);
                 bossMonster.position.set(0, 0, -5);
@@ -312,21 +303,20 @@
                 });
                 scene.add(bossMonster);
 
-                // --- DROP SYSTEM & DROP RATES ---
+                // --- DROP SYSTEM VỚI TỈ LỆ MỚI ---
+                // Common: 20%, Rare: 19%, Epic: 0.9%, Legendary: 0.01%
                 function handleItemDrop() {
                     const rand = Math.random() * 100;
-                    // Epic < Rare < Common, Legendary < Epic
-                    // Tỉ lệ: Common (55%), Rare (25%), Epic (15%), Legendary (5%)
-                    if (rand < 55) {
+                    if (rand < 20) {
                         inventory.common++;
                         showToast("📦 Rơi vật phẩm: Common (+1)");
-                    } else if (rand < 80) {
+                    } else if (rand < 39) {
                         inventory.rare++;
                         showToast("🔷 Rơi vật phẩm: Rare (+1)");
-                    } else if (rand < 95) {
+                    } else if (rand < 39.9) {
                         inventory.epic++;
                         showToast("💜 Rơi vật phẩm: Epic (+1)");
-                    } else {
+                    } else if (rand < 39.91) {
                         inventory.legendary++;
                         showToast("👑 Rơi vật phẩm: Legendary (+1)");
                     }
@@ -352,7 +342,6 @@
                     }
                 };
 
-                // --- COLOR CUSTOMIZATION (Bấm O) ---
                 document.getElementById('picker-body').addEventListener('input', e => {
                     playerBodyMat.color.set(e.target.value);
                 });
@@ -383,7 +372,6 @@
                 });
                 window.addEventListener('mouseup', () => { isDragging = false; });
 
-                // --- KEYBOARD & CLICK HANDLING ---
                 const keys = {};
                 let isInvOpen = false;
                 let isColorOpen = false;
@@ -393,13 +381,11 @@
                     const k = e.key.toLowerCase();
                     keys[k] = true;
 
-                    // Mở túi đồ (TAB)
                     if (e.key === 'Tab') {
                         e.preventDefault();
                         isInvOpen = !isInvOpen;
                         document.getElementById('inventory-modal').style.display = isInvOpen ? 'block' : 'none';
                     }
-                    // Mở tùy chỉnh màu (O)
                     if (k === 'o') {
                         isColorOpen = !isColorOpen;
                         document.getElementById('color-modal').style.display = isColorOpen ? 'block' : 'none';
@@ -416,19 +402,24 @@
                     const totalDmg = Math.floor(power / 2) + swordDmgs[swordLevel];
 
                     if (gameStage === 1) {
-                        killCount++;
-                        power += 2;
-                        checkUpgradeSword();
-                        document.getElementById('val-kills').innerText = `${killCount}`;
-                        document.getElementById('val-power').innerText = power;
+                        redMonsterHP -= totalDmg;
+                        if (redMonsterHP <= 0) {
+                            killCount++;
+                            power += 2;
+                            checkUpgradeSword();
+                            document.getElementById('val-kills').innerText = `${killCount}`;
+                            document.getElementById('val-power').innerText = power;
 
-                        handleItemDrop(); // Rơi đồ ngẫu nhiên mỗi lần hạ quái
+                            handleItemDrop();
 
-                        // Quái chết biến mất 0.1s rồi quay lại
-                        redMonster.visible = false;
-                        setTimeout(() => {
-                            if(gameStage === 1 && !isVictory) redMonster.visible = true;
-                        }, 100);
+                            redMonster.visible = false;
+                            setTimeout(() => {
+                                if(gameStage === 1 && !isVictory) {
+                                    redMonster.visible = true;
+                                    redMonsterHP = 50; // Reset 50 máu
+                                }
+                            }, 100);
+                        }
 
                         if (killCount >= 999) {
                             showToast("🌟 ĐÃ ĐẠT 999 MẠNG! CỔNG ĐÃ MỞ, HÃY BƯỚC QUA!");
@@ -453,7 +444,6 @@
                         }
                     }
                     else if (gameStage === 3) {
-                        // Boss KHÔNG respawn
                         bossHP -= totalDmg;
                         if (bossHP < 0) bossHP = 0;
                         document.getElementById('boss-hp-inner').style.width = `${(bossHP / 333000) * 100}%`;
@@ -490,7 +480,6 @@
                     setTimeout(() => { toast.style.display = 'none'; }, 2200);
                 }
 
-                // --- ANIMATE LOOP ---
                 let walkTime = 0;
                 function animate() {
                     requestAnimationFrame(animate);
@@ -513,7 +502,6 @@
                     playerGroup.position.x = Math.max(-16, Math.min(16, playerGroup.position.x));
                     playerGroup.position.z = Math.max(-16, Math.min(16, playerGroup.position.z));
 
-                    // KIỂM TRA CỔNG
                     const distToGate = Math.hypot(playerGroup.position.x - 0, playerGroup.position.z - (-15.5));
                     const gateMsg = document.getElementById('gate-msg');
 
@@ -537,7 +525,6 @@
                         gateMsg.style.display = 'none';
                     }
 
-                    // CAMERA ORBIT
                     camera.position.x = playerGroup.position.x + cameraDistance * Math.sin(cameraAngleX) * Math.cos(cameraAngleY);
                     camera.position.y = playerGroup.position.y + cameraDistance * Math.sin(cameraAngleY) + 1;
                     camera.position.z = playerGroup.position.z + cameraDistance * Math.cos(cameraAngleX) * Math.cos(cameraAngleY);
