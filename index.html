@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mystic Temple 3D - 999 Kills & 333k Boss Edition</title>
+    <title>Mystic Temple 3D - Ultimate Orbit Edition</title>
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; overflow: hidden; background: #05020a; font-family: 'Segoe UI', sans-serif; user-select: none; }
@@ -20,7 +20,6 @@
         #gate-msg { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(255, 50, 50, 0.9); color: #fff; padding: 10px 22px; border-radius: 12px; font-weight: bold; display: none; z-index: 15; border: 1px solid #fff; box-shadow: 0 0 10px rgba(255,50,50,0.7); }
         
         #instructions { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); background: rgba(10, 5, 20, 0.85); color: #ddd; padding: 10px 20px; border-radius: 15px; font-size: 13px; text-align: center; border: 1px solid #a335ee; pointer-events: none; z-index: 10; }
-        #crosshair { position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; background: #00ffcc; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 10; display: none; }
         
         #victory-screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255,255,255,0.95); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; color: #111; }
         #victory-screen h1 { font-size: 120px; color: #ffd700; margin: 0; text-shadow: 0 0 30px rgba(255,215,0,0.8); letter-spacing: 6px; font-family: Impact, sans-serif; }
@@ -42,7 +41,6 @@
         <p><b>LỖI KHÔNG TẢI ĐƯỢC ĐỒ HỌA 3D!</b><br>Trình duyệt đang tắt WebGL hoặc chặn thư viện JS.</p>
     </div>
 
-    <div id="crosshair"></div>
     <div id="toast"></div>
     <div id="gate-msg">🔒 CẦN ĐỦ 999 MẠNG ĐỂ MỞ CỔNG TIẾN VÀO KHU VỰC BẠCH TUỘC!</div>
 
@@ -61,7 +59,7 @@
     </div>
 
     <div id="instructions">
-        <b>[WASD]</b> Di chuyển | <b>[Bấm P]</b> Đổi góc nhìn | <b>[Click Chuột]</b> Tấn công Quỷ Đỏ / Bạch Tuộc / Boss
+        <b>[WASD]</b> Di chuyển | <b>[Giữ Chuột Trái + Kéo]</b> Xoay đa hướng 360 độ | <b>[Click Chuột]</b> Tấn công phát ra tiếng "È"
     </div>
 
     <div id="victory-screen">
@@ -81,31 +79,36 @@
             if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
 
-        function playSound(freq, type, duration) {
+        // Phát âm thanh "È" vui tai khi đánh trúng quái
+        function playBeepSound() {
             if (!audioCtx) return;
-            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
-            osc.type = type;
-            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-            osc.frequency.exponentialRampToValueAtTime(30, audioCtx.currentTime + duration);
-            gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
-            osc.connect(gain); gain.connect(audioCtx.destination);
-            osc.start(); osc.stop(audioCtx.currentTime + duration);
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            // Tạo cao độ luyến thanh tạo tiếng "è...è"
+            osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.15);
+            
+            gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
         }
 
         if (typeof THREE === 'undefined') {
             triggerNO();
         } else {
             try {
-                let isFirstPerson = false;
                 let power = 10, killCount = 0, swordLevel = 0;
-                
                 const swordNames = ["Common (+10)", "Rare (+50)", "Epic (+250)", "Legendary (+1000)"];
                 const swordColors = [0xaaaaaa, 0x0088ff, 0xa335ee, 0xffd700];
                 const swordDmgs = [10, 50, 250, 1000];
 
-                let gameStage = 1; // Stage 1: 999 Quỷ Đỏ -> Stage 2: Bạch Tuộc -> Stage 3: Boss 333k HP -> Stage 4: Win
-                let octopusHP = 2000;
+                let gameStage = 1; // 1: 999 Quỷ đỏ -> 2: Bạch tuộc -> 3: Boss 333k HP -> 4: Win
+                let octopusHP = 3000;
                 let bossHP = 333000;
                 let isVictory = false;
 
@@ -119,12 +122,12 @@
                 document.body.appendChild(renderer.domElement);
 
                 // ÁNH SÁNG & ĐỀN THỜ 3D
-                scene.add(new THREE.AmbientLight(0x2a1b4e, 1.5));
+                scene.add(new THREE.AmbientLight(0x3a2b5e, 1.5));
                 const dirLight = new THREE.DirectionalLight(0x9966ff, 1.8);
                 dirLight.position.set(15, 25, 10);
                 scene.add(dirLight);
 
-                // BẦU TRỜI SAO LẤP LÁNH
+                // BẦU TRỜI SAO
                 const starsGeo = new THREE.BufferGeometry();
                 const starsCnt = 500;
                 const posArr = new Float32Array(starsCnt * 3);
@@ -133,7 +136,7 @@
                 const starField = new THREE.Points(starsGeo, new THREE.PointsMaterial({color: 0xaa88ff, size: 0.6}));
                 scene.add(starField);
 
-                // SÀN ĐỀN THỜ & CỘT TRỤ
+                // SÀN ĐỀN & CỘT TRỤ
                 const platformGroup = new THREE.Group();
                 const stoneMat = new THREE.MeshStandardMaterial({ color: 0x2e293d, roughness: 0.8 });
                 const floorMesh = new THREE.Mesh(new THREE.BoxGeometry(36, 2, 36), stoneMat);
@@ -160,7 +163,7 @@
                     if(z !== 0) { createPillar(-15, z); createPillar(15, z); }
                 }
 
-                // CỔNG CỔ KÍNH Ở PHÍA SAU
+                // CỔNG
                 const gateGroup = new THREE.Group();
                 const archPillar1 = new THREE.Mesh(new THREE.BoxGeometry(1.2, 8, 1.2), pillarMat); archPillar1.position.set(-4, 3, -16);
                 const archPillar2 = new THREE.Mesh(new THREE.BoxGeometry(1.2, 8, 1.2), pillarMat); archPillar2.position.set(4, 3, -16);
@@ -174,7 +177,7 @@
                 platformGroup.add(gateGroup);
                 scene.add(platformGroup);
 
-                // --- 1. NHÂN VẬT CHÍNH ---
+                // --- 1. NHÂN VẬT CHÍNH (CÓ ĐỦ MẮT, MŨI, MIỆNG, HÀO QUANG) ---
                 const playerGroup = new THREE.Group();
                 const playerBodyMat = new THREE.MeshStandardMaterial({ color: 0x1a1a24 });
                 const skinMat = new THREE.MeshStandardMaterial({ color: 0xd4a373 });
@@ -182,6 +185,13 @@
                 const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.5), playerBodyMat); body.position.y = 1.3;
                 const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMat); head.position.y = 2.1;
                 
+                // Chi tiết Mặt: Mắt, Mũi, Miệng
+                const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.02), eyeMat); eyeL.position.set(-0.12, 2.15, 0.26);
+                const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.02), eyeMat); eyeR.position.set(0.12, 2.15, 0.26);
+                const nose = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.08, 0.04), skinMat); nose.position.set(0, 2.05, 0.26);
+                const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.04, 0.02), new THREE.MeshBasicMaterial({ color: 0x331111 })); mouth.position.set(0, 1.95, 0.26);
+
                 // Vòng hào quang đen lơ lửng trên đầu
                 const haloRing = new THREE.Mesh(
                     new THREE.TorusGeometry(0.45, 0.08, 16, 32),
@@ -201,7 +211,7 @@
                 swordGroup.position.set(0.6, 1.3, -0.3);
                 swordGroup.rotation.x = Math.PI / 3;
 
-                playerGroup.add(body, head, haloRing, legL, legR, swordGroup);
+                playerGroup.add(body, head, eyeL, eyeR, nose, mouth, haloRing, legL, legR, swordGroup);
                 playerGroup.position.set(0, 0, 6);
                 scene.add(playerGroup);
 
@@ -211,12 +221,12 @@
                     const rBody = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.0, 0.8), new THREE.MeshLambertMaterial({ color: 0xff4d4d }));
                     rBody.position.y = 1.8;
 
-                    const eyeWhite = new THREE.MeshBasicMaterial({ color: 0xffffff });
-                    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x00cc66 });
-                    const eL = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.05, 16), eyeWhite); eL.rotation.x = Math.PI/2; eL.position.set(-0.4, 1.85, 0.42);
-                    const eL_in = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 16), eyeMat); eL_in.rotation.x = Math.PI/2; eL_in.position.set(-0.4, 1.85, 0.43);
-                    const eR = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.05, 16), eyeWhite); eR.rotation.x = Math.PI/2; eR.position.set(0.4, 1.85, 0.42);
-                    const eR_in = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 16), eyeMat); eR_in.rotation.x = Math.PI/2; eR_in.position.set(0.4, 1.85, 0.43);
+                    const eWhite = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    const eGreen = new THREE.MeshBasicMaterial({ color: 0x00cc66 });
+                    const eL = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.05, 16), eWhite); eL.rotation.x = Math.PI/2; eL.position.set(-0.4, 1.85, 0.42);
+                    const eL_in = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 16), eGreen); eL_in.rotation.x = Math.PI/2; eL_in.position.set(-0.4, 1.85, 0.43);
+                    const eR = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.05, 16), eWhite); eR.rotation.x = Math.PI/2; eR.position.set(0.4, 1.85, 0.42);
+                    const eR_in = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 16), eGreen); eR_in.rotation.x = Math.PI/2; eR_in.position.set(0.4, 1.85, 0.43);
 
                     const hornMat = new THREE.MeshLambertMaterial({ color: 0xffd700 });
                     const hStickL = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.6), hornMat); hStickL.position.set(-0.7, 2.5, 0); hStickL.rotation.z = -0.4;
@@ -238,18 +248,18 @@
                 redMonster.position.set(0, 0, -4);
                 scene.add(redMonster);
 
-                // --- 3. QUÁI VẬT 2: BẠCH TUỘC (CUTE OCTOPUS) ---
+                // --- 3. QUÁI VẬT 2: BẠCH TUỘC ---
                 function createOctopusMonster() {
                     const group = new THREE.Group();
                     const bodyMat = new THREE.MeshLambertMaterial({ color: 0x3399ff });
                     const headBall = new THREE.Mesh(new THREE.SphereGeometry(1.2, 24, 24), bodyMat); headBall.position.y = 1.4;
 
-                    const eyeWhite = new THREE.MeshBasicMaterial({ color: 0xffffff });
-                    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x00cccc });
-                    const eL = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 16), eyeWhite); eL.rotation.x = Math.PI/2; eL.position.set(-0.4, 1.5, 1.0);
-                    const eL_in = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.06, 16), eyeMat); eL_in.rotation.x = Math.PI/2; eL_in.position.set(-0.4, 1.5, 1.02);
-                    const eR = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 16), eyeWhite); eR.rotation.x = Math.PI/2; eR.position.set(0.4, 1.5, 1.0);
-                    const eR_in = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.06, 16), eyeMat); eR_in.rotation.x = Math.PI/2; eR_in.position.set(0.4, 1.5, 1.02);
+                    const eWhite = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    const eCyan = new THREE.MeshBasicMaterial({ color: 0x00cccc });
+                    const eL = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 16), eWhite); eL.rotation.x = Math.PI/2; eL.position.set(-0.4, 1.5, 1.0);
+                    const eL_in = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.06, 16), eCyan); eL_in.rotation.x = Math.PI/2; eL_in.position.set(-0.4, 1.5, 1.02);
+                    const eR = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 16), eWhite); eR.rotation.x = Math.PI/2; eR.position.set(0.4, 1.5, 1.0);
+                    const eR_in = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.06, 16), eCyan); eR_in.rotation.x = Math.PI/2; eR_in.position.set(0.4, 1.5, 1.02);
 
                     const legMat = new THREE.MeshLambertMaterial({ color: 0x1a75ff });
                     for(let i=0; i<8; i++) {
@@ -281,28 +291,49 @@
                 });
                 scene.add(bossMonster);
 
-                // SỰ KIỆN TƯƠNG TÁC
+                // --- TÍNH NĂNG XOAY ĐA HƯỚNG 360 ĐỘ QUANH NHÂN VẬT ---
+                let isDragging = false;
+                let previousMousePosition = { x: 0, y: 0 };
+                let cameraAngleX = 0; // Góc xoay ngang
+                let cameraAngleY = 0.5; // Góc xoay dọc
+                let cameraDistance = 10; // Khoảng cách camera
+
+                window.addEventListener('mousedown', e => {
+                    isDragging = true;
+                    previousMousePosition = { x: e.clientX, y: e.clientY };
+                });
+
+                window.addEventListener('mousemove', e => {
+                    if (!isDragging) return;
+                    const deltaX = e.clientX - previousMousePosition.x;
+                    const deltaY = e.clientY - previousMousePosition.y;
+
+                    cameraAngleX -= deltaX * 0.008;
+                    cameraAngleY = Math.max(0.1, Math.min(1.4, cameraAngleY + deltaY * 0.008));
+
+                    previousMousePosition = { x: e.clientX, y: e.clientY };
+                });
+
+                window.addEventListener('mouseup', () => { isDragging = false; });
+
+                // SỰ KIỆN TƯƠNG TÁC TẤT CẢ TRONG MỘT
                 const keys = {};
                 window.addEventListener('keydown', e => {
                     initAudio();
-                    const k = e.key.toLowerCase();
-                    keys[k] = true;
-                    if (k === 'p') {
-                        isFirstPerson = !isFirstPerson;
-                        document.getElementById('crosshair').style.display = isFirstPerson ? 'block' : 'none';
-                    }
+                    keys[e.key.toLowerCase()] = true;
                 });
                 window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
-                window.addEventListener('click', () => {
+                window.addEventListener('click', (e) => {
+                    // Tránh click nhầm UI
+                    if(e.target.tagName !== 'CANVAS') return;
                     initAudio();
                     if (isVictory) return;
 
-                    playSound(450, 'sawtooth', 0.12);
+                    playBeepSound(); // Phát âm thanh "è" mỗi lần tấn công
                     const totalDmg = Math.floor(power / 2) + swordDmgs[swordLevel];
 
                     if (gameStage === 1) {
-                        // Stage 1: Kill 999 Quỷ Đỏ
                         killCount++;
                         power += 2;
                         checkUpgradeSword();
@@ -315,18 +346,16 @@
                         }
                     } 
                     else if (gameStage === 2) {
-                        // Stage 2: Kill Bạch Tuộc
                         octopusHP -= totalDmg;
                         if (octopusHP <= 0) {
                             octopusMonster.visible = false;
-                            gameStage = 3; // Sang Stage Boss 333k HP
+                            gameStage = 3;
                             bossMonster.visible = true;
                             document.getElementById('boss-hp-bar').style.display = 'block';
                             showToast("⚠️ BOSS MA VƯƠNG 333.000 MÁU ĐÃ XUẤT HIỆN!");
                         }
                     }
                     else if (gameStage === 3) {
-                        // Stage 3: Kill Boss 333k HP
                         bossHP -= totalDmg;
                         if (bossHP < 0) bossHP = 0;
                         document.getElementById('boss-hp-inner').style.width = `${(bossHP / 333000) * 100}%`;
@@ -335,7 +364,7 @@
                         if (bossHP <= 0) {
                             bossMonster.visible = false;
                             document.getElementById('boss-hp-bar').style.display = 'none';
-                            gameStage = 4; // Mở cổng cuối để hóa người trắng WIN
+                            gameStage = 4;
                             showToast("👑 BOSS ĐÃ GỤC! HÃY BƯỚC QUA CỔNG CUỐI CÙNG!");
                             gateLightMat.color.setHex(0xffffff);
                         }
@@ -363,7 +392,7 @@
                     setTimeout(() => { toast.style.display = 'none'; }, 2500);
                 }
 
-                // VÒNG LẶP ANIMATE & CHECK CỔNG
+                // VÒNG LẶP RENDER & ANIMATE
                 let walkTime = 0;
                 function animate() {
                     requestAnimationFrame(animate);
@@ -386,7 +415,7 @@
                     playerGroup.position.x = Math.max(-16, Math.min(16, playerGroup.position.x));
                     playerGroup.position.z = Math.max(-16, Math.min(16, playerGroup.position.z));
 
-                    // KIỂM TRA BƯỚC QUA CỔNG
+                    // KIỂM TRA CỔNG
                     const distToGate = Math.hypot(playerGroup.position.x - 0, playerGroup.position.z - (-15.5));
                     const gateMsg = document.getElementById('gate-msg');
 
@@ -395,10 +424,11 @@
                             gameStage = 2;
                             redMonster.visible = false;
                             octopusMonster.visible = true;
-                            playerGroup.position.z = 6; // Reset vị trí
+                            playerGroup.position.z = 6;
                             showToast("🐙 ĐÃ QUA CỔNG! HÃY TIÊU DIỆT BẠCH TUỘC!");
                         } else if (gameStage === 4) {
                             isVictory = true;
+                            // Hóa thân toàn bộ thành người trắng
                             playerBodyMat.color.setHex(0xffffff);
                             skinMat.color.setHex(0xffffff);
                             haloRing.material.color.setHex(0xffffff);
@@ -410,16 +440,11 @@
                         gateMsg.style.display = 'none';
                     }
 
-                    // Góc nhìn camera
-                    if (isFirstPerson) {
-                        camera.position.set(playerGroup.position.x, 2.1, playerGroup.position.z);
-                        camera.lookAt(playerGroup.position.x, 2.1, playerGroup.position.z - 5);
-                        playerGroup.visible = false;
-                    } else {
-                        camera.position.set(playerGroup.position.x, playerGroup.position.y + 4.5, playerGroup.position.z + 8);
-                        camera.lookAt(playerGroup.position.x, playerGroup.position.y + 1, playerGroup.position.z - 1);
-                        playerGroup.visible = true;
-                    }
+                    // TÍNH TOÁN CAMERA XOAY ĐA HƯỚNG QUANH NHÂN VẬT
+                    camera.position.x = playerGroup.position.x + cameraDistance * Math.sin(cameraAngleX) * Math.cos(cameraAngleY);
+                    camera.position.y = playerGroup.position.y + cameraDistance * Math.sin(cameraAngleY) + 1;
+                    camera.position.z = playerGroup.position.z + cameraDistance * Math.cos(cameraAngleX) * Math.cos(cameraAngleY);
+                    camera.lookAt(playerGroup.position.x, playerGroup.position.y + 1, playerGroup.position.z);
 
                     starField.rotation.y += 0.0005;
                     if (bossMonster.visible) bossMonster.rotation.y += 0.01;
