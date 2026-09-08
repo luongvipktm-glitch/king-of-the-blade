@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>King of the Blade 3D - Zombie Sound Edition</title>
+    <title>King of the Blade 3D - Cute Monsters Edition</title>
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; user-select: none; }
@@ -49,7 +49,7 @@
     </div>
 
     <div id="boss-hp-bar">
-        <div style="font-size:12px; margin-bottom:3px; font-weight:bold;">BOSS MA VƯƠNG ZOMBIE</div>
+        <div style="font-size:12px; margin-bottom:3px; font-weight:bold;">BOSS BẠCH TUỘC KHỔNG LỒ</div>
         <div style="background:#333; border-radius:6px; overflow:hidden;">
             <div id="boss-hp-inner"></div>
         </div>
@@ -57,7 +57,7 @@
     </div>
 
     <div id="instructions">
-        <b>[WASD / Mũi Tên]</b> Di chuyển | <b>[Bấm P]</b> Đổi góc nhìn | <b>[Click Trái/Phải]</b> Đánh Quái (Có âm thanh)
+        <b>[WASD / Mũi Tên]</b> Di chuyển | <b>[Bấm P]</b> Đổi góc nhìn | <b>[Click Trái/Phải]</b> Đánh Quái
     </div>
 
     <div id="victory-screen">
@@ -72,18 +72,15 @@
             document.getElementById('error-no').style.display = 'flex';
         }
 
-        // HỆ THỐNG ÂM THANH ZOMBIE & VŨ KHÍ TỰ TỔNG HỢP (WEB AUDIO API)
+        // HỆ THỐNG ÂM THANH WEB AUDIO API
         let audioCtx = null;
         function initAudio() {
-            if (!audioCtx) {
-                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-            }
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         }
 
         function playSlashSound() {
             if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
+            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
             osc.type = 'sawtooth';
             osc.frequency.setValueAtTime(800, audioCtx.currentTime);
             osc.frequency.exponentialRampToValueAtTime(100, audioCtx.currentTime + 0.1);
@@ -95,11 +92,9 @@
 
         function playZombieSound() {
             if (!audioCtx) return;
-            const osc = audioCtx.createOscillator();
-            const gain = audioCtx.createGain();
+            const osc = audioCtx.createOscillator(), gain = audioCtx.createGain();
             osc.type = 'sawtooth';
-            // Tiếng gầm gừ trầm u ám của Zombie
-            osc.frequency.setValueAtTime(110 + Math.random() * 30, audioCtx.currentTime);
+            osc.frequency.setValueAtTime(120 + Math.random() * 30, audioCtx.currentTime);
             osc.frequency.linearRampToValueAtTime(60 + Math.random() * 20, audioCtx.currentTime + 0.35);
             gain.gain.setValueAtTime(0.4, audioCtx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.35);
@@ -120,7 +115,6 @@
                 let redHP = 10, blueHP = 1000, bossHP = 15000;
                 let isRedAlive = true, isBlueAlive = true, isBossSpawned = false, isVictory = false;
 
-                // SCENE & RENDERER
                 const scene = new THREE.Scene();
                 scene.background = new THREE.Color(0x111122);
 
@@ -133,9 +127,9 @@
                 const light = new THREE.DirectionalLight(0xffffff, 1.2);
                 light.position.set(10, 20, 15);
                 scene.add(light);
-                scene.add(new THREE.AmbientLight(0x555577));
+                scene.add(new THREE.AmbientLight(0x666688));
 
-                // SÀN NỀN GẠCH 3D
+                // SÀN NỀN
                 const floor = new THREE.Mesh(
                     new THREE.PlaneGeometry(60, 60),
                     new THREE.MeshLambertMaterial({ color: 0x1f2430 })
@@ -143,10 +137,10 @@
                 floor.rotation.x = -Math.PI / 2;
                 scene.add(floor);
 
-                // HÀNG RÀO BAO QUANH
+                // HÀNG RÀO
                 const fenceGroup = new THREE.Group();
                 const fenceMat = new THREE.MeshLambertMaterial({ color: 0x8b4513 });
-                function createFence(x, z, rotY) {
+                function createFence(x, z) {
                     const post = new THREE.Mesh(new THREE.BoxGeometry(0.4, 2.5, 0.4), fenceMat);
                     post.position.set(x, 1.25, z);
                     fenceGroup.add(post);
@@ -157,75 +151,121 @@
                 }
                 scene.add(fenceGroup);
 
-                // NHÂN VẬT ĐẸP HƠN (CHI TIẾT MẮT, GIÁP VAI)
+                // NHÂN VẬT (CÓ ĐẦY ĐỦ 2 CHÂN)
                 const playerGroup = new THREE.Group();
                 const matArmor = new THREE.MeshLambertMaterial({ color: 0x2288ff });
                 const matSkin = new THREE.MeshLambertMaterial({ color: 0xffcc99 });
-                const matGlow = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+                const matDark = new THREE.MeshLambertMaterial({ color: 0x111122 });
 
-                const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.5), matArmor); body.position.y = 1.25;
-                const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), matSkin); head.position.y = 2.0;
-                const eye1 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 0.1), matGlow); eye1.position.set(-0.15, 2.05, -0.23);
-                const eye2 = new THREE.Mesh(new THREE.BoxGeometry(0.1, 0.08, 0.1), matGlow); eye2.position.set(0.15, 2.05, -0.23);
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.5), matArmor); body.position.y = 1.3;
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), matSkin); head.position.y = 2.05;
+                const armL = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.7, 0.25), matArmor); armL.position.set(-0.55, 1.3, 0);
+                const armR = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.7, 0.25), matArmor); armR.position.set(0.55, 1.3, 0);
 
-                const armL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), matArmor); armL.position.set(-0.6, 1.2, 0);
-                const armR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), matArmor); armR.position.set(0.6, 1.2, 0);
+                // 2 CHÂN CỦA NHÂN VẬT
+                const legL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), matDark); legL.position.set(-0.2, 0.4, 0);
+                const legR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), matDark); legR.position.set(0.2, 0.4, 0);
 
-                // THANH KIẾM SẮC BÉN
+                // KIẾM CẦM TAY
                 const swordGroup = new THREE.Group();
                 const swordMat = new THREE.MeshBasicMaterial({ color: swordColors[0] });
-                const swordBlade = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.4, 0.05), swordMat);
-                swordBlade.position.y = 0.7;
-                const handle = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.2, 0.2), new THREE.MeshLambertMaterial({ color: 0x333333 }));
-                swordGroup.add(swordBlade, handle);
-                swordGroup.position.set(0.6, 1.2, -0.3);
+                const swordBlade = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.4, 0.05), swordMat); swordBlade.position.y = 0.7;
+                swordGroup.add(swordBlade);
+                swordGroup.position.set(0.55, 1.3, -0.3);
                 swordGroup.rotation.x = Math.PI / 3;
 
-                playerGroup.add(body, head, eye1, eye2, armL, armR, swordGroup);
+                playerGroup.add(body, head, armL, armR, legL, legR, swordGroup);
                 playerGroup.position.set(0, 0, 5);
                 scene.add(playerGroup);
 
-                // CỔNG THIÊN ĐƯỜNG ĐẸP
+                // CỔNG THIÊN ĐƯỜNG
                 const gateGroup = new THREE.Group();
                 const marbleMat = new THREE.MeshLambertMaterial({ color: 0xddddee });
-                const pillar1 = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 7, 16), marbleMat); pillar1.position.set(-3.5, 3.5, -15);
-                const pillar2 = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 7, 16), marbleMat); pillar2.position.set(3.5, 3.5, -15);
+                const p1 = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 7, 16), marbleMat); p1.position.set(-3.5, 3.5, -15);
+                const p2 = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 7, 16), marbleMat); p2.position.set(3.5, 3.5, -15);
                 const topArch = new THREE.Mesh(new THREE.BoxGeometry(8, 0.8, 1.2), marbleMat); topArch.position.set(0, 7, -15);
 
                 const gateLightMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.3 });
                 const gateLight = new THREE.Mesh(new THREE.PlaneGeometry(6, 6.5), gateLightMat);
                 gateLight.position.set(0, 3.5, -14.9);
 
-                gateGroup.add(pillar1, pillar2, topArch, gateLight);
+                gateGroup.add(p1, p2, topArch, gateLight);
                 scene.add(gateGroup);
 
-                // HÀM TẠO QUÁI VẬT ĐẸP (ZOMBIE)
-                function createMonsterMesh(bodyColor, eyeColor) {
+                // --- 1. QUÁI VẬT 1: CHÂN DÀI ĐÁNG YÊU (RED MONSTER) ---
+                function createRedMonster() {
                     const group = new THREE.Group();
-                    const mBody = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.6, 0.8), new THREE.MeshLambertMaterial({ color: bodyColor })); mBody.position.y = 0.8;
-                    const mHead = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.7), new THREE.MeshLambertMaterial({ color: bodyColor })); mHead.position.y = 1.85;
-                    const mEye1 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.1), new THREE.MeshBasicMaterial({ color: eyeColor })); mEye1.position.set(-0.2, 1.9, -0.36);
-                    const mEye2 = new THREE.Mesh(new THREE.BoxGeometry(0.15, 0.15, 0.1), new THREE.MeshBasicMaterial({ color: eyeColor })); mEye2.position.set(0.2, 1.9, -0.36);
-                    const horn1 = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.5, 4), new THREE.MeshLambertMaterial({ color: 0x111111 })); horn1.position.set(-0.25, 2.35, 0);
-                    const horn2 = new THREE.Mesh(new THREE.ConeGeometry(0.15, 0.5, 4), new THREE.MeshLambertMaterial({ color: 0x111111 })); horn2.position.set(0.25, 2.35, 0);
+                    // Thân đỏ hình chữ nhật
+                    const redBody = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.0, 0.8), new THREE.MeshLambertMaterial({ color: 0xff4d4d }));
+                    redBody.position.y = 1.8;
 
-                    group.add(mBody, mHead, mEye1, mEye2, horn1, horn2);
+                    // Mắt to xoe
+                    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x00cc66 });
+                    const eyeWhite = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    const eL = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.05, 16), eyeWhite); eL.rotation.x = Math.PI/2; eL.position.set(-0.4, 1.85, 0.42);
+                    const eL_inner = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 16), eyeMat); eL_inner.rotation.x = Math.PI/2; eL_inner.position.set(-0.4, 1.85, 0.43);
+                    const eR = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.05, 16), eyeWhite); eR.rotation.x = Math.PI/2; eR.position.set(0.4, 1.85, 0.42);
+                    const eR_inner = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 16), eyeMat); eR_inner.rotation.x = Math.PI/2; eR_inner.position.set(0.4, 1.85, 0.43);
+
+                    // Sừng tròn xốp vàng
+                    const hornMat = new THREE.MeshLambertMaterial({ color: 0xffd700 });
+                    const hStickL = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.6), hornMat); hStickL.position.set(-0.7, 2.5, 0); hStickL.rotation.z = -0.4;
+                    const hBallL = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 12), hornMat); hBallL.position.set(-0.82, 2.8, 0);
+                    
+                    const hStickR = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.6), hornMat); hStickR.position.set(0.7, 2.5, 0); hStickR.rotation.z = 0.4;
+                    const hBallR = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 12), hornMat); hBallR.position.set(0.82, 2.8, 0);
+
+                    // 2 Chân dài lêu khêu
+                    const legMat = new THREE.MeshLambertMaterial({ color: 0x4dd2ff });
+                    const leg1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.5), legMat); leg1.position.set(-0.5, 0.75, 0);
+                    const leg2 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.5), legMat); leg2.position.set(0.5, 0.75, 0);
+                    const foot1 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 10, 10), hornMat); foot1.position.set(-0.5, 0.05, 0);
+                    const foot2 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 10, 10), hornMat); foot2.position.set(0.5, 0.05, 0);
+
+                    group.add(redBody, eL, eL_inner, eR, eR_inner, hStickL, hBallL, hStickR, hBallR, leg1, leg2, foot1, foot2);
                     return group;
                 }
 
-                const redMon = createMonsterMesh(0xcc2222, 0xffff00);
-                redMon.position.set(-3, 0, -1); scene.add(redMon);
+                // --- 2. QUÁI VẬT 2: CUTE OCTOPUS MONSTER (BLUE) ---
+                function createOctopusMonster() {
+                    const group = new THREE.Group();
+                    // Thân tròn xanh mint/dương
+                    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x3399ff });
+                    const headBall = new THREE.Mesh(new THREE.SphereGeometry(1.0, 24, 24), bodyMat); headBall.position.y = 1.3;
 
-                const blueMon = createMonsterMesh(0x2244cc, 0xff00ff);
-                blueMon.position.set(3, 0, -1); scene.add(blueMon);
+                    // Mắt tròn xoe
+                    const eyeWhite = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    const eyeMat = new THREE.MeshBasicMaterial({ color: 0x00cccc });
+                    const eL = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.05, 16), eyeWhite); eL.rotation.x = Math.PI/2; eL.position.set(-0.35, 1.4, 0.85);
+                    const eL_in = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.06, 16), eyeMat); eL_in.rotation.x = Math.PI/2; eL_in.position.set(-0.35, 1.4, 0.86);
+                    const eR = new THREE.Mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.05, 16), eyeWhite); eR.rotation.x = Math.PI/2; eR.position.set(0.35, 1.4, 0.85);
+                    const eR_in = new THREE.Mesh(new THREE.CylinderGeometry(0.14, 0.14, 0.06, 16), eyeMat); eR_in.rotation.x = Math.PI/2; eR_in.position.set(0.35, 1.4, 0.86);
 
-                // BOSS CUỐI
-                const bossMonster = createMonsterMesh(0x111111, 0xff0000);
+                    // 8 Tua bạch tuộc mềm mại
+                    const legMat = new THREE.MeshLambertMaterial({ color: 0x1a75ff });
+                    for(let i=0; i<8; i++) {
+                        const angle = (i / 8) * Math.PI * 2;
+                        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.06, 0.06, 1.2), legMat);
+                        leg.rotation.z = Math.PI / 2;
+                        leg.rotation.y = angle;
+                        leg.position.set(Math.cos(angle)*0.8, 0.5, Math.sin(angle)*0.8);
+                        group.add(leg);
+                    }
+
+                    group.add(headBall, eL, eL_in, eR, eR_in);
+                    return group;
+                }
+
+                const redMon = createRedMonster(); redMon.position.set(-3, 0, -1); scene.add(redMon);
+                const blueMon = createOctopusMonster(); blueMon.position.set(3, 0, -1); scene.add(blueMon);
+
+                // BOSS CUỐI BẠCH TUỘC KHỔNG LỒ
+                const bossMonster = createOctopusMonster();
                 bossMonster.scale.set(2.5, 2.5, 2.5);
                 bossMonster.position.set(0, 0, -3); bossMonster.visible = false;
                 scene.add(bossMonster);
 
-                // TƯƠNG TÁC SỰ KIỆN
+                // SỰ KIỆN TƯƠNG TÁC
                 const keys = {};
                 window.addEventListener('keydown', e => {
                     initAudio();
@@ -242,8 +282,7 @@
                     initAudio();
                     if (isVictory) return;
 
-                    playSlashSound(); // Phát tiếng vút kiếm
-
+                    playSlashSound();
                     const totalDmg = Math.floor(power / 2) + swordDmgs[swordLevel];
                     const isLeftClick = e.clientX < window.innerWidth / 2;
 
@@ -306,7 +345,7 @@
                 function spawnBoss() {
                     isBossSpawned = true; redMon.visible = false; blueMon.visible = false;
                     bossMonster.visible = true; document.getElementById('boss-hp-bar').style.display = 'block';
-                    showToast("⚠️ BOSS ZOMBIE ĐÃ XUẤT HIỆN!");
+                    showToast("⚠️ BOSS BẠCH TUỘC KHỔNG LỒ XUẤT HIỆN!");
                 }
 
                 function updateHUD() {
@@ -317,17 +356,27 @@
                     swordBox.style.color = `#${swordColors[swordLevel].toString(16)}`;
                 }
 
-                // LOOP RENDER
+                // VÒNG LẶP RENDER & DI CHUYỂN
+                let walkTime = 0;
                 function animate() {
                     requestAnimationFrame(animate);
 
                     const speed = 0.12;
-                    if (keys['w'] || keys['arrowup']) playerGroup.position.z -= speed;
-                    if (keys['s'] || keys['arrowdown']) playerGroup.position.z += speed;
-                    if (keys['a'] || keys['arrowleft']) playerGroup.position.x -= speed;
-                    if (keys['d'] || keys['arrowright']) playerGroup.position.x += speed;
+                    let isMoving = false;
+                    if (keys['w'] || keys['arrowup']) { playerGroup.position.z -= speed; isMoving = true; }
+                    if (keys['s'] || keys['arrowdown']) { playerGroup.position.z += speed; isMoving = true; }
+                    if (keys['a'] || keys['arrowleft']) { playerGroup.position.x -= speed; isMoving = true; }
+                    if (keys['d'] || keys['arrowright']) { playerGroup.position.x += speed; isMoving = true; }
 
-                    // Giới hạn trong hàng rào
+                    // Dáng bước đi chuyển động chân
+                    if (isMoving) {
+                        walkTime += 0.2;
+                        legL.rotation.x = Math.sin(walkTime) * 0.5;
+                        legR.rotation.x = -Math.sin(walkTime) * 0.5;
+                    } else {
+                        legL.rotation.x = 0; legR.rotation.x = 0;
+                    }
+
                     playerGroup.position.x = Math.max(-27, Math.min(27, playerGroup.position.x));
                     playerGroup.position.z = Math.max(-27, Math.min(27, playerGroup.position.z));
 
@@ -341,7 +390,7 @@
                         playerGroup.visible = true;
                     }
 
-                    // Va chạm Cổng Thiên Đường
+                    // Cổng Thiên Đường
                     const distToGate = Math.hypot(playerGroup.position.x - 0, playerGroup.position.z - (-14.5));
                     const gateMsg = document.getElementById('gate-msg');
 
