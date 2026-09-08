@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mystic Temple 3D - Custom Drop & Combat Edition</title>
+    <title>Mystic Temple 3D - Fixed Drop & Multi-Kill Edition</title>
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; overflow: hidden; background: #05020a; font-family: 'Segoe UI', sans-serif; user-select: none; }
@@ -120,6 +120,27 @@
             osc.stop(audioCtx.currentTime + 0.15);
         }
 
+        // Âm thanh "tèn tén ten" khi ra Legendary
+        function playLegendarySound() {
+            if (!audioCtx) return;
+            const notes = [523.25, 659.25, 783.99, 1046.50]; // Đồ, Mi, Sol, Đồ cao
+            notes.forEach((freq, index) => {
+                setTimeout(() => {
+                    if (!audioCtx) return;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                }, index * 150);
+            });
+        }
+
         if (typeof THREE === 'undefined') {
             triggerNO();
         } else {
@@ -132,7 +153,7 @@
                 const inventory = { common: 0, rare: 0, epic: 0, legendary: 0 };
 
                 let gameStage = 1;
-                let redMonsterHP = 50; // Quái đỏ 50 máu
+                let redMonsterHP = 50; // Máu quái thường = 50
                 let octopusHP = 3000;
                 let bossHP = 333000;
                 let isVictory = false;
@@ -303,23 +324,27 @@
                 });
                 scene.add(bossMonster);
 
-                // --- DROP SYSTEM VỚI TỈ LỆ MỚI ---
+                // --- TỈ LỆ RƠI ĐỒ CHUẨN XÁC & CƠ CHẾ RƠI KHI HẠ QUÁI ---
                 // Common: 20%, Rare: 19%, Epic: 0.9%, Legendary: 0.01%
-                function handleItemDrop() {
+                function handleItemDrop(isHighKillRange = false) {
                     const rand = Math.random() * 100;
-                    if (rand < 20) {
-                        inventory.common++;
-                        showToast("📦 Rơi vật phẩm: Common (+1)");
-                    } else if (rand < 39) {
-                        inventory.rare++;
-                        showToast("🔷 Rơi vật phẩm: Rare (+1)");
-                    } else if (rand < 39.9) {
+                    
+                    // Nếu ở khoảng 900-999 kill, tăng nhẹ cơ hội hoặc xét đúng tỉ lệ gốc
+                    if (rand < 0.01 || (isHighKillRange && rand < 0.05)) {
+                        inventory.legendary++;
+                        showToast("👑 TUYỆT VỜI! Rơi vật phẩm: LEGENDARY (+1)");
+                        playLegendarySound();
+                    } else if (rand < 0.91) {
                         inventory.epic++;
                         showToast("💜 Rơi vật phẩm: Epic (+1)");
+                    } else if (rand < 19.91) {
+                        inventory.rare++;
+                        showToast("🔷 Rơi vật phẩm: Rare (+1)");
                     } else if (rand < 39.91) {
-                        inventory.legendary++;
-                        showToast("👑 Rơi vật phẩm: Legendary (+1)");
+                        inventory.common++;
+                        showToast("📦 Rơi vật phẩm: Common (+1)");
                     }
+                    // Nếu ra số lớn hơn 39.91 thì không rơi gì cả (Đảm bảo không phải 100% rớt đồ)
                     updateInventoryUI();
                 }
 
@@ -402,24 +427,33 @@
                     const totalDmg = Math.floor(power / 2) + swordDmgs[swordLevel];
 
                     if (gameStage === 1) {
-                        redMonsterHP -= totalDmg;
-                        if (redMonsterHP <= 0) {
-                            killCount++;
-                            power += 2;
-                            checkUpgradeSword();
-                            document.getElementById('val-kills').innerText = `${killCount}`;
-                            document.getElementById('val-power').innerText = power;
+                        // Tính số lượng quái hạ gục trong 1 cú click dựa trên DMG và máu quái (50 máu)
+                        let monstersKilledInOneHit = Math.floor(totalDmg / redMonsterHP);
+                        if (monstersKilledInOneHit < 1) monstersKilledInOneHit = 1;
 
-                            handleItemDrop();
+                        killCount += monstersKilledInOneHit;
+                        power += monstersKilledInOneHit * 2;
+                        checkUpgradeSword();
 
-                            redMonster.visible = false;
-                            setTimeout(() => {
-                                if(gameStage === 1 && !isVictory) {
-                                    redMonster.visible = true;
-                                    redMonsterHP = 50; // Reset 50 máu
-                                }
-                            }, 100);
+                        if (killCount > 999) killCount = 999;
+
+                        document.getElementById('val-kills').innerText = `${killCount}`;
+                        document.getElementById('val-power').innerText = power;
+
+                        // Kiểm tra nếu đang ở khoảng 900 - 999 kill để tăng cơ hội rớt Legendary
+                        const isHighKillRange = (killCount >= 900 && killCount <= 999);
+                        
+                        // Xử lý tỉ lệ rơi đồ cho số lượng quái bị hạ trong nhát chém này
+                        for (let i = 0; i < monstersKilledInOneHit; i++) {
+                            handleItemDrop(isHighKillRange);
                         }
+
+                        redMonster.visible = false;
+                        setTimeout(() => {
+                            if(gameStage === 1 && !isVictory) {
+                                redMonster.visible = true;
+                            }
+                        }, 100);
 
                         if (killCount >= 999) {
                             showToast("🌟 ĐÃ ĐẠT 999 MẠNG! CỔNG ĐÃ MỞ, HÃY BƯỚC QUA!");
@@ -428,7 +462,7 @@
                     } 
                     else if (gameStage === 2) {
                         octopusHP -= totalDmg;
-                        handleItemDrop();
+                        handleItemDrop(false);
                         
                         octopusMonster.visible = false;
                         setTimeout(() => {
