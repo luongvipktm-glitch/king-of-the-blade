@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>King of the Blade 3D - Optimized</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; user-select: none; }
+        #hud { position: absolute; top: 15px; left: 15px; display: flex; flex-direction: column; gap: 8px; z-index: 10; }
+        .stat-box { background: rgba(0,0,0,0.85); border: 2px solid #fff; border-radius: 8px; padding: 8px 16px; color: #fff; font-weight: bold; font-size: 14px; }
+        #power-box { border-color: #ff9900; color: #ff9900; }
+        #sword-box { border-color: #a335ee; color: #a335ee; }
+        #kill-box { border-color: #00ffcc; color: #00ffcc; }
+        #instructions { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 10px 20px; border-radius: 15px; font-size: 13px; text-align: center; border: 1px solid #555; pointer-events: none; z-index: 10; }
+        
+        /* Màn hình báo lỗi NO rực rỡ nếu màn hình đen 100% */
+        #error-no {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; color: #ff0000; display: none; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 9999;
+            font-family: monospace; text-align: center;
+        }
+        #error-no h1 { font-size: 120px; margin: 0; text-shadow: 0 0 20px #ff0000; }
+        #error-no p { font-size: 18px; color: #fff; max-width: 80%; line-height: 1.5; }
+    </style>
+    <!-- Thư viện Three.js dự phòng đa nguồn -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <div id="error-no">
+        <h1>NO</h1>
+        <p><b>LỖI KHÔNG TẢI ĐƯỢC ĐỒ HỌA 3D!</b><br>Trình duyệt Cốc Cốc đang tắt WebGL hoặc chặn thư viện JS.<br>Hãy bật Hardware Acceleration (Tăng tốc phần cứng) trong cài đặt Cốc Cốc hoặc dùng Google Chrome.</p>
+    </div>
+
+    <div id="hud">
+        <div class="stat-box" id="power-box">⚡ POWER: <span id="val-power">10</span></div>
+        <div class="stat-box" id="sword-box">🗡️ KIẾM: <span id="val-sword" style="color:#aaa;">Common (+5 DMG)</span></div>
+        <div class="stat-box" id="kill-box">💀 QUÁI ĐÃ HẠ: <span id="val-kills">0</span> / 999</div>
+    </div>
+
+    <div id="instructions">
+        <b>[WASD / Mũi Tên]</b> Di chuyển | <b>[Bấm P]</b> Đổi góc nhìn | <b>[Click Trái/Phải]</b> Đánh Quái
+    </div>
+
+    <script>
+        function triggerNO() {
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('instructions').style.display = 'none';
+            document.getElementById('error-no').style.display = 'flex';
+        }
+
+        // Tự kiểm tra nếu Three.js không load được
+        if (typeof THREE === 'undefined') {
+            triggerNO();
+        } else {
+            try {
+                let power = 10, killCount = 0;
+                
+                // Khởi tạo Canvas & Renderer
+                const scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x1a1a2e); // Nền xám xanh sáng để dễ thấy
+                
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(renderer.domElement);
+
+                // Ánh sáng
+                const light = new THREE.DirectionalLight(0xffffff, 1);
+                light.position.set(5, 10, 7);
+                scene.add(light);
+                scene.add(new THREE.AmbientLight(0x666666));
+
+                // Sàn nhà
+                const floor = new THREE.Mesh(
+                    new THREE.PlaneGeometry(40, 40),
+                    new THREE.MeshLambertMaterial({ color: 0x16213e })
+                );
+                floor.rotation.x = -Math.PI / 2;
+                scene.add(floor);
+
+                // Quái Đỏ và Quái Xanh hợp lý trước mặt người chơi
+                const redMon = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), new THREE.MeshLambertMaterial({ color: 0xff4d4d }));
+                redMon.position.set(-2, 0.6, -2);
+                scene.add(redMon);
+
+                const blueMon = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.2, 1.2), new THREE.MeshLambertMaterial({ color: 0x4d79ff }));
+                blueMon.position.set(2, 0.6, -2);
+                scene.add(blueMon);
+
+                // Người chơi (Cục Xanh Lá)
+                const player = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.6, 0.8), new THREE.MeshLambertMaterial({ color: 0x00ff88 }));
+                player.position.set(0, 0.8, 3);
+                scene.add(player);
+
+                // Camera góc nhìn 3 quan sát toàn bộ
+                camera.position.set(0, 4, 8);
+                camera.lookAt(0, 0, 0);
+
+                // Di chuyển
+                const keys = {};
+                window.addEventListener('keydown', e => keys[e.key.toLowerCase()] = true);
+                window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+                function animate() {
+                    requestAnimationFrame(animate);
+
+                    if (keys['w'] || keys['arrowup']) player.position.z -= 0.1;
+                    if (keys['s'] || keys['arrowdown']) player.position.z += 0.1;
+                    if (keys['a'] || keys['arrowleft']) player.position.x -= 0.1;
+                    if (keys['d'] || keys['arrowright']) player.position.x += 0.1;
+
+                    // Xoay quái nhẹ cho sinh động
+                    redMon.rotation.y += 0.01;
+                    blueMon.rotation.y += 0.01;
+
+                    renderer.render(scene, camera);
+                }
+
+                animate();
+
+                // Kiểm tra xem WebGL có thực sự vẽ ra hình không, nếu đen 100% thì bật NO
+                setTimeout(() => {
+                    const ctx = renderer.getContext();
+                    if (!ctx || renderer.domElement.width === 0) {
+                        triggerNO();
+                    }
+                }, 1000);
+
+            } catch (err) {
+                triggerNO();
+            }
+        }
+    </script>
+</body>
+</html>
