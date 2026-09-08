@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mystic Temple 3D - Fixed Drop & Multi-Kill Edition</title>
+    <title>Mystic Temple 3D - Multi-Loop & Sell System (@viluong673)</title>
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; overflow: hidden; background: #05020a; font-family: 'Segoe UI', sans-serif; user-select: none; }
@@ -12,6 +12,7 @@
         #power-box { border-color: #ff9900; color: #ff9900; }
         #sword-box { border-color: #a335ee; color: #a335ee; }
         #kill-box { border-color: #00ffcc; color: #00ffcc; }
+        #loop-box { border-color: #ff00ff; color: #ff00ff; }
         
         #boss-hp-bar { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 420px; background: rgba(10,5,20,0.9); border: 2px solid #ff3333; border-radius: 10px; padding: 6px; display: none; text-align: center; color: #fff; z-index: 10; box-shadow: 0 0 15px rgba(255,51,51,0.6); }
         #boss-hp-inner { height: 18px; background: #ff3333; width: 100%; border-radius: 6px; transition: width 0.1s; }
@@ -21,14 +22,18 @@
         
         #instructions { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); background: rgba(10, 5, 20, 0.85); color: #ddd; padding: 10px 20px; border-radius: 15px; font-size: 13px; text-align: center; border: 1px solid #a335ee; pointer-events: none; z-index: 10; }
         
-        .modal-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(10,5,20,0.95); border: 2px solid #a335ee; padding: 25px; border-radius: 15px; color: #fff; z-index: 100; width: 360px; display: none; box-shadow: 0 0 25px rgba(163,53,238,0.6); }
+        .modal-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(10,5,20,0.95); border: 2px solid #a335ee; padding: 25px; border-radius: 15px; color: #fff; z-index: 100; width: 380px; display: none; box-shadow: 0 0 25px rgba(163,53,238,0.6); }
         .modal-box h3 { margin-top: 0; color: #ffd700; text-align: center; }
-        .modal-box button { width: 100%; background: #a335ee; color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 15px; }
+        .modal-box button { width: 100%; background: #a335ee; color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
         .modal-box button:hover { background: #b950ff; }
         .modal-box label { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; font-size: 14px; }
         
-        #victory-screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255,255,255,0.95); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; color: #111; }
-        #victory-screen h1 { font-size: 120px; color: #ffd700; margin: 0; text-shadow: 0 0 30px rgba(255,215,0,0.8); letter-spacing: 6px; font-family: Impact, sans-serif; }
+        .sell-row { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; font-size: 13px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 5px; }
+        .sell-row button { width: auto; padding: 4px 10px; margin-top: 0; background: #ff4d4d; font-size: 11px; }
+        .sell-row button:hover { background: #ff6666; }
+
+        #victory-screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10,5,20,0.95); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; color: #fff; text-align: center; padding: 20px; }
+        #victory-screen h1 { font-size: 100px; color: #ffd700; margin: 0; text-shadow: 0 0 30px rgba(255,215,0,0.8); font-family: Impact, sans-serif; }
         
         #error-no {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -48,29 +53,43 @@
     </div>
 
     <div id="toast"></div>
-    <div id="gate-msg">🔒 CẦN ĐỦ 999 MẠNG ĐỂ MỞ CỔNG TIẾN VÀO KHU VỰC BẠCH TUỘC!</div>
+    <div id="gate-msg">🔒 CẦN ĐỦ 999 MẠNG ĐỂ MỞ CỔNG!</div>
 
     <div id="hud">
         <div class="stat-box" id="power-box">⚡ POWER: <span id="val-power">10</span></div>
         <div class="stat-box" id="sword-box">🗡️ KIẾM: <span id="val-sword" style="color:#aaa;">Common (+10 DMG)</span></div>
         <div class="stat-box" id="kill-box">💀 QUÁI ĐÃ HẠ: <span id="val-kills">0</span> / 999</div>
+        <div class="stat-box" id="loop-box">🔄 VÒNG CHƠI (LOOP): <span id="val-loop">1</span></div>
     </div>
 
     <div id="boss-hp-bar">
-        <div style="font-size:12px; margin-bottom:3px; font-weight:bold; color:#ff4d4d;">BOSS MA VƯƠNG (333.000 HP)</div>
+        <div id="boss-title" style="font-size:12px; margin-bottom:3px; font-weight:bold; color:#ff4d4d;">BOSS MA VƯƠNG (2.000.000 HP)</div>
         <div style="background:#222; border-radius:6px; overflow:hidden;">
             <div id="boss-hp-inner"></div>
         </div>
-        <div id="boss-hp-text" style="font-size:11px; margin-top:2px;">333000 / 333000</div>
+        <div id="boss-hp-text" style="font-size:11px; margin-top:2px;">2000000 / 2000000</div>
     </div>
 
-    <!-- MODAL TÚI ĐỒ (TAB) -->
+    <!-- MODAL TÚI ĐỒ & BÁN VẬT PHẨM (TAB) -->
     <div id="inventory-modal" class="modal-box">
-        <h3>🎒 TÚI ĐỒ VẬT PHẨM</h3>
+        <h3>🎒 TÚI ĐỒ & CHợ VẬT PHẨM</h3>
         <p>📦 Common: <span id="inv-common">0</span></p>
-        <p>🔷 Rare: <span id="inv-rare">0</span></p>
-        <p>💜 Epic: <span id="inv-epic">0</span></p>
-        <p>👑 Legendary: <span id="inv-legendary">0</span></p>
+        
+        <div class="sell-row">
+            <span>🔷 Rare: <span id="inv-rare">0</span></span>
+            <button onclick="sellItem('rare')">BÁN (+510 Power)</button>
+        </div>
+        
+        <div class="sell-row">
+            <span>💜 Epic: <span id="inv-epic">0</span></span>
+            <button onclick="sellItem('epic')">BÁN (+600 Power)</button>
+        </div>
+        
+        <div class="sell-row">
+            <span>👑 Legendary: <span id="inv-legendary">0</span></span>
+            <span style="font-size:11px; color:#ffd700;">(Không thể bán)</span>
+        </div>
+
         <button onclick="convertCommonToPower()">ĐỔI 5 COMMON ➡️ +500 POWER</button>
         <div style="text-align:center; font-size:11px; margin-top:10px; color:#aaa;">Bấm [TAB] để đóng</div>
     </div>
@@ -85,12 +104,13 @@
     </div>
 
     <div id="instructions">
-        <b>[WASD]</b> Di chuyển | <b>[Giữ Chuột + Kéo]</b> Xoay 360° | <b>[TAB]</b> Túi đồ | <b>[O]</b> Đổi màu
+        <b>[WASD]</b> Di chuyển | <b>[Giữ Chuột + Kéo]</b> Xoay 360° | <b>[TAB]</b> Túi đồ & Bán | <b>[O]</b> Đổi màu
     </div>
 
     <div id="victory-screen">
-        <h1>WIN</h1>
-        <p style="font-size: 26px; color: #333; font-weight: bold; margin-top: 15px;">✨ BẠN ĐÃ ĐẠT ĐỈNH CAO VINH QUANG VÀ TRỞ THÀNH THẦN THÁNH ÁNH SÁNG! ✨</p>
+        <h1 id="win-title">WIN</h1>
+        <p id="win-desc" style="font-size: 22px; color: #ffd700; font-weight: bold; margin-top: 15px; max-width: 800px; line-height: 1.6;"></p>
+        <p style="font-size: 14px; color: #aaa; margin-top: 25px;">— By @viluong673 —</p>
     </div>
 
     <script>
@@ -120,10 +140,9 @@
             osc.stop(audioCtx.currentTime + 0.15);
         }
 
-        // Âm thanh "tèn tén ten" khi ra Legendary
         function playLegendarySound() {
             if (!audioCtx) return;
-            const notes = [523.25, 659.25, 783.99, 1046.50]; // Đồ, Mi, Sol, Đồ cao
+            const notes = [523.25, 659.25, 783.99, 1046.50];
             notes.forEach((freq, index) => {
                 setTimeout(() => {
                     if (!audioCtx) return;
@@ -146,6 +165,9 @@
         } else {
             try {
                 let power = 10, killCount = 0, swordLevel = 0;
+                let luckMultiplier = 1; // Hệ số luck nhân theo vòng chơi
+                let gameLoop = 1; // 1 hoặc 2
+
                 const swordNames = ["Common (+10)", "Rare (+50)", "Epic (+250)", "Legendary (+1000)"];
                 const swordColors = [0xaaaaaa, 0x0088ff, 0xa335ee, 0xffd700];
                 const swordDmgs = [10, 50, 250, 1000];
@@ -153,10 +175,13 @@
                 const inventory = { common: 0, rare: 0, epic: 0, legendary: 0 };
 
                 let gameStage = 1;
-                let redMonsterHP = 50; // Máu quái thường = 50
+                let redMonsterHP = 50; 
                 let octopusHP = 3000;
-                let bossHP = 333000;
-                let isVictory = false;
+                
+                // Máu Boss theo yêu cầu: Vòng 1 = 2M, Vòng 2 = 5M
+                let currentBossMaxHP = 2000000;
+                let bossHP = 2000000;
+                let isGameEnded = false;
 
                 const scene = new THREE.Scene();
                 scene.background = new THREE.Color(0x06030d);
@@ -255,26 +280,22 @@
                     const group = new THREE.Group();
                     const rBody = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.0, 0.8), new THREE.MeshLambertMaterial({ color: 0xff4d4d }));
                     rBody.position.y = 1.8;
-
                     const eWhite = new THREE.MeshBasicMaterial({ color: 0xffffff });
                     const eGreen = new THREE.MeshBasicMaterial({ color: 0x00cc66 });
                     const eL = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.05, 16), eWhite); eL.rotation.x = Math.PI/2; eL.position.set(-0.4, 1.85, 0.42);
                     const eL_in = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 16), eGreen); eL_in.rotation.x = Math.PI/2; eL_in.position.set(-0.4, 1.85, 0.43);
                     const eR = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.05, 16), eWhite); eR.rotation.x = Math.PI/2; eR.position.set(0.4, 1.85, 0.42);
                     const eR_in = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 16), eGreen); eR_in.rotation.x = Math.PI/2; eR_in.position.set(0.4, 1.85, 0.43);
-
                     const hornMat = new THREE.MeshLambertMaterial({ color: 0xffd700 });
                     const hStickL = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.6), hornMat); hStickL.position.set(-0.7, 2.5, 0); hStickL.rotation.z = -0.4;
                     const hBallL = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 12), hornMat); hBallL.position.set(-0.82, 2.8, 0);
                     const hStickR = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.6), hornMat); hStickR.position.set(0.7, 2.5, 0); hStickR.rotation.z = 0.4;
                     const hBallR = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 12), hornMat); hBallR.position.set(0.82, 2.8, 0);
-
                     const legMat = new THREE.MeshLambertMaterial({ color: 0x4dd2ff });
                     const leg1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.5), legMat); leg1.position.set(-0.5, 0.75, 0);
                     const leg2 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.5), legMat); leg2.position.set(0.5, 0.75, 0);
                     const foot1 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 10, 10), hornMat); foot1.position.set(-0.5, 0.05, 0);
                     const foot2 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 10, 10), hornMat); foot2.position.set(0.5, 0.05, 0);
-
                     group.add(rBody, eL, eL_in, eR, eR_in, hStickL, hBallL, hStickR, hBallR, leg1, leg2, foot1, foot2);
                     return group;
                 }
@@ -287,20 +308,17 @@
                     const group = new THREE.Group();
                     const bodyMat = new THREE.MeshLambertMaterial({ color: 0x3399ff });
                     const headBall = new THREE.Mesh(new THREE.SphereGeometry(1.2, 24, 24), bodyMat); headBall.position.y = 1.4;
-
                     const eWhite = new THREE.MeshBasicMaterial({ color: 0xffffff });
                     const eCyan = new THREE.MeshBasicMaterial({ color: 0x00cccc });
                     const eL = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 16), eWhite); eL.rotation.x = Math.PI/2; eL.position.set(-0.4, 1.5, 1.0);
                     const eL_in = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.06, 16), eCyan); eL_in.rotation.x = Math.PI/2; eL_in.position.set(-0.4, 1.5, 1.02);
                     const eR = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 16), eWhite); eR.rotation.x = Math.PI/2; eR.position.set(0.4, 1.5, 1.0);
                     const eR_in = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.06, 16), eCyan); eR_in.rotation.x = Math.PI/2; eR_in.position.set(0.4, 1.5, 1.02);
-
                     const legMat = new THREE.MeshLambertMaterial({ color: 0x1a75ff });
                     for(let i=0; i<8; i++) {
                         const angle = (i / 8) * Math.PI * 2;
                         const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 1.4), legMat);
-                        leg.rotation.z = Math.PI / 2;
-                        leg.rotation.y = angle;
+                        leg.rotation.z = Math.PI / 2; leg.rotation.y = angle;
                         leg.position.set(Math.cos(angle)*0.9, 0.6, Math.sin(angle)*0.9);
                         group.add(leg);
                     }
@@ -324,27 +342,30 @@
                 });
                 scene.add(bossMonster);
 
-                // --- TỈ LỆ RƠI ĐỒ CHUẨN XÁC & CƠ CHẾ RƠI KHI HẠ QUÁI ---
-                // Common: 20%, Rare: 19%, Epic: 0.9%, Legendary: 0.01%
-                function handleItemDrop(isHighKillRange = false) {
+                // --- HỆ THỐNG RƠI ĐỒ VÀ LUCK (Nhân theo luckMultiplier) ---
+                function handleItemDrop() {
                     const rand = Math.random() * 100;
                     
-                    // Nếu ở khoảng 900-999 kill, tăng nhẹ cơ hội hoặc xét đúng tỉ lệ gốc
-                    if (rand < 0.01 || (isHighKillRange && rand < 0.05)) {
+                    // Luck tăng tỉ lệ ra đồ hiếm
+                    const legendaryChance = 0.01 * luckMultiplier;
+                    const epicChance = 0.9 * luckMultiplier;
+                    const rareChance = 19.0 * luckMultiplier;
+                    const commonChance = 39.0 * luckMultiplier;
+
+                    if (rand < legendaryChance) {
                         inventory.legendary++;
                         showToast("👑 TUYỆT VỜI! Rơi vật phẩm: LEGENDARY (+1)");
                         playLegendarySound();
-                    } else if (rand < 0.91) {
+                    } else if (rand < epicChance) {
                         inventory.epic++;
                         showToast("💜 Rơi vật phẩm: Epic (+1)");
-                    } else if (rand < 19.91) {
+                    } else if (rand < rareChance) {
                         inventory.rare++;
                         showToast("🔷 Rơi vật phẩm: Rare (+1)");
-                    } else if (rand < 39.91) {
+                    } else if (rand < commonChance) {
                         inventory.common++;
                         showToast("📦 Rơi vật phẩm: Common (+1)");
                     }
-                    // Nếu ra số lớn hơn 39.91 thì không rơi gì cả (Đảm bảo không phải 100% rớt đồ)
                     updateInventoryUI();
                 }
 
@@ -367,17 +388,27 @@
                     }
                 };
 
-                document.getElementById('picker-body').addEventListener('input', e => {
-                    playerBodyMat.color.set(e.target.value);
-                });
-                document.getElementById('picker-skin').addEventListener('input', e => {
-                    skinMat.color.set(e.target.value);
-                });
-                document.getElementById('picker-halo').addEventListener('input', e => {
-                    haloMat.color.set(e.target.value);
-                });
+                // --- BÁN VẬT PHẨM (Rare: +510, Epic: +600, Legendary: Không bán được) ---
+                window.sellItem = function(type) {
+                    if (type === 'rare' && inventory.rare > 0) {
+                        inventory.rare--;
+                        power += 510;
+                        showToast("💰 Bán Rare thành công: +510 Power!");
+                    } else if (type === 'epic' && inventory.epic > 0) {
+                        inventory.epic--;
+                        power += 600;
+                        showToast("💰 Bán Epic thành công: +600 Power!");
+                    } else {
+                        showToast("❌ Không có vật phẩm này để bán!");
+                    }
+                    document.getElementById('val-power').innerText = power;
+                    updateInventoryUI();
+                };
 
-                // --- ORBIT CONTROLS 360 ---
+                document.getElementById('picker-body').addEventListener('input', e => { playerBodyMat.color.set(e.target.value); });
+                document.getElementById('picker-skin').addEventListener('input', e => { skinMat.color.set(e.target.value); });
+                document.getElementById('picker-halo').addEventListener('input', e => { haloMat.color.set(e.target.value); });
+
                 let isDragging = false;
                 let previousMousePosition = { x: 0, y: 0 };
                 let cameraAngleX = 0, cameraAngleY = 0.5, cameraDistance = 10;
@@ -421,13 +452,12 @@
                 window.addEventListener('click', (e) => {
                     if(e.target.tagName !== 'CANVAS') return;
                     initAudio();
-                    if (isVictory || isInvOpen || isColorOpen) return;
+                    if (isGameEnded || isInvOpen || isColorOpen) return;
 
                     playBeepSound();
                     const totalDmg = Math.floor(power / 2) + swordDmgs[swordLevel];
 
                     if (gameStage === 1) {
-                        // Tính số lượng quái hạ gục trong 1 cú click dựa trên DMG và máu quái (50 máu)
                         let monstersKilledInOneHit = Math.floor(totalDmg / redMonsterHP);
                         if (monstersKilledInOneHit < 1) monstersKilledInOneHit = 1;
 
@@ -440,33 +470,27 @@
                         document.getElementById('val-kills').innerText = `${killCount}`;
                         document.getElementById('val-power').innerText = power;
 
-                        // Kiểm tra nếu đang ở khoảng 900 - 999 kill để tăng cơ hội rớt Legendary
-                        const isHighKillRange = (killCount >= 900 && killCount <= 999);
-                        
-                        // Xử lý tỉ lệ rơi đồ cho số lượng quái bị hạ trong nhát chém này
                         for (let i = 0; i < monstersKilledInOneHit; i++) {
-                            handleItemDrop(isHighKillRange);
+                            handleItemDrop();
                         }
 
                         redMonster.visible = false;
                         setTimeout(() => {
-                            if(gameStage === 1 && !isVictory) {
-                                redMonster.visible = true;
-                            }
+                            if(gameStage === 1 && !isGameEnded) redMonster.visible = true;
                         }, 100);
 
                         if (killCount >= 999) {
-                            showToast("🌟 ĐÃ ĐẠT 999 MẠNG! CỔNG ĐÃ MỞ, HÃY BƯỚC QUA!");
+                            showToast("🌟 ĐÃ ĐẠT 999 MẠNG! CỔNG ĐÃ MỞ!");
                             gateLightMat.color.setHex(0xffd700);
                         }
                     } 
                     else if (gameStage === 2) {
                         octopusHP -= totalDmg;
-                        handleItemDrop(false);
+                        handleItemDrop();
                         
                         octopusMonster.visible = false;
                         setTimeout(() => {
-                            if(gameStage === 2 && !isVictory) octopusMonster.visible = true;
+                            if(gameStage === 2 && !isGameEnded) octopusMonster.visible = true;
                         }, 100);
 
                         if (octopusHP <= 0) {
@@ -474,14 +498,14 @@
                             gameStage = 3;
                             bossMonster.visible = true;
                             document.getElementById('boss-hp-bar').style.display = 'block';
-                            showToast("⚠️ BOSS MA VƯƠNG 333.000 MÁU ĐÃ XUẤT HIỆN!");
+                            showToast(`⚠️ BOSS MA VƯƠNG (${currentBossMaxHP.toLocaleString()} HP) ĐÃ XUẤT HIỆN!`);
                         }
                     }
                     else if (gameStage === 3) {
                         bossHP -= totalDmg;
                         if (bossHP < 0) bossHP = 0;
-                        document.getElementById('boss-hp-inner').style.width = `${(bossHP / 333000) * 100}%`;
-                        document.getElementById('boss-hp-text').innerText = `${bossHP} / 333000`;
+                        document.getElementById('boss-hp-inner').style.width = `${(bossHP / currentBossMaxHP) * 100}%`;
+                        document.getElementById('boss-hp-text').innerText = `${bossHP} / ${currentBossMaxHP}`;
 
                         if (bossHP <= 0) {
                             bossMonster.visible = false;
@@ -547,11 +571,32 @@
                             playerGroup.position.z = 6;
                             showToast("🐙 ĐÃ QUA CỔNG! HÃY TIÊU DIỆT BẠCH TUỘC!");
                         } else if (gameStage === 4) {
-                            isVictory = true;
-                            playerBodyMat.color.setHex(0xffffff);
-                            skinMat.color.setHex(0xffffff);
-                            haloMat.color.setHex(0xffffff);
-                            document.getElementById('victory-screen').style.display = 'flex';
+                            // --- XỬ LÝ CƠ CHẾ VÒNG CHƠI (LOOP) ---
+                            if (gameLoop === 1) {
+                                // Lần 1 qua cổng: Nhân *3 power và luck, reset vòng chơi với máu boss 5M
+                                gameLoop = 2;
+                                power *= 3;
+                                luckMultiplier *= 3;
+                                killCount = 0;
+                                gameStage = 1;
+                                currentBossMaxHP = 5000000;
+                                bossHP = 5000000;
+                                
+                                document.getElementById('val-power').innerText = power;
+                                document.getElementById('val-kills').innerText = killCount;
+                                document.getElementById('val-loop').innerText = gameLoop;
+                                document.getElementById('boss-title').innerText = `BOSS MA VƯƠNG (5.000.000 HP)`;
+                                
+                                playerGroup.position.z = 6;
+                                gateLightMat.color.setHex(0x00ffff);
+                                showToast("🔄 CHÀO MỪNG ĐẾN VÒNG 2! POWER & LUCK ĐÃ ĐƯỢC NHÂN 3!");
+                            } else {
+                                // Lần 2 qua cổng: HIỆN CHỮ END GAME VÀ TÊN TÁC GIẢ
+                                isGameEnded = true;
+                                document.getElementById('victory-screen').style.display = 'flex';
+                                document.getElementById('win-title').innerText = "END GAME";
+                                document.getElementById('win-desc').innerText = "✨ CHÚNG MỪNG BẠN ĐÃ HOÀN THÀNH TẤT CẢ THỬ THÁCH VÀ CHINH PHỤC ĐỈNH CAO CAO NHẤT! ✨";
+                            }
                         } else if (gameStage === 1) {
                             gateMsg.style.display = 'block';
                         }
