@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>King of the Blade 3D - First Person Edition</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background-color: #050508;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
+        }
+        #hud {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 20px;
+            z-index: 10;
+        }
+        .stat-box {
+            background: rgba(0, 0, 0, 0.8);
+            border: 2px solid #fff;
+            border-radius: 8px;
+            padding: 10px 20px;
+            color: #fff;
+            text-align: center;
+            min-width: 140px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .stat-title { font-size: 12px; text-transform: uppercase; color: #aaa; }
+        .stat-value { font-size: 22px; font-weight: bold; margin-top: 4px; }
+        #red-hp { color: #ff4d4d; border-color: #ff4d4d; }
+        #blue-hp { color: #4da6ff; border-color: #4da6ff; }
+        #player-dmg { color: #ffd700; border-color: #ffd700; }
+        
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.75);
+            color: white;
+            padding: 12px 24px;
+            border-radius: 20px;
+            font-size: 14px;
+            pointer-events: none;
+            text-align: center;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        #crosshair {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 10px;
+            height: 10px;
+            background: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            pointer-events: none;
+            z-index: 10;
+            box-shadow: 0 0 8px #fff;
+        }
+    </style>
+    <!-- Three.js Library -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+    <div id="crosshair"></div>
+
+    <div id="hud">
+        <div class="stat-box" id="red-hp">
+            <div class="stat-title">Quái Đỏ HP</div>
+            <div class="stat-value" id="val-red">10 / 10</div>
+        </div>
+        <div class="stat-box" id="player-dmg">
+            <div class="stat-title">Sát Thương Kiếm</div>
+            <div class="stat-value" id="val-dmg">1 DMG</div>
+        </div>
+        <div class="stat-box" id="blue-hp">
+            <div class="stat-title">Quái Xanh (BOSS)</div>
+            <div class="stat-value" id="val-blue">1000 / 1000</div>
+        </div>
+    </div>
+
+    <div id="instructions">
+        ⚔️ <b>Nửa TRÁI màn hình:</b> Đánh Quái Đỏ (10 HP - Trừ 1 HP/click) để Lấy Kiếm Thần<br>
+        ⚡ <b>Nửa PHẢI màn hình:</b> Đánh Quái Xanh (1000 HP - Vũ Khí Siêu Mạnh)
+    </div>
+
+    <script>
+        // 1. THIẾT LẬP SCENE & FIRST-PERSON CAMERA
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.FogExp2(0x050508, 0.05);
+
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        // Đặt vị trí Camera ở góc nhìn thứ nhất (không tạo mô hình nhân vật)
+        camera.position.set(0, 1.7, 5);
+        camera.lookAt(0, 1.5, 0);
+
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+        document.body.appendChild(renderer.domElement);
+
+        // 2. ÁNH SÁNG & MÔ TRƯỜNG
+        const ambientLight = new THREE.AmbientLight(0xffffff, 0.4);
+        scene.add(ambientLight);
+
+        const pointLight = new THREE.PointLight(0xffffff, 1.2, 20);
+        pointLight.position.set(0, 5, 2);
+        scene.add(pointLight);
+
+        // Sàn nhà 3D
+        const floorGeo = new THREE.PlaneGeometry(30, 30);
+        const floorMat = new THREE.MeshStandardMaterial({ color: 0x22222e, roughness: 0.8 });
+        const floor = new THREE.Mesh(floorGeo, floorMat);
+        floor.rotation.x = -Math.PI / 2;
+        scene.add(floor);
+
+        // Các cột đá 3D trang trí góc nhìn
+        function createPillar(x, z) {
+            const geo = new THREE.CylinderGeometry(0.4, 0.4, 5, 16);
+            const mat = new THREE.MeshStandardMaterial({ color: 0x444455, roughness: 0.5 });
+            const pillar = new THREE.Mesh(geo, mat);
+            pillar.position.set(x, 2.5, z);
+            scene.add(pillar);
+        }
+        createPillar(-4, -2);
+        createPillar(4, -2);
+        createPillar(-4, 2);
+        createPillar(4, 2);
+
+        // 3. THÔNG SỐ VÀ KHỞI TẠO QUÁI VẬT
+        let redHP = 10;
+        let blueHP = 1000;
+        let playerDmg = 1;
+        let hasSword = false;
+
+        // Quái Đỏ (Khối 3D Đỏ)
+        const redGeo = new THREE.BoxGeometry(1.2, 1.2, 1.2);
+        const redMat = new THREE.MeshStandardMaterial({ color: 0xff3333, roughness: 0.3 });
+        const redMonster = new THREE.Mesh(redGeo, redMat);
+        redMonster.position.set(-2.5, 0.8, -1);
+        scene.add(redMonster);
+
+        // Quái Xanh (Cầu 3D Xanh - Trùm 1000 HP)
+        const blueGeo = new THREE.SphereGeometry(1, 32, 32);
+        const blueMat = new THREE.MeshStandardMaterial({ color: 0x3388ff, roughness: 0.1, metalness: 0.5 });
+        const blueMonster = new THREE.Mesh(blueGeo, blueMat);
+        blueMonster.position.set(2.5, 1, -1);
+        scene.add(blueMonster);
+
+        // Model Cây Kiếm Thần (Xuất hiện sau khi hạ Quái Đỏ)
+        const swordGroup = new THREE.Group();
+        const bladeGeo = new THREE.BoxGeometry(0.1, 1.5, 0.05);
+        const bladeMat = new THREE.MeshStandardMaterial({ color: 0xffd700, metalness: 0.8, roughness: 0.2 });
+        const blade = new THREE.Mesh(bladeGeo, bladeMat);
+        blade.position.y = 0.75;
+        swordGroup.add(blade);
+        swordGroup.position.set(-2.5, 0.5, -1);
+        swordGroup.visible = false;
+        scene.add(swordGroup);
+
+        // 4. CƠ CHẾ SỰ KIỆN CLICK MÀN HÌNH
+        window.addEventListener('click', (e) => {
+            const halfWidth = window.innerWidth / 2;
+
+            if (e.clientX < halfWidth) {
+                // Click Nửa Trái: Đánh Quái Đỏ
+                if (redHP > 0) {
+                    redHP -= 1; // Mỗi click trừ đúng 1 máu
+                    createHitEffect(redMonster.position, 0xff0000);
+
+                    if (redHP <= 0) {
+                        redHP = 0;
+                        redMonster.visible = false;
+                        swordGroup.visible = true; // Rớt Kiếm
+                        equipSword(); // Thu thập Kiếm tăng DMG siêu mạnh
+                    }
+                }
+            } else {
+                // Click Nửa Phải: Đánh Quái Xanh
+                if (blueHP > 0) {
+                    blueHP -= playerDmg;
+                    if (blueHP < 0) blueHP = 0;
+                    createHitEffect(blueMonster.position, 0x0088ff);
+
+                    if (blueHP <= 0) {
+                        blueMonster.visible = false;
+                    }
+                }
+            }
+            updateHUD();
+        });
+
+        // Hàm nâng cấp Vũ Khí Siêu Mạnh
+        function equipSword() {
+            hasSword = true;
+            playerDmg = 250; // Sát thương tăng vọt cực mạnh để hạ Boss 1000 HP
+            document.getElementById('instructions').innerHTML = "<b style='color:#ffd700;'>⚡ BẠN ĐÃ THU THẬP KIẾM THẦN! SÁT THƯƠNG TĂNG LÊN 250 DMG! HÃY TIÊU DIỆT BOSS QUÁI XANH!</b>";
+        }
+
+        // Cập nhật giao diện HUD
+        function updateHUD() {
+            document.getElementById('val-red').innerText = `${redHP} / 10`;
+            document.getElementById('val-blue').innerText = `${blueHP} / 1000`;
+            document.getElementById('val-dmg').innerText = `${playerDmg} DMG`;
+        }
+
+        // Hiệu ứng phát sáng khi chém trúng
+        function createHitEffect(pos, color) {
+            const light = new THREE.PointLight(color, 3, 4);
+            light.position.copy(pos);
+            scene.add(light);
+            setTimeout(() => scene.remove(light), 120);
+        }
+
+        // 5. ANIMATION LOOP
+        function animate() {
+            requestAnimationFrame(animate);
+
+            // Hoạt ảnh quái vật
+            if (redHP > 0) redMonster.rotation.y += 0.02;
+            if (blueHP > 0) {
+                blueMonster.rotation.y += 0.01;
+                blueMonster.position.y = 1 + Math.sin(Date.now() * 0.003) * 0.2;
+            }
+            if (swordGroup.visible) {
+                swordGroup.rotation.y += 0.03; // Kiếm xoay tròn khi rớt ra
+            }
+
+            renderer.render(scene, camera);
+        }
+        animate();
+
+        // Tự động căn chỉnh khi đổi kích thước màn hình
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
