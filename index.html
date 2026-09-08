@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mystic Temple 3D - Ultimate Epic Edition</title>
+    <title>Mystic Temple 3D - 999 Kills & 333k Boss Edition</title>
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; overflow: hidden; background: #05020a; font-family: 'Segoe UI', sans-serif; user-select: none; }
@@ -13,7 +13,7 @@
         #sword-box { border-color: #a335ee; color: #a335ee; }
         #kill-box { border-color: #00ffcc; color: #00ffcc; }
         
-        #boss-hp-bar { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 380px; background: rgba(10,5,20,0.9); border: 2px solid #ff3333; border-radius: 10px; padding: 6px; display: none; text-align: center; color: #fff; z-index: 10; box-shadow: 0 0 15px rgba(255,51,51,0.6); }
+        #boss-hp-bar { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 420px; background: rgba(10,5,20,0.9); border: 2px solid #ff3333; border-radius: 10px; padding: 6px; display: none; text-align: center; color: #fff; z-index: 10; box-shadow: 0 0 15px rgba(255,51,51,0.6); }
         #boss-hp-inner { height: 18px; background: #ff3333; width: 100%; border-radius: 6px; transition: width 0.1s; }
         
         #toast { position: absolute; top: 25%; left: 50%; transform: translate(-50%, -50%); background: rgba(10,5,20,0.95); border: 2px solid #ffd700; color: #ffd700; padding: 12px 28px; border-radius: 25px; font-size: 18px; font-weight: bold; display: none; z-index: 20; text-align: center; box-shadow: 0 0 15px rgba(255,215,0,0.5); }
@@ -23,7 +23,7 @@
         #crosshair { position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; background: #00ffcc; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 10; display: none; }
         
         #victory-screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255,255,255,0.95); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; color: #111; }
-        #victory-screen h1 { font-size: 110px; color: #ffd700; margin: 0; text-shadow: 0 0 30px rgba(255,215,0,0.8); letter-spacing: 5px; font-family: Impact, sans-serif; }
+        #victory-screen h1 { font-size: 120px; color: #ffd700; margin: 0; text-shadow: 0 0 30px rgba(255,215,0,0.8); letter-spacing: 6px; font-family: Impact, sans-serif; }
         
         #error-no {
             position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -44,20 +44,20 @@
 
     <div id="crosshair"></div>
     <div id="toast"></div>
-    <div id="gate-msg">🔒 CẦN ĐỦ 499 MẠNG ĐỂ MỞ CỔNG TIẾN VÀO KHU VỰC BẠCH TUỘC!</div>
+    <div id="gate-msg">🔒 CẦN ĐỦ 999 MẠNG ĐỂ MỞ CỔNG TIẾN VÀO KHU VỰC BẠCH TUỘC!</div>
 
     <div id="hud">
         <div class="stat-box" id="power-box">⚡ POWER: <span id="val-power">10</span></div>
-        <div class="stat-box" id="sword-box">🗡️ KIẾM: <span id="val-sword" style="color:#aaa;">Common (+5 DMG)</span></div>
-        <div class="stat-box" id="kill-box">💀 QUÁI ĐÃ HẠ: <span id="val-kills">0</span> / 499</div>
+        <div class="stat-box" id="sword-box">🗡️ KIẾM: <span id="val-sword" style="color:#aaa;">Common (+10 DMG)</span></div>
+        <div class="stat-box" id="kill-box">💀 QUÁI ĐÃ HẠ: <span id="val-kills">0</span> / 999</div>
     </div>
 
     <div id="boss-hp-bar">
-        <div style="font-size:12px; margin-bottom:3px; font-weight:bold; color:#ff4d4d;">BOSS MA VƯƠNG KHỔNG LỒ</div>
+        <div style="font-size:12px; margin-bottom:3px; font-weight:bold; color:#ff4d4d;">BOSS MA VƯƠNG (333.000 HP)</div>
         <div style="background:#222; border-radius:6px; overflow:hidden;">
             <div id="boss-hp-inner"></div>
         </div>
-        <div id="boss-hp-text" style="font-size:11px; margin-top:2px;">100000 / 100000</div>
+        <div id="boss-hp-text" style="font-size:11px; margin-top:2px;">333000 / 333000</div>
     </div>
 
     <div id="instructions">
@@ -100,12 +100,13 @@
                 let isFirstPerson = false;
                 let power = 10, killCount = 0, swordLevel = 0;
                 
-                const swordNames = ["Common (+5)", "Rare (+25)", "Epic (+100)", "Legendary (+500)"];
+                const swordNames = ["Common (+10)", "Rare (+50)", "Epic (+250)", "Legendary (+1000)"];
                 const swordColors = [0xaaaaaa, 0x0088ff, 0xa335ee, 0xffd700];
-                const swordDmgs = [5, 25, 100, 500];
+                const swordDmgs = [10, 50, 250, 1000];
 
-                let gameStage = 1; // Stage 1: 499 Quỷ Đỏ -> Stage 2: Bạch Tuộc -> Stage 3: Boss 100k HP -> Stage 4: Win
-                let redHP = 10, octopusHP = 500, bossHP = 100000;
+                let gameStage = 1; // Stage 1: 999 Quỷ Đỏ -> Stage 2: Bạch Tuộc -> Stage 3: Boss 333k HP -> Stage 4: Win
+                let octopusHP = 2000;
+                let bossHP = 333000;
                 let isVictory = false;
 
                 const scene = new THREE.Scene();
@@ -117,60 +118,94 @@
                 renderer.setSize(window.innerWidth, window.innerHeight);
                 document.body.appendChild(renderer.domElement);
 
-                // ÁNH SÁNG
-                scene.add(new THREE.AmbientLight(0x332255, 1.5));
-                const dirLight = new THREE.DirectionalLight(0xffffff, 1.5);
-                dirLight.position.set(10, 20, 10);
+                // ÁNH SÁNG & ĐỀN THỜ 3D
+                scene.add(new THREE.AmbientLight(0x2a1b4e, 1.5));
+                const dirLight = new THREE.DirectionalLight(0x9966ff, 1.8);
+                dirLight.position.set(15, 25, 10);
                 scene.add(dirLight);
 
-                // SÀN ĐỀN THỜ 3D
-                const floor = new THREE.Mesh(
-                    new THREE.BoxGeometry(40, 2, 40),
-                    new THREE.MeshStandardMaterial({ color: 0x221e33, roughness: 0.8 })
-                );
-                floor.position.y = -1;
-                scene.add(floor);
+                // BẦU TRỜI SAO LẤP LÁNH
+                const starsGeo = new THREE.BufferGeometry();
+                const starsCnt = 500;
+                const posArr = new Float32Array(starsCnt * 3);
+                for(let i=0; i<starsCnt*3; i++) posArr[i] = (Math.random() - 0.5) * 120;
+                starsGeo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+                const starField = new THREE.Points(starsGeo, new THREE.PointsMaterial({color: 0xaa88ff, size: 0.6}));
+                scene.add(starField);
 
-                // CỔNG THIÊN ĐƯỜNG / KHU VỰC
+                // SÀN ĐỀN THỜ & CỘT TRỤ
+                const platformGroup = new THREE.Group();
+                const stoneMat = new THREE.MeshStandardMaterial({ color: 0x2e293d, roughness: 0.8 });
+                const floorMesh = new THREE.Mesh(new THREE.BoxGeometry(36, 2, 36), stoneMat);
+                floorMesh.position.y = -1;
+                platformGroup.add(floorMesh);
+
+                const pillarMat = new THREE.MeshStandardMaterial({ color: 0x423a56, roughness: 0.6 });
+                const crystalMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
+
+                function createPillar(x, z) {
+                    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 6, 12), pillarMat);
+                    pillar.position.set(x, 2, z);
+                    const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.3), crystalMat);
+                    crystal.position.set(0, 1.5, 0.55);
+                    pillar.add(crystal);
+                    platformGroup.add(pillar);
+                }
+
+                for(let x = -15; x <= 15; x += 7.5) {
+                    createPillar(x, -15);
+                    createPillar(x, 15);
+                }
+                for(let z = -7.5; z <= 7.5; z += 7.5) {
+                    if(z !== 0) { createPillar(-15, z); createPillar(15, z); }
+                }
+
+                // CỔNG CỔ KÍNH Ở PHÍA SAU
                 const gateGroup = new THREE.Group();
-                const marbleMat = new THREE.MeshStandardMaterial({ color: 0xddddee });
-                const p1 = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 8, 16), marbleMat); p1.position.set(-4, 4, -18);
-                const p2 = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.8, 8, 16), marbleMat); p2.position.set(4, 4, -18);
-                const topArch = new THREE.Mesh(new THREE.BoxGeometry(9.2, 1.2, 1.5), marbleMat); topArch.position.set(0, 8.2, -18);
+                const archPillar1 = new THREE.Mesh(new THREE.BoxGeometry(1.2, 8, 1.2), pillarMat); archPillar1.position.set(-4, 3, -16);
+                const archPillar2 = new THREE.Mesh(new THREE.BoxGeometry(1.2, 8, 1.2), pillarMat); archPillar2.position.set(4, 3, -16);
+                const archTop = new THREE.Mesh(new THREE.BoxGeometry(10, 1.5, 1.5), pillarMat); archTop.position.set(0, 7.5, -16);
+                
+                const gateLightMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5 });
+                const gateLight = new THREE.Mesh(new THREE.PlaneGeometry(6.8, 7), gateLightMat);
+                gateLight.position.set(0, 3.5, -15.8);
 
-                const gateLightMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.4 });
-                const gateLight = new THREE.Mesh(new THREE.PlaneGeometry(7.2, 7.5), gateLightMat);
-                gateLight.position.set(0, 4, -17.8);
-
-                gateGroup.add(p1, p2, topArch, gateLight);
-                scene.add(gateGroup);
+                gateGroup.add(archPillar1, archPillar2, archTop, gateLight);
+                platformGroup.add(gateGroup);
+                scene.add(platformGroup);
 
                 // --- 1. NHÂN VẬT CHÍNH ---
                 const playerGroup = new THREE.Group();
-                const playerBodyMat = new THREE.MeshStandardMaterial({ color: 0x2288ff });
-                const skinMat = new THREE.MeshStandardMaterial({ color: 0xffcc99 });
-                const darkMat = new THREE.MeshStandardMaterial({ color: 0x111122 });
+                const playerBodyMat = new THREE.MeshStandardMaterial({ color: 0x1a1a24 });
+                const skinMat = new THREE.MeshStandardMaterial({ color: 0xd4a373 });
 
-                const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.5), playerBodyMat); body.position.y = 1.3;
-                const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMat); head.position.y = 2.05;
-                const armL = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.7, 0.25), playerBodyMat); armL.position.set(-0.55, 1.3, 0);
-                const armR = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.7, 0.25), playerBodyMat); armR.position.set(0.55, 1.3, 0);
-                const legL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), darkMat); legL.position.set(-0.2, 0.4, 0);
-                const legR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), darkMat); legR.position.set(0.2, 0.4, 0);
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.5), playerBodyMat); body.position.y = 1.3;
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMat); head.position.y = 2.1;
+                
+                // Vòng hào quang đen lơ lửng trên đầu
+                const haloRing = new THREE.Mesh(
+                    new THREE.TorusGeometry(0.45, 0.08, 16, 32),
+                    new THREE.MeshBasicMaterial({ color: 0x000000 })
+                );
+                haloRing.rotation.x = Math.PI / 2;
+                haloRing.position.y = 2.55;
 
-                // KIẾM CẦM TAY (Thay đổi màu & sát thương chuẩn)
+                const legL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), playerBodyMat); legL.position.set(-0.2, 0.4, 0);
+                const legR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), playerBodyMat); legR.position.set(0.2, 0.4, 0);
+
+                // KIẾM CẦM TAY
                 const swordGroup = new THREE.Group();
                 const swordMat = new THREE.MeshBasicMaterial({ color: swordColors[0] });
                 const swordBlade = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.5, 0.05), swordMat); swordBlade.position.y = 0.75;
                 swordGroup.add(swordBlade);
-                swordGroup.position.set(0.55, 1.3, -0.3);
+                swordGroup.position.set(0.6, 1.3, -0.3);
                 swordGroup.rotation.x = Math.PI / 3;
 
-                playerGroup.add(body, head, armL, armR, legL, legR, swordGroup);
+                playerGroup.add(body, head, haloRing, legL, legR, swordGroup);
                 playerGroup.position.set(0, 0, 6);
                 scene.add(playerGroup);
 
-                // --- 2. QUÁI VẬT 1: QUỶ ĐỎ CHÂN DÀI (CHUẨN ẢNH) ---
+                // --- 2. QUÁI VẬT 1: QUỶ ĐỎ CHÂN DÀI ---
                 function createRedMonster() {
                     const group = new THREE.Group();
                     const rBody = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.0, 0.8), new THREE.MeshLambertMaterial({ color: 0xff4d4d }));
@@ -200,7 +235,7 @@
                 }
 
                 const redMonster = createRedMonster();
-                redMonster.position.set(0, 0, -2);
+                redMonster.position.set(0, 0, -4);
                 scene.add(redMonster);
 
                 // --- 3. QUÁI VẬT 2: BẠCH TUỘC (CUTE OCTOPUS) ---
@@ -230,19 +265,18 @@
                 }
 
                 const octopusMonster = createOctopusMonster();
-                octopusMonster.position.set(0, 0, -2);
+                octopusMonster.position.set(0, 0, -4);
                 octopusMonster.visible = false;
                 scene.add(octopusMonster);
 
-                // --- 4. BOSS MA VƯƠNG (100K MÁU) ---
+                // --- 4. BOSS MA VƯƠNG (333.000 HP) ---
                 const bossMonster = createOctopusMonster();
-                bossMonster.scale.set(3, 3, 3);
-                bossMonster.position.set(0, 0, -3);
+                bossMonster.scale.set(3.5, 3.5, 3.5);
+                bossMonster.position.set(0, 0, -5);
                 bossMonster.visible = false;
-                // Tô màu Boss đỏ đen hung tợn
                 bossMonster.traverse(child => {
                     if(child.isMesh && child.material) {
-                        child.material = new THREE.MeshLambertMaterial({ color: 0x330000 });
+                        child.material = new THREE.MeshLambertMaterial({ color: 0x440000 });
                     }
                 });
                 scene.add(bossMonster);
@@ -264,44 +298,44 @@
                     initAudio();
                     if (isVictory) return;
 
-                    playSound(400, 'sawtooth', 0.12);
+                    playSound(450, 'sawtooth', 0.12);
                     const totalDmg = Math.floor(power / 2) + swordDmgs[swordLevel];
 
                     if (gameStage === 1) {
-                        // Stage 1: Kill 499 Quỷ Đỏ
+                        // Stage 1: Kill 999 Quỷ Đỏ
                         killCount++;
-                        power += 5;
+                        power += 2;
                         checkUpgradeSword();
                         document.getElementById('val-kills').innerText = `${killCount}`;
                         document.getElementById('val-power').innerText = power;
 
-                        if (killCount >= 499) {
-                            showToast("🌟 ĐÃ ĐẠT 499 MẠNG! CỔNG ĐÃ MỞ, HÃY BƯỚC QUA!");
+                        if (killCount >= 999) {
+                            showToast("🌟 ĐÃ ĐẠT 999 MẠNG! CỔNG ĐÃ MỞ, HÃY BƯỚC QUA!");
                             gateLightMat.color.setHex(0xffd700);
                         }
                     } 
                     else if (gameStage === 2) {
-                        // Stage 2: Kill con Bạch Tuộc
+                        // Stage 2: Kill Bạch Tuộc
                         octopusHP -= totalDmg;
                         if (octopusHP <= 0) {
                             octopusMonster.visible = false;
-                            gameStage = 3; // Sang Stage Boss 100k HP
+                            gameStage = 3; // Sang Stage Boss 333k HP
                             bossMonster.visible = true;
                             document.getElementById('boss-hp-bar').style.display = 'block';
-                            showToast("⚠️ BOSS MA VƯƠNG 100K MÁU ĐÃ XUẤT HIỆN!");
+                            showToast("⚠️ BOSS MA VƯƠNG 333.000 MÁU ĐÃ XUẤT HIỆN!");
                         }
                     }
                     else if (gameStage === 3) {
-                        // Stage 3: Kill Boss 100k HP
+                        // Stage 3: Kill Boss 333k HP
                         bossHP -= totalDmg;
                         if (bossHP < 0) bossHP = 0;
-                        document.getElementById('boss-hp-inner').style.width = `${(bossHP / 100000) * 100}%`;
-                        document.getElementById('boss-hp-text').innerText = `${bossHP} / 100000`;
+                        document.getElementById('boss-hp-inner').style.width = `${(bossHP / 333000) * 100}%`;
+                        document.getElementById('boss-hp-text').innerText = `${bossHP} / 333000`;
 
                         if (bossHP <= 0) {
                             bossMonster.visible = false;
                             document.getElementById('boss-hp-bar').style.display = 'none';
-                            gameStage = 4; // Mở cổng cuối để biến hình người trắng WIN
+                            gameStage = 4; // Mở cổng cuối để hóa người trắng WIN
                             showToast("👑 BOSS ĐÃ GỤC! HÃY BƯỚC QUA CỔNG CUỐI CÙNG!");
                             gateLightMat.color.setHex(0xffffff);
                         }
@@ -310,14 +344,14 @@
 
                 function checkUpgradeSword() {
                     let newLevel = swordLevel;
-                    if (killCount >= 100 && swordLevel < 1) newLevel = 1;
-                    if (killCount >= 250 && swordLevel < 2) newLevel = 2;
-                    if (killCount >= 450 && swordLevel < 3) newLevel = 3;
+                    if (killCount >= 200 && swordLevel < 1) newLevel = 1;
+                    if (killCount >= 500 && swordLevel < 2) newLevel = 2;
+                    if (killCount >= 850 && swordLevel < 3) newLevel = 3;
 
                     if (newLevel !== swordLevel) {
                         swordLevel = newLevel;
                         swordMat.color.setHex(swordColors[swordLevel]);
-                        showToast(`🗡️ NHẶT ĐƯỢC KIẾM: ${swordNames[swordLevel]}!`);
+                        showToast(`🗡️ NÂNG CẤP KIẾM: ${swordNames[swordLevel]}!`);
                         document.getElementById('val-sword').innerText = swordNames[swordLevel];
                         document.getElementById('val-sword').style.color = `#${swordColors[swordLevel].toString(16)}`;
                     }
@@ -349,26 +383,25 @@
                         legL.rotation.x = 0; legR.rotation.x = 0;
                     }
 
-                    playerGroup.position.x = Math.max(-18, Math.min(18, playerGroup.position.x));
-                    playerGroup.position.z = Math.max(-18, Math.min(18, playerGroup.position.z));
+                    playerGroup.position.x = Math.max(-16, Math.min(16, playerGroup.position.x));
+                    playerGroup.position.z = Math.max(-16, Math.min(16, playerGroup.position.z));
 
                     // KIỂM TRA BƯỚC QUA CỔNG
-                    const distToGate = Math.hypot(playerGroup.position.x - 0, playerGroup.position.z - (-17.5));
+                    const distToGate = Math.hypot(playerGroup.position.x - 0, playerGroup.position.z - (-15.5));
                     const gateMsg = document.getElementById('gate-msg');
 
                     if (distToGate < 3.5) {
-                        if (gameStage === 1 && killCount >= 499) {
-                            // Bước qua cổng 1 -> Sang phần Bạch Tuộc
+                        if (gameStage === 1 && killCount >= 999) {
                             gameStage = 2;
                             redMonster.visible = false;
                             octopusMonster.visible = true;
-                            playerGroup.position.z = 4; // Reset vị trí lên trên
-                            showToast("🐙 BẠN ĐÃ BƯỚC QUA CỔNG! HÃY TIÊU DIỆT BẠCH TUỘC!");
+                            playerGroup.position.z = 6; // Reset vị trí
+                            showToast("🐙 ĐÃ QUA CỔNG! HÃY TIÊU DIỆT BẠCH TUỘC!");
                         } else if (gameStage === 4) {
-                            // Bước qua cổng cuối -> BIẾN THÀNH NGƯỜI TRẮNG & WIN
                             isVictory = true;
                             playerBodyMat.color.setHex(0xffffff);
                             skinMat.color.setHex(0xffffff);
+                            haloRing.material.color.setHex(0xffffff);
                             document.getElementById('victory-screen').style.display = 'flex';
                         } else if (gameStage === 1) {
                             gateMsg.style.display = 'block';
@@ -388,6 +421,7 @@
                         playerGroup.visible = true;
                     }
 
+                    starField.rotation.y += 0.0005;
                     if (bossMonster.visible) bossMonster.rotation.y += 0.01;
 
                     renderer.render(scene, camera);
