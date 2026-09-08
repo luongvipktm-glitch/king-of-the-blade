@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>King of the Blade 3D - Ultimate Edition</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; background: #000; font-family: 'Segoe UI', sans-serif; user-select: none; }
+        #hud { position: absolute; top: 15px; left: 15px; display: flex; flex-direction: column; gap: 8px; z-index: 10; }
+        .stat-box { background: rgba(0,0,0,0.85); border: 2px solid #fff; border-radius: 8px; padding: 8px 16px; color: #fff; font-weight: bold; font-size: 14px; }
+        #power-box { border-color: #ff9900; color: #ff9900; }
+        #sword-box { border-color: #a335ee; color: #a335ee; }
+        #kill-box { border-color: #00ffcc; color: #00ffcc; }
+        #boss-hp-bar { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 320px; background: rgba(0,0,0,0.85); border: 2px solid #ff0000; border-radius: 10px; padding: 6px; display: none; text-align: center; color: #fff; z-index: 10; }
+        #boss-hp-inner { height: 18px; background: #ff0000; width: 100%; border-radius: 6px; transition: width 0.1s; }
+        #toast { position: absolute; top: 25%; left: 50%; transform: translate(-50%, -50%); background: rgba(0,0,0,0.9); border: 2px solid #ffd700; color: #ffd700; padding: 12px 28px; border-radius: 25px; font-size: 18px; font-weight: bold; display: none; z-index: 20; text-align: center; }
+        #gate-msg { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(255, 0, 0, 0.85); color: #fff; padding: 10px 22px; border-radius: 12px; font-weight: bold; display: none; z-index: 15; border: 1px solid #fff; }
+        #instructions { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,0.8); color: #fff; padding: 10px 20px; border-radius: 15px; font-size: 13px; text-align: center; border: 1px solid #555; pointer-events: none; z-index: 10; }
+        #crosshair { position: absolute; top: 50%; left: 50%; width: 8px; height: 8px; background: #fff; border-radius: 50%; transform: translate(-50%, -50%); pointer-events: none; z-index: 10; display: none; }
+        #victory-screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(255,255,255,0.95); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; }
+        #victory-screen h1 { font-size: 65px; color: #d4af37; margin: 0; }
+        
+        #error-no {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; color: #ff0000; display: none; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 9999;
+            font-family: monospace; text-align: center;
+        }
+        #error-no h1 { font-size: 120px; margin: 0; text-shadow: 0 0 20px #ff0000; }
+        #error-no p { font-size: 18px; color: #fff; max-width: 80%; line-height: 1.5; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <div id="error-no">
+        <h1>NO</h1>
+        <p><b>LỖI KHÔNG TẢI ĐƯỢC ĐỒ HỌA 3D!</b><br>Trình duyệt Cốc Cốc đang tắt WebGL hoặc chặn thư viện JS.<br>Hãy bật Hardware Acceleration (Tăng tốc phần cứng) trong cài đặt Cốc Cốc hoặc dùng Google Chrome.</p>
+    </div>
+
+    <div id="crosshair"></div>
+    <div id="toast"></div>
+    <div id="gate-msg">🔒 CẦN ĐỦ 999 MẠNG VÀ DIỆT BOSS ĐỂ MỞ CỔNG THIÊN ĐƯỜNG!</div>
+
+    <div id="hud">
+        <div class="stat-box" id="power-box">⚡ POWER: <span id="val-power">10</span></div>
+        <div class="stat-box" id="sword-box">🗡️ KIẾM: <span id="val-sword" style="color:#aaa;">Common (+5 DMG)</span></div>
+        <div class="stat-box" id="kill-box">💀 QUÁI ĐÃ HẠ: <span id="val-kills">0</span> / 999</div>
+    </div>
+
+    <div id="boss-hp-bar">
+        <div style="font-size:12px; margin-bottom:3px; font-weight:bold;">BOSS CUỐI (CỤC ĐEN BÍ ẨN)</div>
+        <div style="background:#333; border-radius:6px; overflow:hidden;">
+            <div id="boss-hp-inner"></div>
+        </div>
+        <div id="boss-hp-text" style="font-size:11px; margin-top:2px;">15000 / 15000</div>
+    </div>
+
+    <div id="instructions">
+        <b>[WASD / Mũi Tên]</b> Di chuyển | <b>[Bấm P]</b> Đổi góc nhìn | <b>[Click Trái/Phải]</b> Đánh Quái
+    </div>
+
+    <div id="victory-screen">
+        <h1>OH MY GOD ! you win</h1>
+        <p style="font-size: 22px; color: #333; font-weight: bold; margin-top: 10px;">Bạn đã bước qua Cổng Thiên Đường!</p>
+    </div>
+
+    <script>
+        function triggerNO() {
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('instructions').style.display = 'none';
+            document.getElementById('error-no').style.display = 'flex';
+        }
+
+        if (typeof THREE === 'undefined') {
+            triggerNO();
+        } else {
+            try {
+                // 1. BIẾN GAME & CHỈ SỐ
+                let isFirstPerson = false;
+                let power = 10, killCount = 0, swordLevel = 0;
+                const swordNames = ["Common (+5)", "Rare (+15)", "Epic (+45)", "Legendary (+120)"];
+                const swordColors = [0xaaaaaa, 0x0088ff, 0xa335ee, 0xffd700];
+                const swordDmgs = [5, 15, 45, 120];
+
+                let redHP = 10, blueHP = 1000, bossHP = 15000;
+                let isRedAlive = true, isBlueAlive = true, isBossSpawned = false, isVictory = false;
+
+                // 2. KHỞI TẠO SCENE & RENDERER
+                const scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x1a1a2e);
+
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(renderer.domElement);
+
+                // Ánh sáng
+                const light = new THREE.DirectionalLight(0xffffff, 1.2);
+                light.position.set(5, 15, 10);
+                scene.add(light);
+                scene.add(new THREE.AmbientLight(0x777777));
+
+                // Sàn nhà
+                const floor = new THREE.Mesh(
+                    new THREE.PlaneGeometry(50, 50),
+                    new THREE.MeshLambertMaterial({ color: 0x16213e })
+                );
+                floor.rotation.x = -Math.PI / 2;
+                scene.add(floor);
+
+                // 3. NHÂN VẬT & TẠO KIẾM
+                const playerGroup = new THREE.Group();
+                const matArmor = new THREE.MeshLambertMaterial({ color: 0x00ff88 });
+                const matSkin = new THREE.MeshLambertMaterial({ color: 0xffcc99 });
+
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.4), matArmor); body.position.y = 1.2;
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), matSkin); head.position.y = 1.9;
+                const armL = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.7, 0.25), matArmor); armL.position.set(-0.55, 1.2, 0);
+                const armR = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.7, 0.25), matArmor); armR.position.set(0.55, 1.2, 0);
+                
+                // Thanh kiếm cầm trên tay phải
+                const swordMat = new THREE.MeshLambertMaterial({ color: swordColors[0] });
+                const swordBlade = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.2, 0.08), swordMat);
+                swordBlade.position.set(0.55, 1.5, -0.4);
+                swordBlade.rotation.x = Math.PI / 4;
+
+                playerGroup.add(body, head, armL, armR, swordBlade);
+                playerGroup.position.set(0, 0, 4);
+                scene.add(playerGroup);
+
+                // 4. CỔNG THIÊN ĐƯỜNG
+                const gateGroup = new THREE.Group();
+                const stoneMat = new THREE.MeshLambertMaterial({ color: 0x444466 });
+                const p1 = new THREE.Mesh(new THREE.BoxGeometry(1, 6, 1), stoneMat); p1.position.set(-3, 3, -12);
+                const p2 = new THREE.Mesh(new THREE.BoxGeometry(1, 6, 1), stoneMat); p2.position.set(3, 3, -12);
+                const top = new THREE.Mesh(new THREE.BoxGeometry(7, 1, 1), stoneMat); top.position.set(0, 6, -12);
+                
+                const gateLightMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.3 });
+                const gateLight = new THREE.Mesh(new THREE.PlaneGeometry(5, 5.5), gateLightMat);
+                gateLight.position.set(0, 3, -11.9);
+
+                gateGroup.add(p1, p2, top, gateLight);
+                scene.add(gateGroup);
+
+                // 5. QUÁI VẬT & BOSS
+                const redMon = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 1.2), new THREE.MeshLambertMaterial({ color: 0xff4d4d }));
+                redMon.position.set(-2.5, 0.75, -1); scene.add(redMon);
+
+                const blueMon = new THREE.Mesh(new THREE.BoxGeometry(1.2, 1.5, 1.2), new THREE.MeshLambertMaterial({ color: 0x4d79ff }));
+                blueMon.position.set(2.5, 0.75, -1); scene.add(blueMon);
+
+                const bossMonster = new THREE.Mesh(new THREE.BoxGeometry(2.5, 2.5, 2.5), new THREE.MeshLambertMaterial({ color: 0x111111 }));
+                bossMonster.position.set(0, 1.8, -3); bossMonster.visible = false;
+                scene.add(bossMonster);
+
+                // 6. ĐIỀU KHIỂN & TƯƠNG TÁC
+                const keys = {};
+                window.addEventListener('keydown', e => {
+                    const k = e.key.toLowerCase();
+                    keys[k] = true;
+                    if (k === 'p') {
+                        isFirstPerson = !isFirstPerson;
+                        document.getElementById('crosshair').style.display = isFirstPerson ? 'block' : 'none';
+                    }
+                });
+                window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
+
+                window.addEventListener('click', (e) => {
+                    if (isVictory) return;
+
+                    const totalDmg = Math.floor(power / 2) + swordDmgs[swordLevel];
+                    const isLeftClick = e.clientX < window.innerWidth / 2;
+
+                    if (isBossSpawned) {
+                        if (bossHP > 0) {
+                            bossHP -= totalDmg;
+                            if (bossHP < 0) bossHP = 0;
+                            document.getElementById('boss-hp-inner').style.width = `${(bossHP / 15000) * 100}%`;
+                            document.getElementById('boss-hp-text').innerText = `${bossHP} / 15000`;
+
+                            if (bossHP <= 0) {
+                                bossMonster.visible = false;
+                                showToast("⚡ ĐÃ TIÊU DIỆT BOSS! CỔNG THIÊN ĐƯỜNG ĐÃ MỞ!");
+                                gateLightMat.color.setHex(0xffd700);
+                                gateLightMat.opacity = 0.8;
+                                document.getElementById('boss-hp-bar').style.display = 'none';
+                            }
+                        }
+                    } else {
+                        if (isLeftClick && isRedAlive) {
+                            redHP -= 1;
+                            if (redHP <= 0) {
+                                isRedAlive = false; redMon.visible = false;
+                                power += 5; killCount++; checkUpgradeSword();
+                                setTimeout(() => { redHP = 10; isRedAlive = true; redMon.visible = true; }, 100);
+                            }
+                        } else if (!isLeftClick && isBlueAlive) {
+                            blueHP -= totalDmg;
+                            if (blueHP <= 0) {
+                                isBlueAlive = false; blueMon.visible = false;
+                                power += 25; killCount += 5; checkUpgradeSword();
+                                setTimeout(() => { blueHP = 1000; isBlueAlive = true; blueMon.visible = true; }, 100);
+                            }
+                        }
+
+                        if (killCount >= 999 && !isBossSpawned) spawnBoss();
+                    }
+                    updateHUD();
+                });
+
+                function checkUpgradeSword() {
+                    let newLevel = swordLevel;
+                    if (killCount >= 100 && swordLevel < 1) newLevel = 1;
+                    if (killCount >= 300 && swordLevel < 2) newLevel = 2;
+                    if (killCount >= 600 && swordLevel < 3) newLevel = 3;
+
+                    if (newLevel !== swordLevel) {
+                        swordLevel = newLevel;
+                        swordMat.color.setHex(swordColors[swordLevel]);
+                        showToast(`🗡️ BẠN ĐÃ NHẶT ĐƯỢC: KIẾM ${swordNames[swordLevel]}!`);
+                    }
+                }
+
+                function showToast(text) {
+                    const toast = document.getElementById('toast');
+                    toast.innerText = text; toast.style.display = 'block';
+                    setTimeout(() => { toast.style.display = 'none'; }, 2000);
+                }
+
+                function spawnBoss() {
+                    isBossSpawned = true; redMon.visible = false; blueMon.visible = false;
+                    bossMonster.visible = true; document.getElementById('boss-hp-bar').style.display = 'block';
+                    showToast("⚠️ BOSS CUỐI ĐÃ XUẤT HIỆN!");
+                }
+
+                function updateHUD() {
+                    document.getElementById('val-power').innerText = power;
+                    document.getElementById('val-kills').innerText = killCount;
+                    const swordBox = document.getElementById('val-sword');
+                    swordBox.innerText = swordNames[swordLevel];
+                    swordBox.style.color = `#${swordColors[swordLevel].toString(16)}`;
+                }
+
+                // 7. VÒNG LẶP RENDER & DI CHUYỂN
+                function animate() {
+                    requestAnimationFrame(animate);
+
+                    const speed = 0.12;
+                    if (keys['w'] || keys['arrowup']) playerGroup.position.z -= speed;
+                    if (keys['s'] || keys['arrowdown']) playerGroup.position.z += speed;
+                    if (keys['a'] || keys['arrowleft']) playerGroup.position.x -= speed;
+                    if (keys['d'] || keys['arrowright']) playerGroup.position.x += speed;
+
+                    if (isFirstPerson) {
+                        camera.position.set(playerGroup.position.x, 1.8, playerGroup.position.z);
+                        camera.lookAt(playerGroup.position.x, 1.8, playerGroup.position.z - 5);
+                        playerGroup.visible = false;
+                    } else {
+                        camera.position.set(playerGroup.position.x, playerGroup.position.y + 4, playerGroup.position.z + 7);
+                        camera.lookAt(playerGroup.position.x, playerGroup.position.y + 1, playerGroup.position.z - 1);
+                        playerGroup.visible = true;
+                    }
+
+                    // Kiểm tra chạm Cổng Thiên Đường
+                    const distToGate = Math.hypot(playerGroup.position.x - 0, playerGroup.position.z - (-11.5));
+                    const gateMsg = document.getElementById('gate-msg');
+
+                    if (distToGate < 3.5) {
+                        if (killCount < 999 || bossHP > 0) {
+                            gateMsg.style.display = 'block';
+                        } else {
+                            gateMsg.style.display = 'none';
+                            isVictory = true;
+                            document.getElementById('victory-screen').style.display = 'flex';
+                        }
+                    } else {
+                        gateMsg.style.display = 'none';
+                    }
+
+                    if (bossMonster.visible) bossMonster.rotation.y += 0.02;
+
+                    renderer.render(scene, camera);
+                }
+
+                animate();
+
+                setTimeout(() => {
+                    const ctx = renderer.getContext();
+                    if (!ctx || renderer.domElement.width === 0) triggerNO();
+                }, 1000);
+
+            } catch (err) {
+                triggerNO();
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            if (typeof THREE !== 'undefined' && camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+    </script>
+</body>
+</html>
