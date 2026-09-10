@@ -1,461 +1,745 @@
-import json
-import math
-import os
-import random
-import pygame
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mystic Temple 3D - Multi-Language & Upgrade System (@viluong673)</title>
+    <style>
+        * { box-sizing: border-box; }
+        body { margin: 0; overflow: hidden; background: #05020a; font-family: 'Segoe UI', sans-serif; user-select: none; }
+        #hud { position: absolute; top: 15px; left: 15px; display: flex; flex-direction: column; gap: 8px; z-index: 10; }
+        .stat-box { background: rgba(10, 5, 20, 0.85); border: 2px solid #a335ee; border-radius: 8px; padding: 8px 16px; color: #fff; font-weight: bold; font-size: 14px; box-shadow: 0 0 10px rgba(163,53,238,0.5); }
+        #power-box { border-color: #ff9900; color: #ff9900; }
+        #sword-box { border-color: #a335ee; color: #a335ee; }
+        #kill-box { border-color: #00ffcc; color: #00ffcc; }
+        #loop-box { border-color: #ff00ff; color: #ff00ff; }
+        
+        #boss-hp-bar { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); width: 420px; background: rgba(10,5,20,0.9); border: 2px solid #ff3333; border-radius: 10px; padding: 6px; display: none; text-align: center; color: #fff; z-index: 10; box-shadow: 0 0 15px rgba(255,51,51,0.6); }
+        #boss-hp-inner { height: 18px; background: #ff3333; width: 100%; border-radius: 6px; transition: width 0.1s; }
+        
+        #toast { position: absolute; top: 25%; left: 50%; transform: translate(-50%, -50%); background: rgba(10,5,20,0.95); border: 2px solid #ffd700; color: #ffd700; padding: 12px 28px; border-radius: 25px; font-size: 18px; font-weight: bold; display: none; z-index: 20; text-align: center; box-shadow: 0 0 15px rgba(255,215,0,0.5); }
+        #gate-msg { position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); background: rgba(255, 50, 50, 0.9); color: #fff; padding: 10px 22px; border-radius: 12px; font-weight: bold; display: none; z-index: 15; border: 1px solid #fff; box-shadow: 0 0 10px rgba(255,50,50,0.7); }
+        
+        #instructions { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); background: rgba(10, 5, 20, 0.85); color: #ddd; padding: 10px 20px; border-radius: 15px; font-size: 13px; text-align: center; border: 1px solid #a335ee; pointer-events: none; z-index: 10; }
+        
+        .modal-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(10,5,20,0.95); border: 2px solid #a335ee; padding: 25px; border-radius: 15px; color: #fff; z-index: 100; width: 420px; display: none; box-shadow: 0 0 25px rgba(163,53,238,0.6); }
+        .modal-box h3 { margin-top: 0; color: #ffd700; text-align: center; }
+        .modal-box button { width: 100%; background: #a335ee; color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; }
+        .modal-box button:hover { background: #b950ff; }
+        .modal-box label { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; font-size: 14px; }
+        
+        .item-row { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; font-size: 13px; background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 5px; }
+        .item-row button { width: auto; padding: 4px 8px; margin-top: 0; font-size: 11px; }
+        .btn-sell { background: #ff4d4d; }
+        .btn-sell:hover { background: #ff6666; }
+        .btn-equip { background: #00cc66; }
+        .btn-equip:hover { background: #00ff88; }
+        .btn-up { background: #ff9900; }
+        .btn-up:hover { background: #ffaa33; }
 
-# Khởi tạo Pygame
-pygame.init()
-pygame.mixer.init()
+        #victory-screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10,5,20,0.95); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; color: #fff; text-align: center; padding: 20px; }
+        #victory-screen h1 { font-size: 100px; color: #ffd700; margin: 0; text-shadow: 0 0 30px rgba(255,215,0,0.8); font-family: Impact, sans-serif; }
+        
+        #error-no {
+            position: absolute; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: #000; color: #ff0000; display: none; flex-direction: column;
+            justify-content: center; align-items: center; z-index: 9999;
+            font-family: monospace; text-align: center;
+        }
+        #error-no h1 { font-size: 120px; margin: 0; text-shadow: 0 0 20px #ff0000; }
+        #error-no p { font-size: 18px; color: #fff; max-width: 80%; line-height: 1.5; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <div id="error-no">
+        <h1>NO</h1>
+        <p><b>LỖI KHÔNG TẢI ĐƯỢC ĐỒ HỌA 3D!</b><br>Trình duyệt đang tắt WebGL hoặc chặn thư viện JS.</p>
+    </div>
 
-# Cấu hình màn hình
-SCREEN_WIDTH = 900
-SCREEN_HEIGHT = 600
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("Game Nâng Cấp Item - Kiếm Hiệp RPG")
+    <div id="toast"></div>
+    <div id="gate-msg" data-vi="🔒 CẦN ĐỦ 999 MẠNG ĐỂ MỞ CỔNG!" data-en="🔒 NEED 999 KILLS TO OPEN GATE!">🔒 CẦN ĐỦ 999 MẠNG ĐỂ MỞ CỔNG!</div>
 
-clock = pygame.time.Clock()
+    <div id="hud">
+        <div class="stat-box" id="power-box">⚡ <span class="lang-txt" data-vi="SỨC MẠNH" data-en="POWER">SỨC MẠNH</span>: <span id="val-power">10</span></div>
+        <div class="stat-box" id="sword-box">🗡️ <span class="lang-txt" data-vi="KIẾM" data-en="SWORD">KIẾM</span>: <span id="val-sword" style="color:#aaa;">Common Lv.1 (+10 DMG)</span></div>
+        <div class="stat-box" id="kill-box">💀 <span class="lang-txt" data-vi="QUÁI ĐÃ HẠ" data-en="KILLS">QUÁI ĐÃ HẠ</span>: <span id="val-kills">0</span> / 999</div>
+        <div class="stat-box" id="loop-box">🔄 <span class="lang-txt" data-vi="VÒNG CHƠI" data-en="LOOP">VÒNG CHƠI</span>: <span id="val-loop">1</span></div>
+    </div>
 
-# Màu sắc
-WHITE = (255, 255, 255)
-BLACK = (0, 0, 0)
-RED = (220, 50, 50)
-GREEN = (50, 200, 50)
-GOLD = (255, 215, 0)
-DARK_RED = (120, 20, 20)
-WOOD_BG = (139, 69, 19)
-WOOD_BORDER = (92, 51, 23)
-UI_BG = (30, 30, 35, 220)
+    <div id="boss-hp-bar">
+        <div id="boss-title" style="font-size:12px; margin-bottom:3px; font-weight:bold; color:#ff4d4d;">BOSS MA VƯƠNG (2.000.000 HP)</div>
+        <div style="background:#222; border-radius:6px; overflow:hidden;">
+            <div id="boss-hp-inner"></div>
+        </div>
+        <div id="boss-hp-text" style="font-size:11px; margin-top:2px;">2000000 / 2000000</div>
+    </div>
 
-# Trạng thái game
-# 'LOGIN', 'PLAYING', 'UPGRADE'
-game_state = "LOGIN"
+    <!-- MODAL TÚI ĐỒ & CHỢ / NÂNG CẤP VẬT PHẨM (TAB) -->
+    <div id="inventory-modal" class="modal-box">
+        <h3 class="lang-txt" data-vi="🎒 TÚI ĐỒ & NÂNG CẤP" data-en="🎒 INVENTORY & UPGRADE">🎒 TÚI ĐỒ & NÂNG CẤP</h3>
+        
+        <div class="item-row">
+            <span>📦 Common (<span id="inv-common">0</span>) [Lv.<span id="lvl-common">1</span>]</span>
+            <div>
+                <button class="btn-sell" onclick="sellItem('common')">Bán (10=490)</button>
+                <button class="btn-up" onclick="upgradeItem('common')">Nâng (<span id="rate-common">60</span>%)</button>
+                <button class="btn-equip" onclick="equipItem('common')">Đeo [F]</button>
+            </div>
+        </div>
+        
+        <div class="item-row">
+            <span>🔷 Rare (<span id="inv-rare">0</span>) [Lv.<span id="lvl-rare">1</span>]</span>
+            <div>
+                <button class="btn-sell" onclick="sellItem('rare')">Bán (10=555)</button>
+                <button class="btn-up" onclick="upgradeItem('rare')">Nâng (<span id="rate-rare">45</span>%)</button>
+                <button class="btn-equip" onclick="equipItem('rare')">Đeo [F]</button>
+            </div>
+        </div>
+        
+        <div class="item-row">
+            <span>💜 Epic (<span id="inv-epic">0</span>) [Lv.<span id="lvl-epic">1</span>]</span>
+            <div>
+                <button class="btn-up" onclick="upgradeItem('epic')">Nâng (<span id="rate-epic">30</span>%)</button>
+                <button class="btn-equip" onclick="equipItem('epic')">Đeo [F]</button>
+            </div>
+        </div>
+        
+        <div class="item-row">
+            <span>👑 Legendary (<span id="inv-legendary">0</span>) [Lv.<span id="lvl-legendary">1</span>]</span>
+            <div>
+                <span style="font-size:10px; color:#ffd700;">(MAX)</span>
+                <button class="btn-up" onclick="upgradeItem('legendary')">Nâng (<span id="rate-legendary">0.1</span>%)</button>
+                <button class="btn-equip" onclick="equipItem('legendary')">Đeo [F]</button>
+            </div>
+        </div>
 
-# Dữ liệu người chơi
-current_user = ""
-player_data = {"gold": 1000, "items": 39}
+        <div style="background:rgba(255,255,255,0.08); padding:8px; border-radius:6px; margin-top:10px; font-size:12px; text-align:center;">
+            ✨ <span class="lang-txt" data-vi="Đang đeo" data-en="Equipped">Đang đeo</span>: <span id="txt-equipped" style="color:#00ffcc; font-weight:bold;">Chưa có</span>
+        </div>
 
-# Input đăng nhập
-username_input = ""
-password_input = ""
-active_box = "user"  # 'user' hoặc 'pass'
-login_message = ""
+        <div style="text-align:center; font-size:11px; margin-top:10px; color:#aaa;" class="lang-txt" data-vi="Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ" data-en="Press [TAB] to close | Press [V] change language">Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ</div>
+    </div>
 
-# Font chữ (Sử dụng font mặc định hệ thống hỗ trợ tiếng Việt cơ bản)
-font_path = None
-try:
-  font_small = pygame.font.SysFont("Arial", 16)
-  font_medium = pygame.font.SysFont("Arial", 20, bold=True)
-  font_large = pygame.font.SysFont("Arial", 28, bold=True)
-except:
-  font_small = pygame.font.Font(None, 24)
-  font_medium = pygame.font.Font(None, 28)
-  font_large = pygame.font.Font(None, 36)
+    <!-- NPC / DRAFT NÂNG CẤP HOẶC ĐỔI MÀU (O) -->
+    <div id="color-modal" class="modal-box" style="border-color:#00ffcc;">
+        <h3 style="color:#00ffcc;" class="lang-txt" data-vi="🎨 TÙY CHỈNH & KHU DRAFT" data-en="🎨 CUSTOMIZE & DRAFT ZONE">🎨 TÙY CHỈNH & KHU DRAFT</h3>
+        <label><span class="lang-txt" data-vi="Màu áo nhân vật" data-en="Body Color">Màu áo nhân vật</span>: <input type="color" id="picker-body" value="#1a1a24"></label>
+        <label><span class="lang-txt" data-vi="Màu da nhân vật" data-en="Skin Color">Màu da nhân vật</span>: <input type="color" id="picker-skin" value="#d4a373"></label>
+        <label><span class="lang-txt" data-vi="Màu hào quang" data-en="Halo Color">Màu hào quang</span>: <input type="color" id="picker-halo" value="#000000"></label>
+        <div style="text-align:center; font-size:11px; margin-top:15px; color:#aaa;" class="lang-txt" data-vi="Bấm [O] để đóng" data-en="Press [O] to close">Bấm [O] để đóng</div>
+    </div>
 
-# Tạo âm thanh nền đơn giản bằng code (Synthesized background music/beeps)
-try:
-  sample_rate = 22050
-  duration = 1.5
-  t = [i / sample_rate for i in range(int(sample_rate * duration))]
-  # Tạo giai điệu nhẹ nhàng
-  buffer = [
-      int(
-          32767
-          * 0.3
-          * math.sin(2 * math.pi * 220 * x)
-          * (1 - x / duration)
-      )
-      for x in t
-  ]
-  sound_array = pygame.sndarray.make_sound(
-      bytes(bytearray([b for s in buffer for b in s.to_bytes(2, 'little', signed=True)]))
-  )
-  sound_array.play(loops=-1)
-except:
-  pass  # Nếu lỗi driver âm thanh thì bỏ qua
+    <div id="instructions">
+        <b>[WASD]</b> <span class="lang-txt" data-vi="Di chuyển" data-en="Move">Di chuyển</span> | <b>[Chuột + Kéo]</b> <span class="lang-txt" data-vi="Xoay" data-en="Rotate">Xoay</span> | <b>[TAB]</b> <span class="lang-txt" data-vi="Túi đồ" data-en="Inventory">Túi đồ</span> | <b>[F]</b> <span class="lang-txt" data-vi="Đeo đồ" data-en="Equip">Đeo đồ</span> | <b>[V]</b> <span class="lang-txt" data-vi="Ngôn ngữ" data-en="Language">Ngôn ngữ</span>: <span id="lang-indicator">VI</span>
+    </div>
 
+    <div id="victory-screen">
+        <h1 id="win-title">WIN</h1>
+        <p id="win-desc" style="font-size: 22px; color: #ffd700; font-weight: bold; margin-top: 15px; max-width: 800px; line-height: 1.6;"></p>
+        <p style="font-size: 14px; color: #aaa; margin-top: 25px;">— By @viluong673 —</p>
+    </div>
 
-def save_game_data():
-  if not current_user:
-    return
-  data = {}
-  if os.path.exists("save_game.json"):
-    try:
-      with open("save_game.json", "r", encoding="utf-8") as f:
-        data = json.load(f)
-    except:
-      pass
+    <script>
+        function triggerNO() {
+            document.getElementById('hud').style.display = 'none';
+            document.getElementById('instructions').style.display = 'none';
+            document.getElementById('error-no').style.display = 'flex';
+        }
 
-  data[current_user] = {
-      "password": password_input,
-      "gold": player_data["gold"],
-      "items": player_data["items"],
-  }
-  with open("save_game.json", "w", encoding="utf-8") as f:
-    json.dump(data, f, ensure_ascii=False, indent=4)
+        let audioCtx = null;
+        function initAudio() {
+            if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
 
+        function playBeepSound() {
+            if (!audioCtx) return;
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(180, audioCtx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(80, audioCtx.currentTime + 0.15);
+            gain.gain.setValueAtTime(0.25, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.15);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + 0.15);
+        }
 
-def load_game_data(username, password):
-  global player_data
-  if not os.path.exists("save_game.json"):
-    return False, "Chưa có tài khoản nào được lưu!"
+        function playLegendarySound() {
+            if (!audioCtx) return;
+            const notes = [523.25, 659.25, 783.99, 1046.50];
+            notes.forEach((freq, index) => {
+                setTimeout(() => {
+                    if (!audioCtx) return;
+                    const osc = audioCtx.createOscillator();
+                    const gain = audioCtx.createGain();
+                    osc.type = 'triangle';
+                    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                    gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.3);
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+                    osc.start();
+                    osc.stop(audioCtx.currentTime + 0.3);
+                }, index * 150);
+            });
+        }
 
-  try:
-    with open("save_game.json", "r", encoding="utf-8") as f:
-      data = json.load(f)
-      if username in data:
-        if data[username]["password"] == password:
-          player_data["gold"] = data[username].get("gold", 1000)
-          player_data["items"] = data[username].get("items", 39)
-          return True, "Đăng nhập thành công!"
-        else:
-          return False, "Sai mật khẩu!"
-      else:
-        # Tạo mới luôn nếu chưa có
-        player_data["gold"] = 1000
-        player_data["items"] = 39
-        return True, "Tài khoản mới đã được tạo!"
-  except:
-    return False, "Lỗi đọc dữ liệu lưu trữ!"
+        if (typeof THREE === 'undefined') {
+            triggerNO();
+        } else {
+            try {
+                let power = 10, killCount = 0, swordLevel = 0;
+                let luckMultiplier = 1;
+                let gameLoop = 1;
+                let currentLang = 'vi'; // 'vi' hoặc 'en'
 
+                const inventory = { common: 0, rare: 0, epic: 0, legendary: 0 };
+                
+                // Cấp độ và tỉ lệ nâng cấp item
+                const itemLevels = { common: 1, rare: 1, epic: 1, legendary: 1 };
+                const upgradeRates = { common: 60, rare: 45, epic: 30, legendary: 0.1 };
+                let equippedItemType = null; // 'common', 'rare', 'epic', 'legendary'
 
-# Đối tượng Người chơi (Nhân vật áo đỏ ngầu)
-class Player:
+                const swordNames = ["Common", "Rare", "Epic", "Legendary"];
+                const swordColors = [0xaaaaaa, 0x0088ff, 0xa335ee, 0xffd700];
+                const swordDmgs = [10, 50, 250, 1000];
 
-  def __init__(self, x, y):
-    self.x = x
-    self.y = y
-    self.speed = 4
-    self.width = 40
-    self.height = 60
+                let gameStage = 1;
+                let redMonsterHP = 50; 
+                let octopusHP = 3000;
+                let currentBossMaxHP = 2000000;
+                let bossHP = 2000000;
+                let isGameEnded = false;
 
-  def handle_keys(self):
-    keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT] or keys[pygame.K_a]:
-      self.x -= self.speed
-    if keys[pygame.K_RIGHT] or keys[pygame.K_d]:
-      self.x += self.speed
-    if keys[pygame.K_UP] or keys[pygame.K_w]:
-      self.y -= self.speed
-    if keys[pygame.K_DOWN] or keys[pygame.K_s]:
-      self.y += self.speed
+                const scene = new THREE.Scene();
+                scene.background = new THREE.Color(0x06030d);
+                scene.fog = new THREE.FogExp2(0x06030d, 0.02);
 
-    # Giới hạn trong màn hình
-    self.x = max(50, min(SCREEN_WIDTH - 50, self.x))
-    self.y = max(100, min(SCREEN_HEIGHT - 60, self.y))
+                const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+                const renderer = new THREE.WebGLRenderer({ antialias: true });
+                renderer.setSize(window.innerWidth, window.innerHeight);
+                document.body.appendChild(renderer.domElement);
 
-  def draw(self, surface):
-    # Vẽ mô phỏng nhân vật phong cách cổ trang áo đỏ (như hình mẫu)
-    # Thân áo choàng đỏ
-    pygame.draw.rect(
-        surface, RED, (self.x - 15, self.y - 10, 30, 45), border_radius=5
-    )
-    # Viền đen trang trí áo
-    pygame.draw.rect(
-        surface, BLACK, (self.x - 15, self.y - 10, 30, 45), 2, border_radius=5
-    )
-    # Tóc đen dài & dải lụa đỏ phía sau
-    pygame.draw.circle(surface, BLACK, (self.x, self.y - 20), 14)
-    pygame.draw.rect(surface, DARK_RED, (self.x - 3, self.y - 30, 6, 25))
-    # Kiếm bên hông
-    pygame.draw.line(surface, WHITE, (self.x + 12, self.y), (self.x + 22, self.y + 15), 3)
+                scene.add(new THREE.AmbientLight(0x3a2b5e, 1.5));
+                const dirLight = new THREE.DirectionalLight(0x9966ff, 1.8);
+                dirLight.position.set(15, 25, 10);
+                scene.add(dirLight);
 
+                const starsGeo = new THREE.BufferGeometry();
+                const starsCnt = 500;
+                const posArr = new Float32Array(starsCnt * 3);
+                for(let i=0; i<starsCnt*3; i++) posArr[i] = (Math.random() - 0.5) * 120;
+                starsGeo.setAttribute('position', new THREE.BufferAttribute(posArr, 3));
+                const starField = new THREE.Points(starsGeo, new THREE.PointsMaterial({color: 0xaa88ff, size: 0.6}));
+                scene.add(starField);
 
-# Đối tượng NPC Nâng Cấp (Kiếm khách kỳ bí áo đỏ)
-class NPC:
+                const platformGroup = new THREE.Group();
+                const stoneMat = new THREE.MeshStandardMaterial({ color: 0x2e293d, roughness: 0.8 });
+                const floorMesh = new THREE.Mesh(new THREE.BoxGeometry(36, 2, 36), stoneMat);
+                floorMesh.position.y = -1;
+                platformGroup.add(floorMesh);
 
-  def __init__(self, x, y):
-    self.x = x
-    self.y = y
-    self.width = 50
-    self.height = 60
+                const pillarMat = new THREE.MeshStandardMaterial({ color: 0x423a56, roughness: 0.6 });
+                const crystalMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
 
-  def draw(self, surface):
-    # Vẽ NPC phong cách kiếm hiệp cổ trang đẹp mắt
-    # Áo choàng đỏ đậm
-    pygame.draw.rect(
-        surface, DARK_RED, (self.x - 18, self.y - 10, 36, 48), border_radius=6
-    )
-    pygame.draw.rect(
-        surface, GOLD, (self.x - 18, self.y - 10, 36, 48), 2, border_radius=6
-    )
-    # Tóc đen
-    pygame.draw.circle(surface, BLACK, (self.x, self.y - 22), 15)
-    # Hiệu hào quang/nón hoặc điểm nhấn kiếm hiệp
-    pygame.draw.circle(surface, GOLD, (self.x, self.y - 32), 4)
+                function createPillar(x, z) {
+                    const pillar = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.6, 6, 12), pillarMat);
+                    pillar.position.set(x, 2, z);
+                    const crystal = new THREE.Mesh(new THREE.OctahedronGeometry(0.3), crystalMat);
+                    crystal.position.set(0, 1.5, 0.55);
+                    pillar.add(crystal);
+                    platformGroup.add(pillar);
+                }
 
-    # Tên NPC
-    name_text = font_small.render("NPC Lão Kiếm Sư", True, GOLD)
-    surface.blit(
-        name_text, (self.x - name_text.get_width() // 2, self.y - 55)
-    )
+                for(let x = -15; x <= 15; x += 7.5) {
+                    createPillar(x, -15);
+                    createPillar(x, 15);
+                }
+                for(let z = -7.5; z <= 7.5; z += 7.5) {
+                    if(z !== 0) { createPillar(-15, z); createPillar(15, z); }
+                }
 
+                // --- THÊM KHU NPC / DRAFT NÂNG CẤP TRONG MAP ---
+                function createUpgradeDraftNPC(x, z) {
+                    const group = new THREE.Group();
+                    const bodyMat = new THREE.MeshLambertMaterial({ color: 0xff9900 });
+                    const skinMat = new THREE.MeshLambertMaterial({ color: 0xd4a373 });
+                    const dBody = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.5), bodyMat); dBody.position.y = 1.3;
+                    const dHead = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMat); dHead.position.y = 2.1;
+                    const ringMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
+                    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.05, 12, 24), ringMat);
+                    ring.rotation.x = Math.PI/2; ring.position.y = 0.05;
+                    group.add(dBody, dHead, ring);
+                    group.position.set(x, 0, z);
+                    platformGroup.add(group);
+                    return group;
+                }
+                createUpgradeDraftNPC(-8, -5); // Đặt NPC/Draft ở khu vực trong map
 
-player = Player(200, 300)
-npc = NPC(700, 350)
+                const gateGroup = new THREE.Group();
+                const archPillar1 = new THREE.Mesh(new THREE.BoxGeometry(1.2, 8, 1.2), pillarMat); archPillar1.position.set(-4, 3, -16);
+                const archPillar2 = new THREE.Mesh(new THREE.BoxGeometry(1.2, 8, 1.2), pillarMat); archPillar2.position.set(4, 3, -16);
+                const archTop = new THREE.Mesh(new THREE.BoxGeometry(10, 1.5, 1.5), pillarMat); archTop.position.set(0, 7.5, -16);
+                
+                const gateLightMat = new THREE.MeshBasicMaterial({ color: 0x00ffff, transparent: true, opacity: 0.5 });
+                const gateLight = new THREE.Mesh(new THREE.PlaneGeometry(6.8, 7), gateLightMat);
+                gateLight.position.set(0, 3.5, -15.8);
 
-# Biến thông báo kết quả nâng cấp
-upgrade_msg = ""
-upgrade_color = WHITE
+                gateGroup.add(archPillar1, archPillar2, archTop, gateLight);
+                platformGroup.add(gateGroup);
+                scene.add(platformGroup);
 
-# Vòng lặp chính của game
-running = True
-while running:
-  screen.fill((25, 25, 35))  # Màu nền bản đồ tối cổ trang
+                const playerGroup = new THREE.Group();
+                const playerBodyMat = new THREE.MeshStandardMaterial({ color: 0x1a1a24 });
+                const skinMat = new THREE.MeshStandardMaterial({ color: 0xd4a373 });
 
-  for event in pygame.event.get():
-    if event.type == pygame.QUIT:
-      save_game_data()
-      running = False
+                const body = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.5), playerBodyMat); body.position.y = 1.3;
+                const head = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMat); head.position.y = 2.1;
+                
+                const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.02), eyeMat); eyeL.position.set(-0.12, 2.15, 0.26);
+                const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.08, 0.02), eyeMat); eyeR.position.set(0.12, 2.15, 0.26);
+                const nose = new THREE.Mesh(new THREE.BoxGeometry(0.06, 0.08, 0.04), skinMat); nose.position.set(0, 2.05, 0.26);
+                const mouth = new THREE.Mesh(new THREE.BoxGeometry(0.18, 0.04, 0.02), new THREE.MeshBasicMaterial({ color: 0x331111 })); mouth.position.set(0, 1.95, 0.26);
 
-    if game_state == "LOGIN":
-      if event.type == pygame.MOUSEBUTTONDOWN:
-        # Kiểm tra click vào ô nhập liệu
-        if 300 <= event.pos[0] <= 600 and 220 <= event.pos[1] <= 260:
-          active_box = "user"
-        elif 300 <= event.pos[0] <= 600 and 300 <= event.pos[1] <= 340:
-          active_box = "pass"
-        # Click nút đăng nhập
-        elif 350 <= event.pos[0] <= 550 and 380 <= event.pos[1] <= 430:
-          if username_input.strip() and password_input.strip():
-            success, msg = load_game_data(username_input, password_input)
-            login_message = msg
-            if success:
-              current_user = username_input
-              game_state = "PLAYING"
-          else:
-            login_message = "Vui lòng nhập đầy đủ tên và mật khẩu!"
+                const haloMat = new THREE.MeshBasicMaterial({ color: 0x000000 });
+                const haloRing = new THREE.Mesh(new THREE.TorusGeometry(0.45, 0.08, 16, 32), haloMat);
+                haloRing.rotation.x = Math.PI / 2;
+                haloRing.position.y = 2.55;
 
-      elif event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_RETURN:
-          if username_input.strip() and password_input.strip():
-            success, msg = load_game_data(username_input, password_input)
-            login_message = msg
-            if success:
-              current_user = username_input
-              game_state = "PLAYING"
-        elif event.key == pygame.K_BACKSPACE:
-          if active_box == "user":
-            username_input = username_input[:-1]
-          else:
-            password_input = password_input[:-1]
-        else:
-          if event.unicode.isprintable():
-            if active_box == "user" and len(username_input) < 15:
-              username_input += event.unicode
-            elif active_box == "pass" and len(password_input) < 15:
-              password_input += event.unicode
+                const legL = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), playerBodyMat); legL.position.set(-0.2, 0.4, 0);
+                const legR = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.8, 0.3), playerBodyMat); legR.position.set(0.2, 0.4, 0);
 
-    elif game_state == "PLAYING":
-      if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_ESCAPE:
-          save_game_data()
-          game_state = "LOGIN"
+                const swordGroup = new THREE.Group();
+                const swordMat = new THREE.MeshBasicMaterial({ color: swordColors[0] });
+                const swordBlade = new THREE.Mesh(new THREE.BoxGeometry(0.1, 1.5, 0.05), swordMat); swordBlade.position.y = 0.75;
+                swordGroup.add(swordBlade);
+                swordGroup.position.set(0.6, 1.3, -0.3);
+                swordGroup.rotation.x = Math.PI / 3;
 
-      # Kiểm tra khoảng cách đến NPC để mở bảng nâng cấp
-      dist = math.hypot(player.x - npc.x, player.y - npc.y)
-      if dist < 60:
-        game_state = "UPGRADE"
-        upgrade_msg = "Hãy chọn nâng cấp trang bị!"
+                playerGroup.add(body, head, eyeL, eyeR, nose, mouth, haloRing, legL, legR, swordGroup);
+                playerGroup.position.set(0, 0, 6);
+                scene.add(playerGroup);
 
-    elif game_state == "UPGRADE":
-      if event.type == pygame.KEYDOWN:
-        if event.key == pygame.K_ESCAPE or event.key == pygame.K_x:
-          game_state = "PLAYING"
-      elif event.type == pygame.MOUSEBUTTONDOWN:
-        mx, my = event.pos
-        # Nút Nâng cấp (50% thành công, thất bại -1 item)
-        if 375 <= mx <= 525 and 320 <= my <= 365:
-          if player_data["gold"] >= 200 and player_data["items"] > 0:
-            player_data["gold"] -= 200
-            if random.random() < 0.5:  # Tỉ lệ thành công 50%
-              player_data["items"] += 1  # Giả định thành công tăng cấp độ item
-              upgrade_msg = "Nâng cấp thành công! +1 cấp Item!"
-              upgrade_color = GREEN
-            else:
-              player_data["items"] -= 1  # Thất bại trừ 1 item như yêu cầu
-              upgrade_msg = "Thất bại! Trang bị bị tổn hại, -1 Item!"
-              upgrade_color = RED
-          else:
-            upgrade_msg = "Không đủ Vàng (Cần 200) hoặc hết Item!"
-            upgrade_color = RED
-        # Nút Đóng bảng nâng cấp
-        elif 375 <= mx <= 525 and 385 <= my <= 430:
-          game_state = "PLAYING"
+                function createRedMonster() {
+                    const group = new THREE.Group();
+                    const rBody = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.0, 0.8), new THREE.MeshLambertMaterial({ color: 0xff4d4d }));
+                    rBody.position.y = 1.8;
+                    const eWhite = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    const eGreen = new THREE.MeshBasicMaterial({ color: 0x00cc66 });
+                    const eL = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.05, 16), eWhite); eL.rotation.x = Math.PI/2; eL.position.set(-0.4, 1.85, 0.42);
+                    const eL_in = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 16), eGreen); eL_in.rotation.x = Math.PI/2; eL_in.position.set(-0.4, 1.85, 0.43);
+                    const eR = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 0.05, 16), eWhite); eR.rotation.x = Math.PI/2; eR.position.set(0.4, 1.85, 0.42);
+                    const eR_in = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.06, 16), eGreen); eR_in.rotation.x = Math.PI/2; eR_in.position.set(0.4, 1.85, 0.43);
+                    const hornMat = new THREE.MeshLambertMaterial({ color: 0xffd700 });
+                    const hStickL = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.6), hornMat); hStickL.position.set(-0.7, 2.5, 0); hStickL.rotation.z = -0.4;
+                    const hBallL = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 12), hornMat); hBallL.position.set(-0.82, 2.8, 0);
+                    const hStickR = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.6), hornMat); hStickR.position.set(0.7, 2.5, 0); hStickR.rotation.z = 0.4;
+                    const hBallR = new THREE.Mesh(new THREE.SphereGeometry(0.18, 12, 12), hornMat); hBallR.position.set(0.82, 2.8, 0);
+                    const legMat = new THREE.MeshLambertMaterial({ color: 0x4dd2ff });
+                    const leg1 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.5), legMat); leg1.position.set(-0.5, 0.75, 0);
+                    const leg2 = new THREE.Mesh(new THREE.CylinderGeometry(0.05, 0.05, 1.5), legMat); leg2.position.set(0.5, 0.75, 0);
+                    const foot1 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 10, 10), hornMat); foot1.position.set(-0.5, 0.05, 0);
+                    const foot2 = new THREE.Mesh(new THREE.SphereGeometry(0.15, 10, 10), hornMat); foot2.position.set(0.5, 0.05, 0);
+                    group.add(rBody, eL, eL_in, eR, eR_in, hStickL, hBallL, hStickR, hBallR, leg1, leg2, foot1, foot2);
+                    return group;
+                }
 
-  # --- XỬ LÝ VÀ VẼ GIAO DIỆN ---
-  if game_state == "LOGIN":
-    # Màn hình Đăng nhập / Lưu tiến trình
-    title = font_large.render(
-        "ĐĂNG NHẬP TIẾN TRÌNH GAME KIẾM HIỆP", True, GOLD
-    )
-    screen.blit(title, (SCREEN_WIDTH // 2 - title.get_width() // 2, 120))
+                const redMonster = createRedMonster();
+                redMonster.position.set(0, 0, -4);
+                scene.add(redMonster);
 
-    # Khung nhập Tên tài khoản
-    pygame.draw.rect(
-        screen,
-        WHITE if active_box == "user" else (180, 180, 180),
-        (300, 220, 300, 40),
-        border_radius=5,
-    )
-    user_surf = font_medium.render(
-        f"Tên: {username_input}" + ("|" if active_box == "user" else ""),
-        True,
-        BLACK,
-    )
-    screen.blit(user_surf, (310, 228))
+                function createOctopusMonster() {
+                    const group = new THREE.Group();
+                    const bodyMat = new THREE.MeshLambertMaterial({ color: 0x3399ff });
+                    const headBall = new THREE.Mesh(new THREE.SphereGeometry(1.2, 24, 24), bodyMat); headBall.position.y = 1.4;
+                    const eWhite = new THREE.MeshBasicMaterial({ color: 0xffffff });
+                    const eCyan = new THREE.MeshBasicMaterial({ color: 0x00cccc });
+                    const eL = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 16), eWhite); eL.rotation.x = Math.PI/2; eL.position.set(-0.4, 1.5, 1.0);
+                    const eL_in = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.06, 16), eCyan); eL_in.rotation.x = Math.PI/2; eL_in.position.set(-0.4, 1.5, 1.02);
+                    const eR = new THREE.Mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.05, 16), eWhite); eR.rotation.x = Math.PI/2; eR.position.set(0.4, 1.5, 1.0);
+                    const eR_in = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.06, 16), eCyan); eR_in.rotation.x = Math.PI/2; eR_in.position.set(0.4, 1.5, 1.02);
+                    const legMat = new THREE.MeshLambertMaterial({ color: 0x1a75ff });
+                    for(let i=0; i<8; i++) {
+                        const angle = (i / 8) * Math.PI * 2;
+                        const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 1.4), legMat);
+                        leg.rotation.z = Math.PI / 2; leg.rotation.y = angle;
+                        leg.position.set(Math.cos(angle)*0.9, 0.6, Math.sin(angle)*0.9);
+                        group.add(leg);
+                    }
+                    group.add(headBall, eL, eL_in, eR, eR_in);
+                    return group;
+                }
 
-    # Khung nhập Mật khẩu
-    pygame.draw.rect(
-        screen,
-        WHITE if active_box == "pass" else (180, 180, 180),
-        (300, 300, 300, 40),
-        border_radius=5,
-    )
-    pass_surf = font_medium.render(
-        f"Mật khẩu: {'*' * len(password_input)}"
-        + ("|" if active_box == "pass" else ""),
-        True,
-        BLACK,
-    )
-    screen.blit(pass_surf, (310, 308))
+                const octopusMonster = createOctopusMonster();
+                octopusMonster.position.set(0, 0, -4);
+                octopusMonster.visible = false;
+                scene.add(octopusMonster);
 
-    # Nút bấm Đăng nhập / Chơi tiếp
-    pygame.draw.rect(screen, RED, (350, 380, 200, 50), border_radius=8)
-    btn_text = font_medium.render("VÀO GAME", True, WHITE)
-    screen.blit(btn_text, (400, 393))
+                const bossMonster = createOctopusMonster();
+                bossMonster.scale.set(3.5, 3.5, 3.5);
+                bossMonster.position.set(0, 0, -5);
+                bossMonster.visible = false;
+                bossMonster.traverse(child => {
+                    if(child.isMesh && child.material) {
+                        child.material = new THREE.MeshLambertMaterial({ color: 0x440000 });
+                    }
+                });
+                scene.add(bossMonster);
 
-    # Thông báo lỗi/thành công
-    if login_message:
-      msg_surf = font_small.render(
-          login_message,
-          True,
-          GREEN if "thành công" in login_message or "mới" in login_message else RED,
-      )
-      screen.blit(msg_surf, (SCREEN_WIDTH // 2 - msg_surf.get_width() // 2, 450))
+                // --- HỆ THỐNG RƠI ĐỒ THEO YÊU CẦU ---
+                function handleItemDrop() {
+                    const rand = Math.random() * 100;
+                    
+                    // Kill 999: khoảng 50-60 common, rare khoảng 20 cái
+                    const legendaryChance = 0.05 * luckMultiplier;
+                    const epicChance = 2.0 * luckMultiplier;
+                    const rareChance = 15.0 * luckMultiplier; // Khoảng 20 cái khi đủ 999 mạng
+                    const commonChance = 45.0 * luckMultiplier; // Khoảng 50-60 cái khi đủ 999 mạng
 
-    # Hướng dẫn nhỏ
-    guide = font_small.render(
-        "Nhập tên và mật khẩu (Ví dụ: mua / 6767) để lưu & tải tiến trình chơi!",
-        True,
-        WHITE,
-    )
-    screen.blit(guide, (SCREEN_WIDTH // 2 - guide.get_width() // 2, 500))
+                    if (rand < legendaryChance) {
+                        inventory.legendary++;
+                        showToast(currentLang === 'vi' ? "👑 Rơi: LEGENDARY (+1)" : "👑 Drop: LEGENDARY (+1)");
+                        playLegendarySound();
+                    } else if (rand < epicChance) {
+                        inventory.epic++;
+                        showToast(currentLang === 'vi' ? "💜 Rơi: Epic (+1)" : "💜 Drop: Epic (+1)");
+                    } else if (rand < rareChance) {
+                        inventory.rare++;
+                        showToast(currentLang === 'vi' ? "🔷 Rơi: Rare (+1)" : "🔷 Drop: Rare (+1)");
+                    } else if (rand < commonChance) {
+                        inventory.common++;
+                        showToast(currentLang === 'vi' ? "📦 Rơi: Common (+1)" : "📦 Drop: Common (+1)");
+                    }
+                    updateInventoryUI();
+                }
 
-  elif game_state == "PLAYING" or game_state == "UPGRADE":
-    # Cập nhật chuyển động người chơi
-    if game_state == "PLAYING":
-      player.handle_keys()
+                function updateInventoryUI() {
+                    document.getElementById('inv-common').innerText = inventory.common;
+                    document.getElementById('inv-rare').innerText = inventory.rare;
+                    document.getElementById('inv-epic').innerText = inventory.epic;
+                    document.getElementById('inv-legendary').innerText = inventory.legendary;
 
-    # Vẽ nền bản đồ game
-    # Vẽ đường đi giả lập
-    pygame.draw.rect(screen, (40, 40, 55), (0, 250, SCREEN_WIDTH, 150))
+                    document.getElementById('lvl-common').innerText = itemLevels.common;
+                    document.getElementById('lvl-rare').innerText = itemLevels.rare;
+                    document.getElementById('lvl-epic').innerText = itemLevels.epic;
+                    document.getElementById('lvl-legendary').innerText = itemLevels.legendary;
 
-    # Vẽ NPC
-    npc.draw(screen)
+                    document.getElementById('rate-common').innerText = upgradeRates.common;
+                    document.getElementById('rate-rare').innerText = upgradeRates.rare;
+                    document.getElementById('rate-epic').innerText = upgradeRates.epic;
+                    document.getElementById('rate-legendary').innerText = upgradeRates.legendary;
+                }
 
-    # Vẽ Người chơi
-    player.draw(screen)
+                // --- HỆ THỐNG BÁN ĐỒ ---
+                window.sellItem = function(type) {
+                    if (type === 'common' && inventory.common >= 10) {
+                        inventory.common -= 10;
+                        power += 490;
+                        showToast(currentLang === 'vi' ? "💰 Bán 10 Common: +490 Power" : "💰 Sold 10 Common: +490 Power");
+                    } else if (type === 'rare' && inventory.rare >= 10) {
+                        inventory.rare -= 10;
+                        power += 555;
+                        showToast(currentLang === 'vi' ? "💰 Bán 10 Rare: +555 Power" : "💰 Sold 10 Rare: +555 Power");
+                    } else {
+                        showToast(currentLang === 'vi' ? "❌ Không đủ 10 vật phẩm để bán!" : "❌ Not enough items to sell!");
+                    }
+                    document.getElementById('val-power').innerText = power;
+                    updateInventoryUI();
+                };
 
-    # --- BẢNG GỖ "YOU CAN DO IT" Ở GÓC BẢN ĐỒ ---
-    wood_rect = pygame.Rect(30, 30, 220, 80)
-    pygame.draw.rect(screen, WOOD_BG, wood_rect, border_radius=8)
-    pygame.draw.rect(screen, WOOD_BORDER, wood_rect, 4, border_radius=8)
+                // --- HỆ THỐNG NÂNG CẤP ITEM (Dựa vào NPC / Draft) ---
+                window.upgradeItem = function(type) {
+                    const distToDraft = Math.hypot(playerGroup.position.x - (-8), playerGroup.position.z - (-5));
+                    if (distToDraft > 4) {
+                        showToast(currentLang === 'vi' ? "❌ Hãy đến gần khu vực Draft (NPC) để nâng cấp!" : "❌ Move close to Draft area to upgrade!");
+                        return;
+                    }
 
-    # Nội dung bảng gỗ
-    sign_text1 = font_medium.render("YOU CAN DO IT!", True, GOLD)
-    sign_text2 = font_small.render(f"Tài khoản: {current_user}", True, WHITE)
-    screen.blit(sign_text1, (wood_rect.centerx - sign_text1.get_width() // 2, 42))
-    screen.blit(sign_text2, (wood_rect.centerx - sign_text2.get_width() // 2, 72))
+                    const currentRate = upgradeRates[type];
+                    const rand = Math.random() * 100;
 
-    # --- HUD THÔNG TIN NGƯỜI CHƠI (Góc trên phải) ---
-    hud_bg = pygame.Rect(620, 25, 250, 70)
-    pygame.draw.rect(screen, (20, 20, 25), hud_bg, border_radius=6)
-    pygame.draw.rect(screen, GOLD, hud_bg, 2, border_radius=6)
+                    if (rand <= currentRate) {
+                        itemLevels[type]++;
+                        playLegendarySound();
+                        showToast(currentLang === 'vi' ? `✨ Nâng cấp ${type} lên Lv.${itemLevels[type]} thành công!` : `✨ Upgraded ${type} to Lv.${itemLevels[type]}!`);
+                        
+                        // Trừ tỉ lệ theo yêu cầu
+                        if (type === 'common') upgradeRates.common = Math.max(5, upgradeRates.common - 5);
+                        if (type === 'rare') upgradeRates.rare = Math.max(5, upgradeRates.rare - 4);
+                        if (type === 'epic') upgradeRates.epic = Math.max(5, upgradeRates.epic - 2.5);
+                        // Legendary giữ nguyên hoặc cố định 0.1%
+                    } else {
+                        showToast(currentLang === 'vi' ? "❌ Nâng cấp thất bại!" : "❌ Upgrade failed!");
+                    }
+                    updateInventoryUI();
+                };
 
-    gold_surf = font_small.render(f"Vàng: {player_data['gold']} G", True, GOLD)
-    item_surf = font_small.render(
-        f"Số lượng Item: {player_data['items']}", True, WHITE
-    )
-    screen.blit(gold_surf, (640, 38))
-    screen.blit(item_surf, (640, 62))
+                // --- HỆ THỐNG ĐEO ĐỒ [F] ---
+                window.equipItem = function(type) {
+                    equippedItemType = type;
+                    document.getElementById('txt-equipped').innerText = type.toUpperCase() + ` (Lv.${itemLevels[type]})`;
+                    showToast(currentLang === 'vi' ? `🛡️ Đã đeo trang bị: ${type.toUpperCase()}` : `🛡️ Equipped: ${type.toUpperCase()}`);
+                };
 
-    # Hướng dẫn di chuyển
-    hint = font_small.render(
-        "Di chuyển tới gần Lão Kiếm Sư (NPC áo đỏ phải màn hình) để nâng cấp item!",
-        True,
-        (180, 180, 180),
-    )
-    screen.blit(hint, (20, 565))
+                // --- CHUYỂN NGÔN NGỮ ANH - VIỆT [V] ---
+                function toggleLanguage() {
+                    currentLang = currentLang === 'vi' ? 'en' : 'vi';
+                    document.getElementById('lang-indicator').innerText = currentLang.toUpperCase();
+                    
+                    const elements = document.querySelectorAll('.lang-txt');
+                    elements.forEach(el => {
+                        el.innerText = el.getAttribute(`data-${currentLang}`);
+                    });
+                    showToast(currentLang === 'vi' ? "🇻🇳 Đã chuyển sang tiếng Việt" : "🇬🇧 Switched to English");
+                }
 
-    # Nếu đang ở trạng thái UPGRADE -> Hiển thị Bảng nâng cấp item
-    if game_state == "UPGRADE":
-      # Lớp phủ mờ nền
-      overlay = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.SRCALPHA)
-      overlay.fill((0, 0, 0, 150))
-      screen.blit(overlay, (0, 0))
+                document.getElementById('picker-body').addEventListener('input', e => { playerBodyMat.color.set(e.target.value); });
+                document.getElementById('picker-skin').addEventListener('input', e => { skinMat.color.set(e.target.value); });
+                document.getElementById('picker-halo').addEventListener('input', e => { haloMat.color.set(e.target.value); });
 
-      # Giao diện bảng nâng cấp sắc nét phong cách cổ trang
-      box_w, box_h = 440, 280
-      box_x = (SCREEN_WIDTH - box_w) // 2
-      box_y = (SCREEN_HEIGHT - box_h) // 2
+                let isDragging = false;
+                let previousMousePosition = { x: 0, y: 0 };
+                let cameraAngleX = 0, cameraAngleY = 0.5, cameraDistance = 10;
 
-      # Vẽ khung bảng gỗ nâng cấp
-      pygame.draw.rect(
-          screen, WOOD_BG, (box_x, box_y, box_w, box_h), border_radius=10
-      )
-      pygame.draw.rect(
-          screen, WOOD_BORDER, (box_x, box_y, box_w, box_h), 5, border_radius=10
-      )
+                window.addEventListener('mousedown', e => {
+                    if(e.target.tagName !== 'CANVAS') return;
+                    isDragging = true;
+                    previousMousePosition = { x: e.clientX, y: e.clientY };
+                });
+                window.addEventListener('mousemove', e => {
+                    if (!isDragging) return;
+                    const deltaX = e.clientX - previousMousePosition.x;
+                    const deltaY = e.clientY - previousMousePosition.y;
+                    cameraAngleX -= deltaX * 0.008;
+                    cameraAngleY = Math.max(0.1, Math.min(1.4, cameraAngleY + deltaY * 0.008));
+                    previousMousePosition = { x: e.clientX, y: e.clientY };
+                });
+                window.addEventListener('mouseup', () => { isDragging = false; });
 
-      # Tiêu đề bảng
-      up_title = font_medium.render("--- KHU VỰC RÈN ĐỒ & NÂNG CẤP ---", True, GOLD)
-      screen.blit(up_title, (box_x + box_w // 2 - up_title.get_width() // 2, box_y + 20))
+                const keys = {};
+                let isInvOpen = false;
+                let isColorOpen = false;
 
-      # Chi tiết luật chơi nâng cấp
-      desc1 = font_small.render("Phí nâng cấp: 200 Vàng | Tỉ lệ: 50%", True, WHITE)
-      desc2 = font_small.render(
-          "Thất bại: Mất phí & TRỪ 1 ITEM (-1)", True, (255, 100, 100)
-      )
-      screen.blit(
-          desc1, (box_x + box_w // 2 - desc1.get_width() // 2, box_y + 65)
-      )
-      screen.blit(
-          desc2, (box_x + box_w // 2 - desc2.get_width() // 2, box_y + 95)
-      )
+                window.addEventListener('keydown', e => {
+                    initAudio();
+                    const k = e.key.toLowerCase();
+                    keys[k] = true;
 
-      # Thông báo kết quả nâng cấp
-      if upgrade_msg:
-        res_surf = font_small.render(upgrade_msg, True, upgrade_color)
-        screen.blit(
-            res_surf, (box_x + box_w // 2 - res_surf.get_width() // 2, box_y + 135)
-        )
+                    if (e.key === 'Tab') {
+                        e.preventDefault();
+                        isInvOpen = !isInvOpen;
+                        document.getElementById('inventory-modal').style.display = isInvOpen ? 'block' : 'none';
+                    }
+                    if (k === 'o') {
+                        isColorOpen = !isColorOpen;
+                        document.getElementById('color-modal').style.display = isColorOpen ? 'block' : 'none';
+                    }
+                    if (k === 'v') {
+                        toggleLanguage();
+                    }
+                    if (k === 'f') {
+                        // Phím tắt đeo vật phẩm mạnh nhất đang có hoặc mặc định
+                        if (inventory.legendary > 0) equipItem('legendary');
+                        else if (inventory.epic > 0) equipItem('epic');
+                        else if (inventory.rare > 0) equipItem('rare');
+                        else if (inventory.common > 0) equipItem('common');
+                    }
+                });
+                window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
-      # Nút bấm Nâng Cấp
-      btn_up = pygame.Rect(box_x + 60, box_y + 180, 140, 40)
-      pygame.draw.rect(screen, RED, btn_up, border_radius=6)
-      btn_up_text = font_medium.render("NÂNG CẤP", True, WHITE)
-      screen.blit(
-          btn_up_text,
-          (
-              btn_up.centerx - btn_up_text.get_width() // 2,
-              btn_up.centery - btn_up_text.get_height() // 2,
-          ),
-      )
+                window.addEventListener('click', (e) => {
+                    if(e.target.tagName !== 'CANVAS') return;
+                    initAudio();
+                    if (isGameEnded || isInvOpen || isColorOpen) return;
 
-      # Nút bấm Đóng / Quay lại
-      btn_close = pygame.Rect(box_x + 240, box_y + 180, 140, 40)
-      pygame.draw.rect(screen, (100, 100, 100), btn_close, border_radius=6)
-      btn_close_text = font_medium.render("QUAY LẠI", True, WHITE)
-      screen.blit(
-          btn_close_text,
-          (
-              btn_close.centerx - btn_close_text.get_width() // 2,
-              btn_close.centery - btn_close_text.get_height() // 2,
-          ),
-      )
+                    playBeepSound();
+                    
+                    // Tính sức mạnh từ trang bị đeo vào (Mỗi cấp nâng cấp tăng +25% sức mạnh, riêng Legendary tăng +200%)
+                    let itemBonusMultiplier = 1;
+                    if (equippedItemType) {
+                        const lvl = itemLevels[equippedItemType];
+                        if (equippedItemType === 'legendary') {
+                            itemBonusMultiplier = 1 + (lvl * 2.0); // +200% mỗi cấp
+                        } else {
+                            itemBonusMultiplier = 1 + ((lvl - 1) * 0.25); // +25% mỗi cấp tiếp theo
+                        }
+                    }
 
-  pygame.display.flip()
-  clock.tick(60)
+                    const totalDmg = Math.floor((power / 2) + swordDmgs[swordLevel]) * itemBonusMultiplier;
 
-pygame.quit()
+                    if (gameStage === 1) {
+                        let monstersKilledInOneHit = Math.floor(totalDmg / redMonsterHP);
+                        if (monstersKilledInOneHit < 1) monstersKilledInOneHit = 1;
+
+                        killCount += monstersKilledInOneHit;
+                        power += monstersKilledInOneHit * 2;
+                        checkUpgradeSword();
+
+                        if (killCount > 999) killCount = 999;
+
+                        document.getElementById('val-kills').innerText = `${killCount}`;
+                        document.getElementById('val-power').innerText = Math.floor(power);
+
+                        for (let i = 0; i < monstersKilledInOneHit; i++) {
+                            handleItemDrop();
+                        }
+
+                        redMonster.visible = false;
+                        setTimeout(() => {
+                            if(gameStage === 1 && !isGameEnded) redMonster.visible = true;
+                        }, 100);
+
+                        if (killCount >= 999) {
+                            showToast(currentLang === 'vi' ? "🌟 ĐÃ ĐẠT 999 MẠNG! CỔNG ĐÃ MỞ!" : "🌟 REACHED 999 KILLS! GATE OPEN!");
+                            gateLightMat.color.setHex(0xffd700);
+                        }
+                    } 
+                    else if (gameStage === 2) {
+                        octopusHP -= totalDmg;
+                        handleItemDrop();
+                        
+                        octopusMonster.visible = false;
+                        setTimeout(() => {
+                            if(gameStage === 2 && !isGameEnded) octopusMonster.visible = true;
+                        }, 100);
+
+                        if (octopusHP <= 0) {
+                            octopusMonster.visible = false;
+                            gameStage = 3;
+                            bossMonster.visible = true;
+                            document.getElementById('boss-hp-bar').style.display = 'block';
+                            showToast(currentLang === 'vi' ? `⚠️ BOSS MA VƯƠNG (${currentBossMaxHP.toLocaleString()} HP) XUẤT HIỆN!` : `⚠️ DEMON BOSS (${currentBossMaxHP.toLocaleString()} HP) APPEARED!`);
+                        }
+                    }
+                    else if (gameStage === 3) {
+                        bossHP -= totalDmg;
+                        if (bossHP < 0) bossHP = 0;
+                        document.getElementById('boss-hp-inner').style.width = `${(bossHP / currentBossMaxHP) * 100}%`;
+                        document.getElementById('boss-hp-text').innerText = `${bossHP} / ${currentBossMaxHP}`;
+
+                        if (bossHP <= 0) {
+                            bossMonster.visible = false;
+                            document.getElementById('boss-hp-bar').style.display = 'none';
+                            gameStage = 4;
+                            showToast(currentLang === 'vi' ? "👑 BOSS ĐÃ GỤC! HÃY BƯỚC QUA CỔNG!" : "👑 BOSS DEFEATED! WALK THROUGH GATE!");
+                            gateLightMat.color.setHex(0xffffff);
+                        }
+                    }
+                });
+
+                function checkUpgradeSword() {
+                    let newLevel = swordLevel;
+                    if (killCount >= 200 && swordLevel < 1) newLevel = 1;
+                    if (killCount >= 500 && swordLevel < 2) newLevel = 2;
+                    if (killCount >= 850 && swordLevel < 3) newLevel = 3;
+
+                    if (newLevel !== swordLevel) {
+                        swordLevel = newLevel;
+                        swordMat.color.setHex(swordColors[swordLevel]);
+                        showToast(`🗡️ ${currentLang === 'vi' ? 'NÂNG CẤP KIẾM' : 'SWORD UPGRADE'}: ${swordNames[swordLevel]}!`);
+                        document.getElementById('val-sword').innerText = `${swordNames[swordLevel]} (+${swordDmgs[swordLevel]})`;
+                        document.getElementById('val-sword').style.color = `#${swordColors[swordLevel].toString(16)}`;
+                    }
+                }
+
+                function showToast(text) {
+                    const toast = document.getElementById('toast');
+                    toast.innerText = text; toast.style.display = 'block';
+                    setTimeout(() => { toast.style.display = 'none'; }, 2200);
+                }
+
+                let walkTime = 0;
+                function animate() {
+                    requestAnimationFrame(animate);
+
+                    const speed = 0.12;
+                    let isMoving = false;
+                    if (keys['w'] || keys['arrowup']) { playerGroup.position.z -= speed; isMoving = true; }
+                    if (keys['s'] || keys['arrowdown']) { playerGroup.position.z += speed; isMoving = true; }
+                    if (keys['a'] || keys['arrowleft']) { playerGroup.position.x -= speed; isMoving = true; }
+                    if (keys['d'] || keys['arrowright']) { playerGroup.position.x += speed; isMoving = true; }
+
+                    if (isMoving) {
+                        walkTime += 0.2;
+                        legL.rotation.x = Math.sin(walkTime) * 0.5;
+                        legR.rotation.x = -Math.sin(walkTime) * 0.5;
+                    } else {
+                        legL.rotation.x = 0; legR.rotation.x = 0;
+                    }
+
+                    playerGroup.position.x = Math.max(-16, Math.min(16, playerGroup.position.x));
+                    playerGroup.position.z = Math.max(-16, Math.min(16, playerGroup.position.z));
+
+                    const distToGate = Math.hypot(playerGroup.position.x - 0, playerGroup.position.z - (-15.5));
+                    const gateMsg = document.getElementById('gate-msg');
+
+                    if (distToGate < 3.5) {
+                        if (gameStage === 1 && killCount >= 999) {
+                            gameStage = 2;
+                            redMonster.visible = false;
+                            octopusMonster.visible = true;
+                            playerGroup.position.z = 6;
+                            showToast(currentLang === 'vi' ? "🐙 QUA CỔNG! TIÊU DIỆT BẠCH TUỘC!" : "🐙 ENTERED GATE! DEFEAT OCTOPUS!");
+                        } else if (gameStage === 4) {
+                            if (gameLoop === 1) {
+                                gameLoop = 2;
+                                power *= 3;
+                                luckMultiplier *= 3;
+                                killCount = 0;
+                                gameStage = 1;
+                                currentBossMaxHP = 5000000;
+                                bossHP = 5000000;
+                                
+                                document.getElementById('val-power').innerText = Math.floor(power);
+                                document.getElementById('val-kills').innerText = killCount;
+                                document.getElementById('val-loop').innerText = gameLoop;
+                                document.getElementById('boss-title').innerText = `BOSS MA VƯƠNG (5.000.000 HP)`;
+                                
+                                playerGroup.position.z = 6;
+                                gateLightMat.color.setHex(0x00ffff);
+                                showToast(currentLang === 'vi' ? "🔄 VÒNG 2! POWER & LUCK ĐÃ NHÂN 3!" : "🔄 LOOP 2! POWER & LUCK *3!");
+                            } else {
+                                isGameEnded = true;
+                                document.getElementById('victory-screen').style.display = 'flex';
+                                document.getElementById('win-title').innerText = "END GAME";
+                                document.getElementById('win-desc').innerText = currentLang === 'vi' ? "✨ CHÚNG MỪNG BẠN ĐÃ HOÀN THÀNH TẤT CẢ THỬ THÁCH VÀ CHINH PHỤC ĐỈNH CAO! ✨" : "✨ CONGRATULATIONS ON COMPLETING ALL CHALLENGES AND REACHING THE END! ✨";
+                            }
+                        } else if (gameStage === 1) {
+                            gateMsg.style.display = 'block';
+                        }
+                    } else {
+                        gateMsg.style.display = 'none';
+                    }
+
+                    camera.position.x = playerGroup.position.x + cameraDistance * Math.sin(cameraAngleX) * Math.cos(cameraAngleY);
+                    camera.position.y = playerGroup.position.y + cameraDistance * Math.sin(cameraAngleY) + 1;
+                    camera.position.z = playerGroup.position.z + cameraDistance * Math.cos(cameraAngleX) * Math.cos(cameraAngleY);
+                    camera.lookAt(playerGroup.position.x, playerGroup.position.y + 1, playerGroup.position.z);
+
+                    starField.rotation.y += 0.0005;
+                    if (bossMonster.visible) bossMonster.rotation.y += 0.01;
+
+                    renderer.render(scene, camera);
+                }
+
+                animate();
+
+            } catch (err) {
+                triggerNO();
+            }
+        }
+
+        window.addEventListener('resize', () => {
+            if (typeof THREE !== 'undefined' && camera && renderer) {
+                camera.aspect = window.innerWidth / window.innerHeight;
+                camera.updateProjectionMatrix();
+                renderer.setSize(window.innerWidth, window.innerHeight);
+            }
+        });
+    </script>
+</body>
+</html>
