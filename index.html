@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mystic Temple 3D - Multi-Loop & Sell System (@viluong673)</title>
+    <title>Mystic Temple 3D - Multi-Language & Upgrade System (@viluong673)</title>
     <style>
         * { box-sizing: border-box; }
         body { margin: 0; overflow: hidden; background: #05020a; font-family: 'Segoe UI', sans-serif; user-select: none; }
@@ -22,15 +22,20 @@
         
         #instructions { position: absolute; bottom: 15px; left: 50%; transform: translateX(-50%); background: rgba(10, 5, 20, 0.85); color: #ddd; padding: 10px 20px; border-radius: 15px; font-size: 13px; text-align: center; border: 1px solid #a335ee; pointer-events: none; z-index: 10; }
         
-        .modal-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(10,5,20,0.95); border: 2px solid #a335ee; padding: 25px; border-radius: 15px; color: #fff; z-index: 100; width: 380px; display: none; box-shadow: 0 0 25px rgba(163,53,238,0.6); }
+        .modal-box { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); background: rgba(10,5,20,0.95); border: 2px solid #a335ee; padding: 25px; border-radius: 15px; color: #fff; z-index: 100; width: 420px; display: none; box-shadow: 0 0 25px rgba(163,53,238,0.6); }
         .modal-box h3 { margin-top: 0; color: #ffd700; text-align: center; }
-        .modal-box button { width: 100%; background: #a335ee; color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 10px; }
+        .modal-box button { width: 100%; background: #a335ee; color: #fff; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; margin-top: 8px; }
         .modal-box button:hover { background: #b950ff; }
         .modal-box label { display: flex; justify-content: space-between; align-items: center; margin: 10px 0; font-size: 14px; }
         
-        .sell-row { display: flex; justify-content: space-between; align-items: center; margin: 8px 0; font-size: 13px; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 5px; }
-        .sell-row button { width: auto; padding: 4px 10px; margin-top: 0; background: #ff4d4d; font-size: 11px; }
-        .sell-row button:hover { background: #ff6666; }
+        .item-row { display: flex; justify-content: space-between; align-items: center; margin: 6px 0; font-size: 13px; background: rgba(255,255,255,0.05); padding: 6px 10px; border-radius: 5px; }
+        .item-row button { width: auto; padding: 4px 8px; margin-top: 0; font-size: 11px; }
+        .btn-sell { background: #ff4d4d; }
+        .btn-sell:hover { background: #ff6666; }
+        .btn-equip { background: #00cc66; }
+        .btn-equip:hover { background: #00ff88; }
+        .btn-up { background: #ff9900; }
+        .btn-up:hover { background: #ffaa33; }
 
         #victory-screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(10,5,20,0.95); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 100; color: #fff; text-align: center; padding: 20px; }
         #victory-screen h1 { font-size: 100px; color: #ffd700; margin: 0; text-shadow: 0 0 30px rgba(255,215,0,0.8); font-family: Impact, sans-serif; }
@@ -53,13 +58,13 @@
     </div>
 
     <div id="toast"></div>
-    <div id="gate-msg">🔒 CẦN ĐỦ 999 MẠNG ĐỂ MỞ CỔNG!</div>
+    <div id="gate-msg" data-vi="🔒 CẦN ĐỦ 999 MẠNG ĐỂ MỞ CỔNG!" data-en="🔒 NEED 999 KILLS TO OPEN GATE!">🔒 CẦN ĐỦ 999 MẠNG ĐỂ MỞ CỔNG!</div>
 
     <div id="hud">
-        <div class="stat-box" id="power-box">⚡ POWER: <span id="val-power">10</span></div>
-        <div class="stat-box" id="sword-box">🗡️ KIẾM: <span id="val-sword" style="color:#aaa;">Common (+10 DMG)</span></div>
-        <div class="stat-box" id="kill-box">💀 QUÁI ĐÃ HẠ: <span id="val-kills">0</span> / 999</div>
-        <div class="stat-box" id="loop-box">🔄 VÒNG CHƠI (LOOP): <span id="val-loop">1</span></div>
+        <div class="stat-box" id="power-box">⚡ <span class="lang-txt" data-vi="SỨC MẠNH" data-en="POWER">SỨC MẠNH</span>: <span id="val-power">10</span></div>
+        <div class="stat-box" id="sword-box">🗡️ <span class="lang-txt" data-vi="KIẾM" data-en="SWORD">KIẾM</span>: <span id="val-sword" style="color:#aaa;">Common Lv.1 (+10 DMG)</span></div>
+        <div class="stat-box" id="kill-box">💀 <span class="lang-txt" data-vi="QUÁI ĐÃ HẠ" data-en="KILLS">QUÁI ĐÃ HẠ</span>: <span id="val-kills">0</span> / 999</div>
+        <div class="stat-box" id="loop-box">🔄 <span class="lang-txt" data-vi="VÒNG CHƠI" data-en="LOOP">VÒNG CHƠI</span>: <span id="val-loop">1</span></div>
     </div>
 
     <div id="boss-hp-bar">
@@ -70,41 +75,63 @@
         <div id="boss-hp-text" style="font-size:11px; margin-top:2px;">2000000 / 2000000</div>
     </div>
 
-    <!-- MODAL TÚI ĐỒ & BÁN VẬT PHẨM (TAB) -->
+    <!-- MODAL TÚI ĐỒ & CHỢ / NÂNG CẤP VẬT PHẨM (TAB) -->
     <div id="inventory-modal" class="modal-box">
-        <h3>🎒 TÚI ĐỒ & CHợ VẬT PHẨM</h3>
-        <p>📦 Common: <span id="inv-common">0</span></p>
+        <h3 class="lang-txt" data-vi="🎒 TÚI ĐỒ & NÂNG CẤP" data-en="🎒 INVENTORY & UPGRADE">🎒 TÚI ĐỒ & NÂNG CẤP</h3>
         
-        <div class="sell-row">
-            <span>🔷 Rare: <span id="inv-rare">0</span></span>
-            <button onclick="sellItem('rare')">BÁN (+510 Power)</button>
+        <div class="item-row">
+            <span>📦 Common (<span id="inv-common">0</span>) [Lv.<span id="lvl-common">1</span>]</span>
+            <div>
+                <button class="btn-sell" onclick="sellItem('common')">Bán (10=490)</button>
+                <button class="btn-up" onclick="upgradeItem('common')">Nâng (<span id="rate-common">60</span>%)</button>
+                <button class="btn-equip" onclick="equipItem('common')">Đeo [F]</button>
+            </div>
         </div>
         
-        <div class="sell-row">
-            <span>💜 Epic: <span id="inv-epic">0</span></span>
-            <button onclick="sellItem('epic')">BÁN (+600 Power)</button>
+        <div class="item-row">
+            <span>🔷 Rare (<span id="inv-rare">0</span>) [Lv.<span id="lvl-rare">1</span>]</span>
+            <div>
+                <button class="btn-sell" onclick="sellItem('rare')">Bán (10=555)</button>
+                <button class="btn-up" onclick="upgradeItem('rare')">Nâng (<span id="rate-rare">45</span>%)</button>
+                <button class="btn-equip" onclick="equipItem('rare')">Đeo [F]</button>
+            </div>
         </div>
         
-        <div class="sell-row">
-            <span>👑 Legendary: <span id="inv-legendary">0</span></span>
-            <span style="font-size:11px; color:#ffd700;">(Không thể bán)</span>
+        <div class="item-row">
+            <span>💜 Epic (<span id="inv-epic">0</span>) [Lv.<span id="lvl-epic">1</span>]</span>
+            <div>
+                <button class="btn-up" onclick="upgradeItem('epic')">Nâng (<span id="rate-epic">30</span>%)</button>
+                <button class="btn-equip" onclick="equipItem('epic')">Đeo [F]</button>
+            </div>
+        </div>
+        
+        <div class="item-row">
+            <span>👑 Legendary (<span id="inv-legendary">0</span>) [Lv.<span id="lvl-legendary">1</span>]</span>
+            <div>
+                <span style="font-size:10px; color:#ffd700;">(MAX)</span>
+                <button class="btn-up" onclick="upgradeItem('legendary')">Nâng (<span id="rate-legendary">0.1</span>%)</button>
+                <button class="btn-equip" onclick="equipItem('legendary')">Đeo [F]</button>
+            </div>
         </div>
 
-        <button onclick="convertCommonToPower()">ĐỔI 5 COMMON ➡️ +500 POWER</button>
-        <div style="text-align:center; font-size:11px; margin-top:10px; color:#aaa;">Bấm [TAB] để đóng</div>
+        <div style="background:rgba(255,255,255,0.08); padding:8px; border-radius:6px; margin-top:10px; font-size:12px; text-align:center;">
+            ✨ <span class="lang-txt" data-vi="Đang đeo" data-en="Equipped">Đang đeo</span>: <span id="txt-equipped" style="color:#00ffcc; font-weight:bold;">Chưa có</span>
+        </div>
+
+        <div style="text-align:center; font-size:11px; margin-top:10px; color:#aaa;" class="lang-txt" data-vi="Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ" data-en="Press [TAB] to close | Press [V] change language">Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ</div>
     </div>
 
-    <!-- MODAL TÙY CHỈNH MÀU (O) -->
+    <!-- NPC / DRAFT NÂNG CẤP HOẶC ĐỔI MÀU (O) -->
     <div id="color-modal" class="modal-box" style="border-color:#00ffcc;">
-        <h3 style="color:#00ffcc;">🎨 TÙY CHỈNH TRANG PHỤC</h3>
-        <label>Màu áo nhân vật: <input type="color" id="picker-body" value="#1a1a24"></label>
-        <label>Màu da nhân vật: <input type="color" id="picker-skin" value="#d4a373"></label>
-        <label>Màu hào quang: <input type="color" id="picker-halo" value="#000000"></label>
-        <div style="text-align:center; font-size:11px; margin-top:15px; color:#aaa;">Bấm [O] để đóng</div>
+        <h3 style="color:#00ffcc;" class="lang-txt" data-vi="🎨 TÙY CHỈNH & KHU DRAFT" data-en="🎨 CUSTOMIZE & DRAFT ZONE">🎨 TÙY CHỈNH & KHU DRAFT</h3>
+        <label><span class="lang-txt" data-vi="Màu áo nhân vật" data-en="Body Color">Màu áo nhân vật</span>: <input type="color" id="picker-body" value="#1a1a24"></label>
+        <label><span class="lang-txt" data-vi="Màu da nhân vật" data-en="Skin Color">Màu da nhân vật</span>: <input type="color" id="picker-skin" value="#d4a373"></label>
+        <label><span class="lang-txt" data-vi="Màu hào quang" data-en="Halo Color">Màu hào quang</span>: <input type="color" id="picker-halo" value="#000000"></label>
+        <div style="text-align:center; font-size:11px; margin-top:15px; color:#aaa;" class="lang-txt" data-vi="Bấm [O] để đóng" data-en="Press [O] to close">Bấm [O] để đóng</div>
     </div>
 
     <div id="instructions">
-        <b>[WASD]</b> Di chuyển | <b>[Giữ Chuột + Kéo]</b> Xoay 360° | <b>[TAB]</b> Túi đồ & Bán | <b>[O]</b> Đổi màu
+        <b>[WASD]</b> <span class="lang-txt" data-vi="Di chuyển" data-en="Move">Di chuyển</span> | <b>[Chuột + Kéo]</b> <span class="lang-txt" data-vi="Xoay" data-en="Rotate">Xoay</span> | <b>[TAB]</b> <span class="lang-txt" data-vi="Túi đồ" data-en="Inventory">Túi đồ</span> | <b>[F]</b> <span class="lang-txt" data-vi="Đeo đồ" data-en="Equip">Đeo đồ</span> | <b>[V]</b> <span class="lang-txt" data-vi="Ngôn ngữ" data-en="Language">Ngôn ngữ</span>: <span id="lang-indicator">VI</span>
     </div>
 
     <div id="victory-screen">
@@ -165,20 +192,24 @@
         } else {
             try {
                 let power = 10, killCount = 0, swordLevel = 0;
-                let luckMultiplier = 1; // Hệ số luck nhân theo vòng chơi
-                let gameLoop = 1; // 1 hoặc 2
-
-                const swordNames = ["Common (+10)", "Rare (+50)", "Epic (+250)", "Legendary (+1000)"];
-                const swordColors = [0xaaaaaa, 0x0088ff, 0xa335ee, 0xffd700];
-                const swordDmgs = [10, 50, 250, 1000];
+                let luckMultiplier = 1;
+                let gameLoop = 1;
+                let currentLang = 'vi'; // 'vi' hoặc 'en'
 
                 const inventory = { common: 0, rare: 0, epic: 0, legendary: 0 };
+                
+                // Cấp độ và tỉ lệ nâng cấp item
+                const itemLevels = { common: 1, rare: 1, epic: 1, legendary: 1 };
+                const upgradeRates = { common: 60, rare: 45, epic: 30, legendary: 0.1 };
+                let equippedItemType = null; // 'common', 'rare', 'epic', 'legendary'
+
+                const swordNames = ["Common", "Rare", "Epic", "Legendary"];
+                const swordColors = [0xaaaaaa, 0x0088ff, 0xa335ee, 0xffd700];
+                const swordDmgs = [10, 50, 250, 1000];
 
                 let gameStage = 1;
                 let redMonsterHP = 50; 
                 let octopusHP = 3000;
-                
-                // Máu Boss theo yêu cầu: Vòng 1 = 2M, Vòng 2 = 5M
                 let currentBossMaxHP = 2000000;
                 let bossHP = 2000000;
                 let isGameEnded = false;
@@ -230,6 +261,23 @@
                 for(let z = -7.5; z <= 7.5; z += 7.5) {
                     if(z !== 0) { createPillar(-15, z); createPillar(15, z); }
                 }
+
+                // --- THÊM KHU NPC / DRAFT NÂNG CẤP TRONG MAP ---
+                function createUpgradeDraftNPC(x, z) {
+                    const group = new THREE.Group();
+                    const bodyMat = new THREE.MeshLambertMaterial({ color: 0xff9900 });
+                    const skinMat = new THREE.MeshLambertMaterial({ color: 0xd4a373 });
+                    const dBody = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.1, 0.5), bodyMat); dBody.position.y = 1.3;
+                    const dHead = new THREE.Mesh(new THREE.BoxGeometry(0.5, 0.5, 0.5), skinMat); dHead.position.y = 2.1;
+                    const ringMat = new THREE.MeshBasicMaterial({ color: 0xffd700 });
+                    const ring = new THREE.Mesh(new THREE.TorusGeometry(1.2, 0.05, 12, 24), ringMat);
+                    ring.rotation.x = Math.PI/2; ring.position.y = 0.05;
+                    group.add(dBody, dHead, ring);
+                    group.position.set(x, 0, z);
+                    platformGroup.add(group);
+                    return group;
+                }
+                createUpgradeDraftNPC(-8, -5); // Đặt NPC/Draft ở khu vực trong map
 
                 const gateGroup = new THREE.Group();
                 const archPillar1 = new THREE.Mesh(new THREE.BoxGeometry(1.2, 8, 1.2), pillarMat); archPillar1.position.set(-4, 3, -16);
@@ -342,29 +390,29 @@
                 });
                 scene.add(bossMonster);
 
-                // --- HỆ THỐNG RƠI ĐỒ VÀ LUCK (Nhân theo luckMultiplier) ---
+                // --- HỆ THỐNG RƠI ĐỒ THEO YÊU CẦU ---
                 function handleItemDrop() {
                     const rand = Math.random() * 100;
                     
-                    // Luck tăng tỉ lệ ra đồ hiếm
-                    const legendaryChance = 0.01 * luckMultiplier;
-                    const epicChance = 0.9 * luckMultiplier;
-                    const rareChance = 19.0 * luckMultiplier;
-                    const commonChance = 39.0 * luckMultiplier;
+                    // Kill 999: khoảng 50-60 common, rare khoảng 20 cái
+                    const legendaryChance = 0.05 * luckMultiplier;
+                    const epicChance = 2.0 * luckMultiplier;
+                    const rareChance = 15.0 * luckMultiplier; // Khoảng 20 cái khi đủ 999 mạng
+                    const commonChance = 45.0 * luckMultiplier; // Khoảng 50-60 cái khi đủ 999 mạng
 
                     if (rand < legendaryChance) {
                         inventory.legendary++;
-                        showToast("👑 TUYỆT VỜI! Rơi vật phẩm: LEGENDARY (+1)");
+                        showToast(currentLang === 'vi' ? "👑 Rơi: LEGENDARY (+1)" : "👑 Drop: LEGENDARY (+1)");
                         playLegendarySound();
                     } else if (rand < epicChance) {
                         inventory.epic++;
-                        showToast("💜 Rơi vật phẩm: Epic (+1)");
+                        showToast(currentLang === 'vi' ? "💜 Rơi: Epic (+1)" : "💜 Drop: Epic (+1)");
                     } else if (rand < rareChance) {
                         inventory.rare++;
-                        showToast("🔷 Rơi vật phẩm: Rare (+1)");
+                        showToast(currentLang === 'vi' ? "🔷 Rơi: Rare (+1)" : "🔷 Drop: Rare (+1)");
                     } else if (rand < commonChance) {
                         inventory.common++;
-                        showToast("📦 Rơi vật phẩm: Common (+1)");
+                        showToast(currentLang === 'vi' ? "📦 Rơi: Common (+1)" : "📦 Drop: Common (+1)");
                     }
                     updateInventoryUI();
                 }
@@ -374,36 +422,80 @@
                     document.getElementById('inv-rare').innerText = inventory.rare;
                     document.getElementById('inv-epic').innerText = inventory.epic;
                     document.getElementById('inv-legendary').innerText = inventory.legendary;
+
+                    document.getElementById('lvl-common').innerText = itemLevels.common;
+                    document.getElementById('lvl-rare').innerText = itemLevels.rare;
+                    document.getElementById('lvl-epic').innerText = itemLevels.epic;
+                    document.getElementById('lvl-legendary').innerText = itemLevels.legendary;
+
+                    document.getElementById('rate-common').innerText = upgradeRates.common;
+                    document.getElementById('rate-rare').innerText = upgradeRates.rare;
+                    document.getElementById('rate-epic').innerText = upgradeRates.epic;
+                    document.getElementById('rate-legendary').innerText = upgradeRates.legendary;
                 }
 
-                window.convertCommonToPower = function() {
-                    if (inventory.common >= 5) {
-                        inventory.common -= 5;
-                        power += 500;
-                        document.getElementById('val-power').innerText = power;
-                        updateInventoryUI();
-                        showToast("⚡ Đã đổi 5 Common thành +500 Power!");
-                    } else {
-                        showToast("❌ Không đủ 5 vật phẩm Common trong túi!");
-                    }
-                };
-
-                // --- BÁN VẬT PHẨM (Rare: +510, Epic: +600, Legendary: Không bán được) ---
+                // --- HỆ THỐNG BÁN ĐỒ ---
                 window.sellItem = function(type) {
-                    if (type === 'rare' && inventory.rare > 0) {
-                        inventory.rare--;
-                        power += 510;
-                        showToast("💰 Bán Rare thành công: +510 Power!");
-                    } else if (type === 'epic' && inventory.epic > 0) {
-                        inventory.epic--;
-                        power += 600;
-                        showToast("💰 Bán Epic thành công: +600 Power!");
+                    if (type === 'common' && inventory.common >= 10) {
+                        inventory.common -= 10;
+                        power += 490;
+                        showToast(currentLang === 'vi' ? "💰 Bán 10 Common: +490 Power" : "💰 Sold 10 Common: +490 Power");
+                    } else if (type === 'rare' && inventory.rare >= 10) {
+                        inventory.rare -= 10;
+                        power += 555;
+                        showToast(currentLang === 'vi' ? "💰 Bán 10 Rare: +555 Power" : "💰 Sold 10 Rare: +555 Power");
                     } else {
-                        showToast("❌ Không có vật phẩm này để bán!");
+                        showToast(currentLang === 'vi' ? "❌ Không đủ 10 vật phẩm để bán!" : "❌ Not enough items to sell!");
                     }
                     document.getElementById('val-power').innerText = power;
                     updateInventoryUI();
                 };
+
+                // --- HỆ THỐNG NÂNG CẤP ITEM (Dựa vào NPC / Draft) ---
+                window.upgradeItem = function(type) {
+                    const distToDraft = Math.hypot(playerGroup.position.x - (-8), playerGroup.position.z - (-5));
+                    if (distToDraft > 4) {
+                        showToast(currentLang === 'vi' ? "❌ Hãy đến gần khu vực Draft (NPC) để nâng cấp!" : "❌ Move close to Draft area to upgrade!");
+                        return;
+                    }
+
+                    const currentRate = upgradeRates[type];
+                    const rand = Math.random() * 100;
+
+                    if (rand <= currentRate) {
+                        itemLevels[type]++;
+                        playLegendarySound();
+                        showToast(currentLang === 'vi' ? `✨ Nâng cấp ${type} lên Lv.${itemLevels[type]} thành công!` : `✨ Upgraded ${type} to Lv.${itemLevels[type]}!`);
+                        
+                        // Trừ tỉ lệ theo yêu cầu
+                        if (type === 'common') upgradeRates.common = Math.max(5, upgradeRates.common - 5);
+                        if (type === 'rare') upgradeRates.rare = Math.max(5, upgradeRates.rare - 4);
+                        if (type === 'epic') upgradeRates.epic = Math.max(5, upgradeRates.epic - 2.5);
+                        // Legendary giữ nguyên hoặc cố định 0.1%
+                    } else {
+                        showToast(currentLang === 'vi' ? "❌ Nâng cấp thất bại!" : "❌ Upgrade failed!");
+                    }
+                    updateInventoryUI();
+                };
+
+                // --- HỆ THỐNG ĐEO ĐỒ [F] ---
+                window.equipItem = function(type) {
+                    equippedItemType = type;
+                    document.getElementById('txt-equipped').innerText = type.toUpperCase() + ` (Lv.${itemLevels[type]})`;
+                    showToast(currentLang === 'vi' ? `🛡️ Đã đeo trang bị: ${type.toUpperCase()}` : `🛡️ Equipped: ${type.toUpperCase()}`);
+                };
+
+                // --- CHUYỂN NGÔN NGỮ ANH - VIỆT [V] ---
+                function toggleLanguage() {
+                    currentLang = currentLang === 'vi' ? 'en' : 'vi';
+                    document.getElementById('lang-indicator').innerText = currentLang.toUpperCase();
+                    
+                    const elements = document.querySelectorAll('.lang-txt');
+                    elements.forEach(el => {
+                        el.innerText = el.getAttribute(`data-${currentLang}`);
+                    });
+                    showToast(currentLang === 'vi' ? "🇻🇳 Đã chuyển sang tiếng Việt" : "🇬🇧 Switched to English");
+                }
 
                 document.getElementById('picker-body').addEventListener('input', e => { playerBodyMat.color.set(e.target.value); });
                 document.getElementById('picker-skin').addEventListener('input', e => { skinMat.color.set(e.target.value); });
@@ -446,6 +538,16 @@
                         isColorOpen = !isColorOpen;
                         document.getElementById('color-modal').style.display = isColorOpen ? 'block' : 'none';
                     }
+                    if (k === 'v') {
+                        toggleLanguage();
+                    }
+                    if (k === 'f') {
+                        // Phím tắt đeo vật phẩm mạnh nhất đang có hoặc mặc định
+                        if (inventory.legendary > 0) equipItem('legendary');
+                        else if (inventory.epic > 0) equipItem('epic');
+                        else if (inventory.rare > 0) equipItem('rare');
+                        else if (inventory.common > 0) equipItem('common');
+                    }
                 });
                 window.addEventListener('keyup', e => keys[e.key.toLowerCase()] = false);
 
@@ -455,7 +557,19 @@
                     if (isGameEnded || isInvOpen || isColorOpen) return;
 
                     playBeepSound();
-                    const totalDmg = Math.floor(power / 2) + swordDmgs[swordLevel];
+                    
+                    // Tính sức mạnh từ trang bị đeo vào (Mỗi cấp nâng cấp tăng +25% sức mạnh, riêng Legendary tăng +200%)
+                    let itemBonusMultiplier = 1;
+                    if (equippedItemType) {
+                        const lvl = itemLevels[equippedItemType];
+                        if (equippedItemType === 'legendary') {
+                            itemBonusMultiplier = 1 + (lvl * 2.0); // +200% mỗi cấp
+                        } else {
+                            itemBonusMultiplier = 1 + ((lvl - 1) * 0.25); // +25% mỗi cấp tiếp theo
+                        }
+                    }
+
+                    const totalDmg = Math.floor((power / 2) + swordDmgs[swordLevel]) * itemBonusMultiplier;
 
                     if (gameStage === 1) {
                         let monstersKilledInOneHit = Math.floor(totalDmg / redMonsterHP);
@@ -468,7 +582,7 @@
                         if (killCount > 999) killCount = 999;
 
                         document.getElementById('val-kills').innerText = `${killCount}`;
-                        document.getElementById('val-power').innerText = power;
+                        document.getElementById('val-power').innerText = Math.floor(power);
 
                         for (let i = 0; i < monstersKilledInOneHit; i++) {
                             handleItemDrop();
@@ -480,7 +594,7 @@
                         }, 100);
 
                         if (killCount >= 999) {
-                            showToast("🌟 ĐÃ ĐẠT 999 MẠNG! CỔNG ĐÃ MỞ!");
+                            showToast(currentLang === 'vi' ? "🌟 ĐÃ ĐẠT 999 MẠNG! CỔNG ĐÃ MỞ!" : "🌟 REACHED 999 KILLS! GATE OPEN!");
                             gateLightMat.color.setHex(0xffd700);
                         }
                     } 
@@ -498,7 +612,7 @@
                             gameStage = 3;
                             bossMonster.visible = true;
                             document.getElementById('boss-hp-bar').style.display = 'block';
-                            showToast(`⚠️ BOSS MA VƯƠNG (${currentBossMaxHP.toLocaleString()} HP) ĐÃ XUẤT HIỆN!`);
+                            showToast(currentLang === 'vi' ? `⚠️ BOSS MA VƯƠNG (${currentBossMaxHP.toLocaleString()} HP) XUẤT HIỆN!` : `⚠️ DEMON BOSS (${currentBossMaxHP.toLocaleString()} HP) APPEARED!`);
                         }
                     }
                     else if (gameStage === 3) {
@@ -511,7 +625,7 @@
                             bossMonster.visible = false;
                             document.getElementById('boss-hp-bar').style.display = 'none';
                             gameStage = 4;
-                            showToast("👑 BOSS ĐÃ GỤC! HÃY BƯỚC QUA CỔNG CUỐI CÙNG!");
+                            showToast(currentLang === 'vi' ? "👑 BOSS ĐÃ GỤC! HÃY BƯỚC QUA CỔNG!" : "👑 BOSS DEFEATED! WALK THROUGH GATE!");
                             gateLightMat.color.setHex(0xffffff);
                         }
                     }
@@ -526,8 +640,8 @@
                     if (newLevel !== swordLevel) {
                         swordLevel = newLevel;
                         swordMat.color.setHex(swordColors[swordLevel]);
-                        showToast(`🗡️ NÂNG CẤP KIẾM: ${swordNames[swordLevel]}!`);
-                        document.getElementById('val-sword').innerText = swordNames[swordLevel];
+                        showToast(`🗡️ ${currentLang === 'vi' ? 'NÂNG CẤP KIẾM' : 'SWORD UPGRADE'}: ${swordNames[swordLevel]}!`);
+                        document.getElementById('val-sword').innerText = `${swordNames[swordLevel]} (+${swordDmgs[swordLevel]})`;
                         document.getElementById('val-sword').style.color = `#${swordColors[swordLevel].toString(16)}`;
                     }
                 }
@@ -569,11 +683,9 @@
                             redMonster.visible = false;
                             octopusMonster.visible = true;
                             playerGroup.position.z = 6;
-                            showToast("🐙 ĐÃ QUA CỔNG! HÃY TIÊU DIỆT BẠCH TUỘC!");
+                            showToast(currentLang === 'vi' ? "🐙 QUA CỔNG! TIÊU DIỆT BẠCH TUỘC!" : "🐙 ENTERED GATE! DEFEAT OCTOPUS!");
                         } else if (gameStage === 4) {
-                            // --- XỬ LÝ CƠ CHẾ VÒNG CHƠI (LOOP) ---
                             if (gameLoop === 1) {
-                                // Lần 1 qua cổng: Nhân *3 power và luck, reset vòng chơi với máu boss 5M
                                 gameLoop = 2;
                                 power *= 3;
                                 luckMultiplier *= 3;
@@ -582,20 +694,19 @@
                                 currentBossMaxHP = 5000000;
                                 bossHP = 5000000;
                                 
-                                document.getElementById('val-power').innerText = power;
+                                document.getElementById('val-power').innerText = Math.floor(power);
                                 document.getElementById('val-kills').innerText = killCount;
                                 document.getElementById('val-loop').innerText = gameLoop;
                                 document.getElementById('boss-title').innerText = `BOSS MA VƯƠNG (5.000.000 HP)`;
                                 
                                 playerGroup.position.z = 6;
                                 gateLightMat.color.setHex(0x00ffff);
-                                showToast("🔄 CHÀO MỪNG ĐẾN VÒNG 2! POWER & LUCK ĐÃ ĐƯỢC NHÂN 3!");
+                                showToast(currentLang === 'vi' ? "🔄 VÒNG 2! POWER & LUCK ĐÃ NHÂN 3!" : "🔄 LOOP 2! POWER & LUCK *3!");
                             } else {
-                                // Lần 2 qua cổng: HIỆN CHỮ END GAME VÀ TÊN TÁC GIẢ
                                 isGameEnded = true;
                                 document.getElementById('victory-screen').style.display = 'flex';
                                 document.getElementById('win-title').innerText = "END GAME";
-                                document.getElementById('win-desc').innerText = "✨ CHÚNG MỪNG BẠN ĐÃ HOÀN THÀNH TẤT CẢ THỬ THÁCH VÀ CHINH PHỤC ĐỈNH CAO CAO NHẤT! ✨";
+                                document.getElementById('win-desc').innerText = currentLang === 'vi' ? "✨ CHÚNG MỪNG BẠN ĐÃ HOÀN THÀNH TẤT CẢ THỬ THÁCH VÀ CHINH PHỤC ĐỈNH CAO! ✨" : "✨ CONGRATULATIONS ON COMPLETING ALL CHALLENGES AND REACHING THE END! ✨";
                             }
                         } else if (gameStage === 1) {
                             gateMsg.style.display = 'block';
