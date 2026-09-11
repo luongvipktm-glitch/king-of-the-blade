@@ -284,6 +284,23 @@
             line-height: 1.5;
         }
 
+        #play-again-btn {
+            margin-top: 25px;
+            background: #a335ee;
+            color: #fff;
+            border: none;
+            padding: 14px 34px;
+            border-radius: 10px;
+            font-weight: bold;
+            font-size: 20px;
+            cursor: pointer;
+            box-shadow: 0 0 15px rgba(163,53,238,0.7);
+        }
+
+        #play-again-btn:hover {
+            background: #b950ff;
+        }
+
         @media(max-width:700px) {
             #boss-hp-bar {
                 width: 90vw;
@@ -513,7 +530,7 @@
                     onclick="upgradeItem('legendary')"
                 >
                     Nâng
-                    (<span id="rate-legendary">0.1</span>%)
+                    (<span id="rate-legendary">0.009</span>%)
                 </button>
 
                 <button
@@ -562,10 +579,10 @@
                 color:#aaa;
             "
             class="lang-txt"
-            data-vi="Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ"
-            data-en="Press [TAB] to close | Press [V] change language"
+            data-vi="Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ | Bấm [G] gộp 4 Legendary Lv.2 thành kiếm GoD"
+            data-en="Press [TAB] to close | Press [V] change language | Press [G] to fuse 4 Legendary Lv.2 into GoD sword"
         >
-            Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ
+            Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ | Bấm [G] gộp 4 Legendary Lv.2 thành kiếm GoD
         </div>
 
     </div>
@@ -635,6 +652,25 @@
             >
         </label>
 
+        <label>
+            <span
+                class="lang-txt"
+                data-vi="Da vũ trụ (bật/tắt)"
+                data-en="Cosmic Skin (on/off)"
+            >
+                Da vũ trụ (bật/tắt)
+            </span>:
+
+            <button
+                id="btn-cosmic-skin"
+                type="button"
+                style="width:auto;padding:6px 14px;margin-top:0;"
+                onclick="toggleCosmicSkin()"
+            >
+                🌌 <span class="lang-txt" data-vi="BẬT" data-en="ON">BẬT</span>
+            </button>
+        </label>
+
         <div
             style="text-align:center;font-size:11px;margin-top:15px;color:#aaa;"
             class="lang-txt"
@@ -697,6 +733,17 @@
 
         |
 
+        <b>[G]</b>
+        <span
+            class="lang-txt"
+            data-vi="Gộp kiếm GoD"
+            data-en="Fuse GoD Sword"
+        >
+            Gộp kiếm GoD
+        </span>
+
+        |
+
         <b>[V]</b>
         <span
             class="lang-txt"
@@ -727,6 +774,20 @@
                 line-height:1.6;
             "
         ></p>
+
+        <button
+            id="play-again-btn"
+            type="button"
+            onclick="restartGame()"
+        >
+            <span
+                class="lang-txt"
+                data-vi="Chơi lại"
+                data-en="Play"
+            >
+                Chơi lại
+            </span> -->
+        </button>
 
         <p
             style="
@@ -876,6 +937,62 @@
             });
         }
 
+        function playGoDFusionSound() {
+
+            if (!audioCtx) return;
+
+            const notes = [
+                392.00,
+                523.25,
+                659.25,
+                783.99,
+                1046.50,
+                1318.51
+            ];
+
+            notes.forEach((freq,index) => {
+
+                setTimeout(() => {
+
+                    if (!audioCtx) return;
+
+                    const osc =
+                        audioCtx.createOscillator();
+
+                    const gain =
+                        audioCtx.createGain();
+
+                    osc.type = 'sine';
+
+                    osc.frequency.setValueAtTime(
+                        freq,
+                        audioCtx.currentTime
+                    );
+
+                    gain.gain.setValueAtTime(
+                        0.35,
+                        audioCtx.currentTime
+                    );
+
+                    gain.gain.exponentialRampToValueAtTime(
+                        0.001,
+                        audioCtx.currentTime + 0.4
+                    );
+
+                    osc.connect(gain);
+                    gain.connect(audioCtx.destination);
+
+                    osc.start();
+
+                    osc.stop(
+                        audioCtx.currentTime + 0.4
+                    );
+
+                }, index * 120);
+
+            });
+        }
+
         if (typeof THREE === 'undefined') {
 
             triggerNO();
@@ -895,6 +1012,10 @@
                 let gameLoop = 1;
 
                 let currentLang = 'vi';
+
+                let hasGoDSword = false;
+
+                let isCosmicSkinOn = true;
 
                 const inventory = {
 
@@ -919,7 +1040,7 @@
                     common: 60,
                     rare: 45,
                     epic: 30,
-                    legendary: 0.1
+                    legendary: 0.009
 
                 };
 
@@ -945,6 +1066,8 @@
                     250,
                     1000
                 ];
+
+                const GOD_SWORD_DMG = 9999;
 
                 let gameStage = 1;
 
@@ -1532,6 +1655,129 @@
                 );
 
                 /* =========================
+                   COSMIC SKIN TEXTURE
+                ========================= */
+
+                function createCosmicTexture() {
+
+                    const canvas =
+                        document.createElement('canvas');
+
+                    canvas.width = 256;
+                    canvas.height = 256;
+
+                    const ctx =
+                        canvas.getContext('2d');
+
+                    const gradient =
+                        ctx.createRadialGradient(
+                            128, 128, 10,
+                            128, 128, 180
+                        );
+
+                    gradient.addColorStop(0, '#3a0ca3');
+                    gradient.addColorStop(0.35, '#7209b7');
+                    gradient.addColorStop(0.6, '#240046');
+                    gradient.addColorStop(0.85, '#10002b');
+                    gradient.addColorStop(1, '#03000a');
+
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, 256, 256);
+
+                    const nebulaColors = [
+                        'rgba(255,0,200,0.25)',
+                        'rgba(0,200,255,0.22)',
+                        'rgba(120,0,255,0.25)',
+                        'rgba(255,120,0,0.18)'
+                    ];
+
+                    for (
+                        let i = 0;
+                        i < 14;
+                        i++
+                    ) {
+
+                        ctx.fillStyle =
+                            nebulaColors[
+                                i % nebulaColors.length
+                            ];
+
+                        const bx =
+                            Math.random() * 256;
+
+                        const by =
+                            Math.random() * 256;
+
+                        const br =
+                            20 + Math.random() * 45;
+
+                        ctx.beginPath();
+
+                        ctx.arc(
+                            bx,
+                            by,
+                            br,
+                            0,
+                            Math.PI * 2
+                        );
+
+                        ctx.fill();
+
+                    }
+
+                    for (
+                        let i = 0;
+                        i < 220;
+                        i++
+                    ) {
+
+                        const sx =
+                            Math.random() * 256;
+
+                        const sy =
+                            Math.random() * 256;
+
+                        const size =
+                            Math.random() * 1.6 + 0.2;
+
+                        const bright =
+                            0.4 + Math.random() * 0.6;
+
+                        ctx.fillStyle =
+                            `rgba(255,255,255,${bright})`;
+
+                        ctx.beginPath();
+
+                        ctx.arc(
+                            sx,
+                            sy,
+                            size,
+                            0,
+                            Math.PI * 2
+                        );
+
+                        ctx.fill();
+
+                    }
+
+                    const texture =
+                        new THREE.CanvasTexture(
+                            canvas
+                        );
+
+                    texture.wrapS =
+                        THREE.RepeatWrapping;
+
+                    texture.wrapT =
+                        THREE.RepeatWrapping;
+
+                    return texture;
+                }
+
+                const cosmicTexture =
+                    createCosmicTexture();
+
+                /* =========================
                    PLAYER
                 ========================= */
 
@@ -1545,7 +1791,10 @@
 
                 const skinMat =
                     new THREE.MeshStandardMaterial({
-                        color: 0xd4a373
+                        color: 0xd4a373,
+                        map: cosmicTexture,
+                        emissive: 0x1a0033,
+                        emissiveIntensity: 0.4
                     });
 
                 const body =
@@ -2630,6 +2879,92 @@
                     };
 
                 /* =========================
+                   FUSE GOD SWORD
+                   4 x Legendary Lv.2 -> GoD Sword 9999 DMG
+                ========================= */
+
+                window.fuseGoDSword =
+                    function() {
+
+                        if (
+                            hasGoDSword
+                        ) {
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? "⚔️ BẠN ĐÃ CÓ KIẾM GoD RỒI!"
+                                : "⚔️ YOU ALREADY HAVE THE GoD SWORD!"
+                            );
+
+                            return;
+                        }
+
+                        if (
+                            itemLevels.legendary < 2
+                        ) {
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? "❌ LEGENDARY PHẢI ĐẠT LV.2 TRỞ LÊN!"
+                                : "❌ LEGENDARY MUST BE LV.2 OR HIGHER!"
+                            );
+
+                            return;
+                        }
+
+                        if (
+                            inventory.legendary < 4
+                        ) {
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? "❌ CẦN 4 LEGENDARY LV.2 ĐỂ GỘP!"
+                                : "❌ NEED 4 LEGENDARY LV.2 TO FUSE!"
+                            );
+
+                            return;
+                        }
+
+                        inventory.legendary -= 4;
+
+                        hasGoDSword = true;
+
+                        swordMat.color.setHex(
+                            0xffffff
+                        );
+
+                        swordMat.color.set(
+                            'white'
+                        );
+
+                        swordGroup.scale.set(
+                            1.4,
+                            1.6,
+                            1.4
+                        );
+
+                        document.getElementById(
+                            'val-sword'
+                        ).innerText =
+                            `GoD (+${GOD_SWORD_DMG} DMG)`;
+
+                        document.getElementById(
+                            'val-sword'
+                        ).style.color =
+                            '#ffd700';
+
+                        playGoDFusionSound();
+
+                        showToast(
+                            currentLang === 'vi'
+                            ? "🌟 GỘP THÀNH CÔNG! KIẾM GoD ĐÃ SẴN SÀNG! (+9999 DMG)"
+                            : "🌟 FUSION SUCCESS! GoD SWORD READY! (+9999 DMG)"
+                        );
+
+                        updateInventoryUI();
+                    };
+
+                /* =========================
                    LANGUAGE
                 ========================= */
 
@@ -2665,6 +3000,84 @@
                         : "🇬🇧 SWITCHED TO ENGLISH"
                     );
                 }
+
+                /* =========================
+                   COSMIC SKIN TOGGLE
+                ========================= */
+
+                window.toggleCosmicSkin =
+                    function() {
+
+                        isCosmicSkinOn =
+                            !isCosmicSkinOn;
+
+                        skinMat.map =
+                            isCosmicSkinOn
+                            ? cosmicTexture
+                            : null;
+
+                        skinMat.emissiveIntensity =
+                            isCosmicSkinOn
+                            ? 0.4
+                            : 0;
+
+                        skinMat.needsUpdate = true;
+
+                        const btn =
+                            document.getElementById(
+                                'btn-cosmic-skin'
+                            );
+
+                        const label =
+                            btn.querySelector(
+                                '.lang-txt'
+                            );
+
+                        if (label) {
+
+                            label.setAttribute(
+                                'data-vi',
+                                isCosmicSkinOn
+                                ? 'BẬT'
+                                : 'TẮT'
+                            );
+
+                            label.setAttribute(
+                                'data-en',
+                                isCosmicSkinOn
+                                ? 'ON'
+                                : 'OFF'
+                            );
+
+                            label.innerText =
+                                currentLang === 'vi'
+                                ? (
+                                    isCosmicSkinOn
+                                    ? 'BẬT'
+                                    : 'TẮT'
+                                )
+                                : (
+                                    isCosmicSkinOn
+                                    ? 'ON'
+                                    : 'OFF'
+                                );
+
+                        }
+
+                        showToast(
+                            currentLang === 'vi'
+                            ? (
+                                isCosmicSkinOn
+                                ? "🌌 ĐÃ BẬT DA VŨ TRỤ!"
+                                : "🌌 ĐÃ TẮT DA VŨ TRỤ!"
+                            )
+                            : (
+                                isCosmicSkinOn
+                                ? "🌌 COSMIC SKIN ON!"
+                                : "🌌 COSMIC SKIN OFF!"
+                            )
+                        );
+                    };
 
                 /* =========================
                    COLOR
@@ -2887,6 +3300,12 @@
 
                         }
 
+                        if (k === 'g') {
+
+                            fuseGoDSword();
+
+                        }
+
                         if (k === 'f') {
 
                             if (
@@ -3004,12 +3423,17 @@
 
                         }
 
+                        const baseSwordDmg =
+                            hasGoDSword
+                            ? GOD_SWORD_DMG
+                            : swordDmgs[
+                                swordLevel
+                            ];
+
                         const totalDmg =
                             Math.floor(
                                 (power / 2) +
-                                swordDmgs[
-                                    swordLevel
-                                ]
+                                baseSwordDmg
                             ) *
                             itemBonusMultiplier;
 
@@ -3219,6 +3643,11 @@
 
                 function checkUpgradeSword() {
 
+                    if (
+                        hasGoDSword
+                    )
+                        return;
+
                     let newLevel =
                         swordLevel;
 
@@ -3316,6 +3745,17 @@
                             2200
                         );
                 }
+
+                /* =========================
+                   RESTART GAME
+                ========================= */
+
+                window.restartGame =
+                    function() {
+
+                        window.location.reload();
+
+                    };
 
                 /* =========================
                    GAME LOOP
