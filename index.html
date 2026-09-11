@@ -475,6 +475,25 @@
 
     </div>
 
+    <div id="boss-hp-bar">
+
+        <div
+            id="boss-title"
+            style="font-size:12px;margin-bottom:3px;font-weight:bold;color:#ff4d4d;"
+        >
+            BOSS MA VƯƠNG (2.000.000 HP)
+        </div>
+
+        <div style="background:#222;border-radius:6px;overflow:hidden;">
+            <div id="boss-hp-inner"></div>
+        </div>
+
+        <div id="boss-hp-text" style="font-size:11px;margin-top:2px;">
+            2000000 / 2000000
+        </div>
+
+    </div>
+
     <!-- INVENTORY -->
 
     <div id="inventory-modal" class="modal-box">
@@ -2592,10 +2611,42 @@
                             child.material
                         ) {
 
-                            child.material =
-                                new THREE.MeshLambertMaterial({
-                                    color: 0x440000
-                                });
+                            /*
+                               Giữ mắt trắng/đỏ để boss
+                               không bị nhuộm thành 1 khối
+                               tròn trơn không chi tiết
+                            */
+
+                            const isEyeWhite =
+                                child.material.color &&
+                                child.material.color.getHex() === 0xffffff;
+
+                            const isEyeIris =
+                                child.material.color &&
+                                child.material.color.getHex() === 0x00cccc;
+
+                            if (isEyeWhite) {
+
+                                child.material =
+                                    new THREE.MeshBasicMaterial({
+                                        color: 0xffffff
+                                    });
+
+                            } else if (isEyeIris) {
+
+                                child.material =
+                                    new THREE.MeshBasicMaterial({
+                                        color: 0xff2200
+                                    });
+
+                            } else {
+
+                                child.material =
+                                    new THREE.MeshLambertMaterial({
+                                        color: 0x660000
+                                    });
+
+                            }
 
                         }
 
