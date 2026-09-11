@@ -301,6 +301,16 @@
             background: #b950ff;
         }
 
+        .modal-box input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border-radius: 6px;
+            border: none;
+            margin: 10px 0;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+
         @media(max-width:700px) {
             #boss-hp-bar {
                 width: 90vw;
@@ -379,6 +389,14 @@
                 VÒNG CHƠI
             </span>:
             <span id="val-loop">1</span>
+        </div>
+
+        <div class="stat-box" id="account-box" style="border-color:#ffd700;color:#ffd700;">
+            🔑
+            <span class="lang-txt" data-vi="TK" data-en="ACC">
+                TK
+            </span>:
+            <span id="val-account">--</span>
         </div>
 
     </div>
@@ -530,7 +548,7 @@
                     onclick="upgradeItem('legendary')"
                 >
                     Nâng
-                    (<span id="rate-legendary">0.009</span>%)
+                    (<span id="rate-legendary">0.09</span>%)
                 </button>
 
                 <button
@@ -579,10 +597,10 @@
                 color:#aaa;
             "
             class="lang-txt"
-            data-vi="Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ | Bấm [G] gộp 4 Legendary Lv.2 thành kiếm GoD"
-            data-en="Press [TAB] to close | Press [V] change language | Press [G] to fuse 4 Legendary Lv.2 into GoD sword"
+            data-vi="Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ | Bấm [G] gộp 2 Legendary Lv.2 thành kiếm GoD"
+            data-en="Press [TAB] to close | Press [V] change language | Press [G] to fuse 2 Legendary Lv.2 into GoD sword"
         >
-            Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ | Bấm [G] gộp 4 Legendary Lv.2 thành kiếm GoD
+            Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ | Bấm [G] gộp 2 Legendary Lv.2 thành kiếm GoD
         </div>
 
     </div>
@@ -682,6 +700,68 @@
 
     </div>
 
+    <!-- LOGIN / SAVE -->
+
+    <div
+        id="login-modal"
+        class="modal-box"
+        style="border-color:#ffd700;"
+    >
+
+        <h3
+            style="color:#ffd700;"
+            class="lang-txt"
+            data-vi="🔑 ĐĂNG NHẬP / LƯU TIẾN TRÌNH"
+            data-en="🔑 LOGIN / SAVE PROGRESS"
+        >
+            🔑 ĐĂNG NHẬP / LƯU TIẾN TRÌNH
+        </h3>
+
+        <p
+            class="lang-txt"
+            style="font-size:12px;color:#ccc;"
+            data-vi="Nhập tên/mã (vd: vv/6726). Nếu tài khoản đã tồn tại, tiến trình cũ sẽ được tải lại. Nếu chưa có, tiến trình hiện tại sẽ được lưu vào tài khoản này."
+            data-en="Enter name/code (e.g. vv/6726). If the account already exists, your saved progress will be loaded. If not, your current progress will be saved to this account."
+        >
+            Nhập tên/mã (vd: vv/6726). Nếu tài khoản đã tồn tại, tiến trình cũ sẽ được tải lại. Nếu chưa có, tiến trình hiện tại sẽ được lưu vào tài khoản này.
+        </p>
+
+        <input
+            type="text"
+            id="login-input"
+            placeholder="vv/6726"
+            autocomplete="off"
+        >
+
+        <button
+            type="button"
+            onclick="loginAccount()"
+        >
+            <span
+                class="lang-txt"
+                data-vi="Xác nhận"
+                data-en="Confirm"
+            >
+                Xác nhận
+            </span>
+        </button>
+
+        <div
+            id="login-status"
+            style="text-align:center;font-size:12px;margin-top:8px;color:#ff6666;"
+        ></div>
+
+        <div
+            style="text-align:center;font-size:11px;margin-top:15px;color:#aaa;"
+            class="lang-txt"
+            data-vi="Bấm [J] để đóng"
+            data-en="Press [J] to close"
+        >
+            Bấm [J] để đóng
+        </div>
+
+    </div>
+
     <div id="instructions">
 
         <b>[WASD]</b>
@@ -740,6 +820,17 @@
             data-en="Fuse GoD Sword"
         >
             Gộp kiếm GoD
+        </span>
+
+        |
+
+        <b>[J]</b>
+        <span
+            class="lang-txt"
+            data-vi="Đăng nhập/Lưu"
+            data-en="Login/Save"
+        >
+            Đăng nhập/Lưu
         </span>
 
         |
@@ -1040,9 +1131,15 @@
                     common: 60,
                     rare: 45,
                     epic: 30,
-                    legendary: 0.009
+                    legendary: 0.09
 
                 };
+
+                let currentAccountName = null;
+
+                let currentAccountPass = null;
+
+                let isLoginOpen = false;
 
                 let equippedItemType = null;
 
@@ -2723,6 +2820,8 @@
                             Math.floor(power);
 
                         updateInventoryUI();
+
+                        saveCurrentAccount();
                     };
 
                 /* =========================
@@ -2840,6 +2939,8 @@
                         }
 
                         updateInventoryUI();
+
+                        saveCurrentAccount();
                     };
 
                 /* =========================
@@ -2876,6 +2977,8 @@
                             ? `🛡️ ĐÃ ĐEO ${type.toUpperCase()} LV.${itemLevels[type]}`
                             : `🛡️ EQUIPPED ${type.toUpperCase()} LV.${itemLevels[type]}`
                         );
+
+                        saveCurrentAccount();
                     };
 
                 /* =========================
@@ -2913,19 +3016,19 @@
                         }
 
                         if (
-                            inventory.legendary < 4
+                            inventory.legendary < 2
                         ) {
 
                             showToast(
                                 currentLang === 'vi'
-                                ? "❌ CẦN 4 LEGENDARY LV.2 ĐỂ GỘP!"
-                                : "❌ NEED 4 LEGENDARY LV.2 TO FUSE!"
+                                ? "❌ CẦN 2 LEGENDARY LV.2 ĐỂ GỘP!"
+                                : "❌ NEED 2 LEGENDARY LV.2 TO FUSE!"
                             );
 
                             return;
                         }
 
-                        inventory.legendary -= 4;
+                        inventory.legendary -= 2;
 
                         hasGoDSword = true;
 
@@ -2962,6 +3065,8 @@
                         );
 
                         updateInventoryUI();
+
+                        saveCurrentAccount();
                     };
 
                 /* =========================
@@ -2999,6 +3104,8 @@
                         ? "🇻🇳 ĐÃ CHUYỂN SANG TIẾNG VIỆT"
                         : "🇬🇧 SWITCHED TO ENGLISH"
                     );
+
+                    saveCurrentAccount();
                 }
 
                 /* =========================
@@ -3077,6 +3184,8 @@
                                 : "🌌 COSMIC SKIN OFF!"
                             )
                         );
+
+                        saveCurrentAccount();
                     };
 
                 /* =========================
@@ -3093,6 +3202,8 @@
                             e.target.value
                         );
 
+                        saveCurrentAccount();
+
                     }
                 );
 
@@ -3106,6 +3217,8 @@
                             e.target.value
                         );
 
+                        saveCurrentAccount();
+
                     }
                 );
 
@@ -3118,6 +3231,8 @@
                         haloMat.color.set(
                             e.target.value
                         );
+
+                        saveCurrentAccount();
 
                     }
                 );
@@ -3255,6 +3370,23 @@
                     'keydown',
                     e => {
 
+                        if (
+                            e.target &&
+                            e.target.id ===
+                            'login-input'
+                        ) {
+
+                            if (
+                                e.key === 'Enter'
+                            ) {
+
+                                loginAccount();
+
+                            }
+
+                            return;
+                        }
+
                         initAudio();
 
                         const k =
@@ -3303,6 +3435,41 @@
                         if (k === 'g') {
 
                             fuseGoDSword();
+
+                        }
+
+                        if (k === 'j') {
+
+                            isLoginOpen =
+                                !isLoginOpen;
+
+                            document.getElementById(
+                                'login-modal'
+                            ).style.display =
+                                isLoginOpen
+                                ? 'block'
+                                : 'none';
+
+                            document.getElementById(
+                                'login-status'
+                            ).innerText = '';
+
+                            if (
+                                isLoginOpen
+                            ) {
+
+                                setTimeout(
+                                    () => {
+
+                                        document.getElementById(
+                                            'login-input'
+                                        ).focus();
+
+                                    },
+                                    50
+                                );
+
+                            }
 
                         }
 
@@ -3385,7 +3552,8 @@
                         if (
                             isGameEnded ||
                             isInvOpen ||
-                            isColorOpen
+                            isColorOpen ||
+                            isLoginOpen
                         )
                             return;
 
@@ -3707,6 +3875,8 @@
                                 swordLevel
                             ].toString(16);
 
+                        saveCurrentAccount();
+
                     }
 
                 }
@@ -3745,6 +3915,458 @@
                             2200
                         );
                 }
+
+                /* =========================
+                   ACCOUNT SAVE / LOGIN
+                ========================= */
+
+                function getSaveKey(name, pass) {
+
+                    return (
+                        'mystic_temple_save_' +
+                        name.trim().toLowerCase() +
+                        '_' +
+                        pass.trim()
+                    );
+                }
+
+                function collectGameState() {
+
+                    return {
+
+                        power: power,
+
+                        killCount: killCount,
+
+                        swordLevel: swordLevel,
+
+                        luckMultiplier: luckMultiplier,
+
+                        gameLoop: gameLoop,
+
+                        hasGoDSword: hasGoDSword,
+
+                        isCosmicSkinOn: isCosmicSkinOn,
+
+                        inventory: {
+                            common: inventory.common,
+                            rare: inventory.rare,
+                            epic: inventory.epic,
+                            legendary: inventory.legendary
+                        },
+
+                        itemLevels: {
+                            common: itemLevels.common,
+                            rare: itemLevels.rare,
+                            epic: itemLevels.epic,
+                            legendary: itemLevels.legendary
+                        },
+
+                        upgradeRates: {
+                            common: upgradeRates.common,
+                            rare: upgradeRates.rare,
+                            epic: upgradeRates.epic,
+                            legendary: upgradeRates.legendary
+                        },
+
+                        equippedItemType: equippedItemType,
+
+                        gameStage: gameStage,
+
+                        octopusHP: octopusHP,
+
+                        currentBossMaxHP: currentBossMaxHP,
+
+                        bossHP: bossHP,
+
+                        currentLang: currentLang,
+
+                        playerX: playerGroup.position.x,
+
+                        playerZ: playerGroup.position.z,
+
+                        bodyColor:
+                            '#' +
+                            playerBodyMat.color.getHexString(),
+
+                        skinColor:
+                            '#' +
+                            skinMat.color.getHexString(),
+
+                        haloColor:
+                            '#' +
+                            haloMat.color.getHexString()
+
+                    };
+                }
+
+                function applyGameState(data) {
+
+                    power = data.power;
+
+                    killCount = data.killCount;
+
+                    swordLevel = data.swordLevel;
+
+                    luckMultiplier = data.luckMultiplier;
+
+                    gameLoop = data.gameLoop;
+
+                    hasGoDSword = data.hasGoDSword;
+
+                    isCosmicSkinOn = data.isCosmicSkinOn;
+
+                    inventory.common = data.inventory.common;
+                    inventory.rare = data.inventory.rare;
+                    inventory.epic = data.inventory.epic;
+                    inventory.legendary = data.inventory.legendary;
+
+                    itemLevels.common = data.itemLevels.common;
+                    itemLevels.rare = data.itemLevels.rare;
+                    itemLevels.epic = data.itemLevels.epic;
+                    itemLevels.legendary = data.itemLevels.legendary;
+
+                    upgradeRates.common = data.upgradeRates.common;
+                    upgradeRates.rare = data.upgradeRates.rare;
+                    upgradeRates.epic = data.upgradeRates.epic;
+                    upgradeRates.legendary = data.upgradeRates.legendary;
+
+                    equippedItemType = data.equippedItemType;
+
+                    gameStage = data.gameStage;
+
+                    octopusHP = data.octopusHP;
+
+                    currentBossMaxHP = data.currentBossMaxHP;
+
+                    bossHP = data.bossHP;
+
+                    currentLang = data.currentLang;
+
+                    playerGroup.position.x = data.playerX;
+                    playerGroup.position.z = data.playerZ;
+
+                    playerBodyMat.color.set(data.bodyColor);
+                    skinMat.color.set(data.skinColor);
+                    haloMat.color.set(data.haloColor);
+
+                    document.getElementById(
+                        'picker-body'
+                    ).value = data.bodyColor;
+
+                    document.getElementById(
+                        'picker-skin'
+                    ).value = data.skinColor;
+
+                    document.getElementById(
+                        'picker-halo'
+                    ).value = data.haloColor;
+
+                    skinMat.map =
+                        isCosmicSkinOn
+                        ? cosmicTexture
+                        : null;
+
+                    skinMat.emissiveIntensity =
+                        isCosmicSkinOn
+                        ? 0.4
+                        : 0;
+
+                    skinMat.needsUpdate = true;
+
+                    if (hasGoDSword) {
+
+                        swordMat.color.set('white');
+
+                        swordGroup.scale.set(
+                            1.4,
+                            1.6,
+                            1.4
+                        );
+
+                        document.getElementById(
+                            'val-sword'
+                        ).innerText =
+                            `GoD (+${GOD_SWORD_DMG} DMG)`;
+
+                        document.getElementById(
+                            'val-sword'
+                        ).style.color =
+                            '#ffd700';
+
+                    } else {
+
+                        swordMat.color.setHex(
+                            swordColors[swordLevel]
+                        );
+
+                        swordGroup.scale.set(
+                            1,
+                            1,
+                            1
+                        );
+
+                        document.getElementById(
+                            'val-sword'
+                        ).innerText =
+                            `${swordNames[swordLevel]} (+${swordDmgs[swordLevel]})`;
+
+                        document.getElementById(
+                            'val-sword'
+                        ).style.color =
+                            '#' +
+                            swordColors[swordLevel].toString(16);
+
+                    }
+
+                    redMonster.visible =
+                        (gameStage === 1);
+
+                    octopusMonster.visible =
+                        (gameStage === 2);
+
+                    bossMonster.visible =
+                        (gameStage === 3);
+
+                    document.getElementById(
+                        'boss-hp-bar'
+                    ).style.display =
+                        (gameStage === 3)
+                        ? 'block'
+                        : 'none';
+
+                    document.getElementById(
+                        'boss-title'
+                    ).innerText =
+                        gameLoop >= 2
+                        ? `BOSS MA VƯƠNG (5.000.000 HP)`
+                        : `BOSS MA VƯƠNG (2.000.000 HP)`;
+
+                    const hpPercent =
+                        Math.max(
+                            0,
+                            (bossHP / currentBossMaxHP) * 100
+                        );
+
+                    document.getElementById(
+                        'boss-hp-inner'
+                    ).style.width =
+                        hpPercent + '%';
+
+                    document.getElementById(
+                        'boss-hp-text'
+                    ).innerText =
+                        `${Math.floor(bossHP)} / ${currentBossMaxHP}`;
+
+                    document.getElementById(
+                        'val-power'
+                    ).innerText =
+                        Math.floor(power);
+
+                    document.getElementById(
+                        'val-kills'
+                    ).innerText =
+                        killCount;
+
+                    document.getElementById(
+                        'val-loop'
+                    ).innerText =
+                        gameLoop;
+
+                    if (equippedItemType) {
+
+                        document.getElementById(
+                            'txt-equipped'
+                        ).innerText =
+                            equippedItemType.toUpperCase() +
+                            ` (Lv.${itemLevels[equippedItemType]})`;
+
+                    } else {
+
+                        document.getElementById(
+                            'txt-equipped'
+                        ).innerText =
+                            currentLang === 'vi'
+                            ? 'Chưa có'
+                            : 'None';
+
+                    }
+
+                    updateInventoryUI();
+
+                    document.getElementById(
+                        'lang-indicator'
+                    ).innerText =
+                        currentLang.toUpperCase();
+
+                    document.querySelectorAll(
+                        '.lang-txt'
+                    ).forEach(el => {
+
+                        el.innerText =
+                            el.getAttribute(
+                                `data-${currentLang}`
+                            );
+
+                    });
+                }
+
+                window.saveCurrentAccount =
+                    function() {
+
+                        if (
+                            !currentAccountName
+                        )
+                            return;
+
+                        const key =
+                            getSaveKey(
+                                currentAccountName,
+                                currentAccountPass
+                            );
+
+                        try {
+
+                            localStorage.setItem(
+                                key,
+                                JSON.stringify(
+                                    collectGameState()
+                                )
+                            );
+
+                        } catch(e) {}
+
+                    };
+
+                window.loginAccount =
+                    function() {
+
+                        const raw =
+                            document.getElementById(
+                                'login-input'
+                            ).value;
+
+                        const parts =
+                            raw.split('/');
+
+                        if (
+                            parts.length !== 2 ||
+                            !parts[0].trim() ||
+                            !parts[1].trim()
+                        ) {
+
+                            document.getElementById(
+                                'login-status'
+                            ).innerText =
+                                currentLang === 'vi'
+                                ? "❌ SAI ĐỊNH DẠNG! DÙNG: tên/mã"
+                                : "❌ WRONG FORMAT! USE: name/code";
+
+                            return;
+                        }
+
+                        const name =
+                            parts[0].trim();
+
+                        const pass =
+                            parts[1].trim();
+
+                        const key =
+                            getSaveKey(
+                                name,
+                                pass
+                            );
+
+                        const saved =
+                            localStorage.getItem(
+                                key
+                            );
+
+                        if (saved) {
+
+                            try {
+
+                                const data =
+                                    JSON.parse(saved);
+
+                                applyGameState(
+                                    data
+                                );
+
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? `✅ ĐÃ TẢI TIẾN TRÌNH CỦA ${name.toUpperCase()}!`
+                                    : `✅ LOADED PROGRESS FOR ${name.toUpperCase()}!`
+                                );
+
+                            } catch(e) {
+
+                                document.getElementById(
+                                    'login-status'
+                                ).innerText =
+                                    currentLang === 'vi'
+                                    ? "❌ LỖI DỮ LIỆU LƯU!"
+                                    : "❌ SAVE DATA ERROR!";
+
+                                return;
+                            }
+
+                        } else {
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? `🆕 TÀI KHOẢN MỚI! ĐÃ LƯU TIẾN TRÌNH HIỆN TẠI CHO ${name.toUpperCase()}!`
+                                : `🆕 NEW ACCOUNT! CURRENT PROGRESS SAVED FOR ${name.toUpperCase()}!`
+                            );
+
+                        }
+
+                        currentAccountName =
+                            name;
+
+                        currentAccountPass =
+                            pass;
+
+                        document.getElementById(
+                            'val-account'
+                        ).innerText =
+                            name.toUpperCase();
+
+                        saveCurrentAccount();
+
+                        isLoginOpen = false;
+
+                        document.getElementById(
+                            'login-modal'
+                        ).style.display =
+                            'none';
+
+                        document.getElementById(
+                            'login-input'
+                        ).value = '';
+
+                        document.getElementById(
+                            'login-status'
+                        ).innerText = '';
+                    };
+
+                window.addEventListener(
+                    'beforeunload',
+                    () => {
+
+                        saveCurrentAccount();
+
+                    }
+                );
+
+                setInterval(
+                    () => {
+
+                        saveCurrentAccount();
+
+                    },
+                    5000
+                );
 
                 /* =========================
                    RESTART GAME
