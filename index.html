@@ -1,789 +1,662 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mystic Temple 3D - @viluong673</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mystic Temple 3D - King of The Blade</title>
 
-    <style>
-        * {
-            box-sizing: border-box;
-        }
+<style>
+* {
+    box-sizing: border-box;
+}
 
-        body {
-            margin: 0;
-            overflow: hidden;
-            background: #05020a;
-            font-family: 'Segoe UI', sans-serif;
-            user-select: none;
-        }
+body {
+    margin: 0;
+    overflow: hidden;
+    background: #05020a;
+    font-family: Segoe UI, sans-serif;
+    user-select: none;
+}
 
-        #hud {
-            position: absolute;
-            top: 15px;
-            left: 15px;
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-            z-index: 10;
-        }
+#hud {
+    position: absolute;
+    top: 15px;
+    left: 15px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    z-index: 10;
+}
 
-        .stat-box {
-            background: rgba(10, 5, 20, 0.85);
-            border: 2px solid #a335ee;
-            border-radius: 8px;
-            padding: 8px 16px;
-            color: #fff;
-            font-weight: bold;
-            font-size: 14px;
-            box-shadow: 0 0 10px rgba(163,53,238,0.5);
-        }
+.stat-box {
+    background: rgba(10,5,20,0.88);
+    border: 2px solid #a335ee;
+    border-radius: 8px;
+    padding: 8px 16px;
+    color: white;
+    font-weight: bold;
+    font-size: 14px;
+    box-shadow: 0 0 10px rgba(163,53,238,0.5);
+}
 
-        #power-box {
-            border-color: #ff9900;
-            color: #ff9900;
-        }
+#power-box {
+    border-color: #ff9900;
+    color: #ff9900;
+}
 
-        #sword-box {
-            border-color: #a335ee;
-            color: #a335ee;
-        }
+#sword-box {
+    border-color: #a335ee;
+    color: #a335ee;
+}
 
-        #kill-box {
-            border-color: #00ffcc;
-            color: #00ffcc;
-        }
+#kill-box {
+    border-color: #00ffcc;
+    color: #00ffcc;
+}
 
-        #loop-box {
-            border-color: #ff00ff;
-            color: #ff00ff;
-        }
+#loop-box {
+    border-color: #ff00ff;
+    color: #ff00ff;
+}
 
-        #boss-hp-bar {
-            position: absolute;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 420px;
-            background: rgba(10,5,20,0.9);
-            border: 2px solid #ff3333;
-            border-radius: 10px;
-            padding: 6px;
-            display: none;
-            text-align: center;
-            color: #fff;
-            z-index: 10;
-            box-shadow: 0 0 15px rgba(255,51,51,0.6);
-        }
+#boss-hp-bar {
+    position: absolute;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 420px;
+    background: rgba(10,5,20,0.92);
+    border: 2px solid #ff3333;
+    border-radius: 10px;
+    padding: 6px;
+    display: none;
+    text-align: center;
+    color: white;
+    z-index: 10;
+    box-shadow: 0 0 15px rgba(255,51,51,0.6);
+}
 
-        #boss-hp-inner {
-            height: 18px;
-            background: #ff3333;
-            width: 100%;
-            border-radius: 6px;
-            transition: width 0.1s;
-        }
+#boss-hp-inner {
+    height: 18px;
+    background: #ff3333;
+    width: 100%;
+    border-radius: 6px;
+    transition: width 0.1s;
+}
 
-        #toast {
-            position: absolute;
-            top: 25%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background: rgba(10,5,20,0.95);
-            border: 2px solid #ffd700;
-            color: #ffd700;
-            padding: 12px 28px;
-            border-radius: 25px;
-            font-size: 18px;
-            font-weight: bold;
-            display: none;
-            z-index: 200;
-            text-align: center;
-            box-shadow: 0 0 15px rgba(255,215,0,0.5);
-        }
+#toast {
+    position: absolute;
+    top: 25%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background: rgba(10,5,20,0.96);
+    border: 2px solid #ffd700;
+    color: #ffd700;
+    padding: 12px 28px;
+    border-radius: 25px;
+    font-size: 18px;
+    font-weight: bold;
+    display: none;
+    z-index: 200;
+    text-align: center;
+    box-shadow: 0 0 15px rgba(255,215,0,0.5);
+}
 
-        #gate-msg {
-            position: absolute;
-            bottom: 80px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(255, 50, 50, 0.9);
-            color: #fff;
-            padding: 10px 22px;
-            border-radius: 12px;
-            font-weight: bold;
-            display: none;
-            z-index: 15;
-            border: 1px solid #fff;
-            box-shadow: 0 0 10px rgba(255,50,50,0.7);
-        }
+#gate-msg {
+    position: absolute;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255,50,50,0.9);
+    color: white;
+    padding: 10px 22px;
+    border-radius: 12px;
+    font-weight: bold;
+    display: none;
+    z-index: 15;
+    border: 1px solid white;
+}
 
-        #instructions {
-            position: absolute;
-            bottom: 15px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(10, 5, 20, 0.85);
-            color: #ddd;
-            padding: 10px 20px;
-            border-radius: 15px;
-            font-size: 13px;
-            text-align: center;
-            border: 1px solid #a335ee;
-            pointer-events: none;
-            z-index: 10;
-        }
+#instructions {
+    position: absolute;
+    bottom: 15px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(10,5,20,0.88);
+    color: #ddd;
+    padding: 10px 20px;
+    border-radius: 15px;
+    font-size: 13px;
+    text-align: center;
+    border: 1px solid #a335ee;
+    pointer-events: none;
+    z-index: 10;
+    white-space: nowrap;
+}
 
-        .modal-box {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%,-50%);
-            background: rgba(10,5,20,0.96);
-            border: 2px solid #a335ee;
-            padding: 25px;
-            border-radius: 15px;
-            color: #fff;
-            z-index: 100;
-            width: 520px;
-            max-width: 94vw;
-            display: none;
-            box-shadow: 0 0 25px rgba(163,53,238,0.6);
-        }
+.modal-box {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%,-50%);
+    background: rgba(10,5,20,0.97);
+    border: 2px solid #a335ee;
+    padding: 25px;
+    border-radius: 15px;
+    color: white;
+    z-index: 100;
+    width: 420px;
+    display: none;
+    box-shadow: 0 0 25px rgba(163,53,238,0.6);
+}
 
-        .modal-box h3 {
-            margin-top: 0;
-            color: #ffd700;
-            text-align: center;
-        }
+.modal-box h3 {
+    margin-top: 0;
+    color: #ffd700;
+    text-align: center;
+}
 
-        .modal-box button {
-            width: 100%;
-            background: #a335ee;
-            color: #fff;
-            border: none;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: bold;
-            cursor: pointer;
-            margin-top: 8px;
-        }
+.modal-box label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+    font-size: 14px;
+}
 
-        .modal-box button:hover {
-            background: #b950ff;
-        }
+.item-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    margin: 7px 0;
+    font-size: 13px;
+    background: rgba(255,255,255,0.06);
+    padding: 8px 10px;
+    border-radius: 6px;
+}
 
-        .modal-box label {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin: 10px 0;
-            font-size: 14px;
-        }
+.item-row button {
+    border: none;
+    color: white;
+    padding: 6px 9px;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
 
-        .item-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            gap: 10px;
-            margin: 7px 0;
-            font-size: 13px;
-            background: rgba(255,255,255,0.05);
-            padding: 8px 10px;
-            border-radius: 7px;
-        }
+.btn-up {
+    background: #ff9900;
+}
 
-        .item-row > div {
-            display: flex;
-            gap: 4px;
-        }
+.btn-up:hover {
+    background: #ffaa33;
+}
 
-        .item-row button {
-            width: auto;
-            padding: 5px 8px;
-            margin-top: 0;
-            font-size: 11px;
-        }
+.btn-equip {
+    background: #00aa66;
+}
 
-        .btn-sell {
-            background: #ff4d4d !important;
-        }
+.btn-equip:hover {
+    background: #00dd88;
+}
 
-        .btn-sell:hover {
-            background: #ff6666 !important;
-        }
+#upgrade-modal {
+    border-color: #ff9900;
+    width: 460px;
+}
 
-        .btn-equip {
-            background: #00aa55 !important;
-        }
+.upgrade-title {
+    color: #ff9900 !important;
+    font-size: 23px;
+}
 
-        .btn-equip:hover {
-            background: #00dd77 !important;
-        }
+.upgrade-card {
+    background: rgba(255,153,0,0.08);
+    border: 1px solid #ff9900;
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+}
 
-        .btn-up {
-            background: #ff9900 !important;
-        }
+.upgrade-card h4 {
+    margin: 0 0 8px;
+    font-size: 18px;
+}
 
-        .btn-up:hover {
-            background: #ffaa33 !important;
-        }
+.upgrade-info {
+    display: flex;
+    justify-content: space-between;
+    margin: 5px 0;
+}
 
-        #victory-screen {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: rgba(10,5,20,0.96);
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-            color: #fff;
-            text-align: center;
-            padding: 20px;
-        }
+#upgrade-result {
+    min-height: 25px;
+    text-align: center;
+    font-weight: bold;
+    margin-top: 10px;
+}
 
-        #victory-screen h1 {
-            font-size: 100px;
-            color: #ffd700;
-            margin: 0;
-            text-shadow: 0 0 30px rgba(255,215,0,0.8);
-            font-family: Impact, sans-serif;
-        }
+.upgrade-big-button {
+    width: 100%;
+    border: none;
+    background: #ff9900;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+}
 
-        #error-no {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100vw;
-            height: 100vh;
-            background: #000;
-            color: #ff0000;
-            display: none;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            z-index: 9999;
-            font-family: monospace;
-            text-align: center;
-        }
+.upgrade-big-button:hover {
+    background: #ffaa33;
+}
 
-        #error-no h1 {
-            font-size: 120px;
-            margin: 0;
-            text-shadow: 0 0 20px #ff0000;
-        }
+.upgrade-big-button:disabled {
+    background: #555;
+    cursor: not-allowed;
+}
 
-        #error-no p {
-            font-size: 18px;
-            color: #fff;
-            max-width: 80%;
-            line-height: 1.5;
-        }
+#upgrade-near {
+    position: absolute;
+    left: 50%;
+    bottom: 130px;
+    transform: translateX(-50%);
+    background: rgba(255,153,0,0.92);
+    color: white;
+    padding: 8px 18px;
+    border-radius: 12px;
+    display: none;
+    z-index: 20;
+    font-weight: bold;
+}
 
-        @media(max-width:700px) {
-            #boss-hp-bar {
-                width: 90vw;
-            }
+#victory-screen {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(10,5,20,0.96);
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 500;
+    color: white;
+    text-align: center;
+}
 
-            .item-row {
-                flex-direction: column;
-                align-items: stretch;
-            }
+#victory-screen h1 {
+    font-size: 100px;
+    color: #ffd700;
+    margin: 0;
+    text-shadow: 0 0 30px rgba(255,215,0,0.8);
+    font-family: Impact, sans-serif;
+}
 
-            .item-row > div {
-                display: grid;
-                grid-template-columns: 1fr 1fr 1fr;
-            }
+#error-no {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: black;
+    color: red;
+    display: none;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    font-family: monospace;
+    text-align: center;
+}
 
-            #victory-screen h1 {
-                font-size: 60px;
-            }
-        }
-    </style>
+#error-no h1 {
+    font-size: 120px;
+    margin: 0;
+}
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+#error-no p {
+    color: white;
+    font-size: 18px;
+}
+
+@media(max-width:600px) {
+    #instructions {
+        font-size: 10px;
+        width: 95%;
+        white-space: normal;
+    }
+
+    #boss-hp-bar {
+        width: 90%;
+    }
+
+    .modal-box {
+        width: 94%;
+    }
+}
+</style>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
 
 <body>
 
-    <div id="error-no">
-        <h1>NO</h1>
-        <p>
-            <b>LỖI KHÔNG TẢI ĐƯỢC ĐỒ HỌA 3D!</b><br>
-            Trình duyệt đang tắt WebGL hoặc thư viện Three.js không tải được.
-        </p>
+<div id="error-no">
+    <h1>NO</h1>
+    <p>KHÔNG TẢI ĐƯỢC ĐỒ HỌA 3D!</p>
+</div>
+
+<div id="toast"></div>
+
+<div id="gate-msg">
+    🔒 CẦN ĐỦ 999 MẠNG ĐỂ MỞ CỔNG!
+</div>
+
+<div id="upgrade-near">
+    🟧 KHU NÂNG CẤP
+</div>
+
+<div id="hud">
+
+    <div class="stat-box" id="power-box">
+        ⚡ SỨC MẠNH:
+        <span id="val-power">10</span>
     </div>
 
-    <div id="toast"></div>
-
-    <div
-        id="gate-msg"
-        data-vi="🔒 CẦN ĐỦ 999 MẠNG ĐỂ MỞ CỔNG!"
-        data-en="🔒 NEED 999 KILLS TO OPEN GATE!"
-    >
-        🔒 CẦN ĐỦ 999 MẠNG ĐỂ MỞ CỔNG!
-    </div>
-
-    <div id="hud">
-
-        <div class="stat-box" id="power-box">
-            ⚡
-            <span class="lang-txt" data-vi="SỨC MẠNH" data-en="POWER">
-                SỨC MẠNH
-            </span>:
-            <span id="val-power">10</span>
-        </div>
-
-        <div class="stat-box" id="sword-box">
-            🗡️
-            <span class="lang-txt" data-vi="KIẾM" data-en="SWORD">
-                KIẾM
-            </span>:
-            <span id="val-sword" style="color:#aaa;">
-                Common Lv.1 (+10 DMG)
-            </span>
-        </div>
-
-        <div class="stat-box" id="kill-box">
-            💀
-            <span class="lang-txt" data-vi="QUÁI ĐÃ HẠ" data-en="KILLS">
-                QUÁI ĐÃ HẠ
-            </span>:
-            <span id="val-kills">0</span> / 999
-        </div>
-
-        <div class="stat-box" id="loop-box">
-            🔄
-            <span class="lang-txt" data-vi="VÒNG CHƠI" data-en="LOOP">
-                VÒNG CHƠI
-            </span>:
-            <span id="val-loop">1</span>
-        </div>
-
-    </div>
-
-    <div id="boss-hp-bar">
-
-        <div
-            id="boss-title"
-            style="font-size:12px;margin-bottom:3px;font-weight:bold;color:#ff4d4d;"
-        >
-            BOSS MA VƯƠNG (2.000.000 HP)
-        </div>
-
-        <div style="background:#222;border-radius:6px;overflow:hidden;">
-            <div id="boss-hp-inner"></div>
-        </div>
-
-        <div id="boss-hp-text" style="font-size:11px;margin-top:2px;">
-            2000000 / 2000000
-        </div>
-
-    </div>
-
-    <!-- INVENTORY -->
-
-    <div id="inventory-modal" class="modal-box">
-
-        <h3
-            class="lang-txt"
-            data-vi="🎒 TÚI ĐỒ & NÂNG CẤP"
-            data-en="🎒 INVENTORY & UPGRADE"
-        >
-            🎒 TÚI ĐỒ & NÂNG CẤP
-        </h3>
-
-        <div class="item-row">
-
-            <span>
-                📦 Common
-                (<span id="inv-common">0</span>)
-                [Lv.<span id="lvl-common">1</span>]
-            </span>
-
-            <div>
-                <button
-                    class="btn-sell"
-                    onclick="sellItem('common')"
-                >
-                    Bán 10 = 490
-                </button>
-
-                <button
-                    class="btn-up"
-                    onclick="upgradeItem('common')"
-                >
-                    Nâng
-                    (<span id="rate-common">60</span>%)
-                </button>
-
-                <button
-                    class="btn-equip"
-                    onclick="equipItem('common')"
-                >
-                    Đeo [F]
-                </button>
-            </div>
-
-        </div>
-
-        <div class="item-row">
-
-            <span>
-                🔷 Rare
-                (<span id="inv-rare">0</span>)
-                [Lv.<span id="lvl-rare">1</span>]
-            </span>
-
-            <div>
-                <button
-                    class="btn-sell"
-                    onclick="sellItem('rare')"
-                >
-                    Bán 10 = 555
-                </button>
-
-                <button
-                    class="btn-up"
-                    onclick="upgradeItem('rare')"
-                >
-                    Nâng
-                    (<span id="rate-rare">45</span>%)
-                </button>
-
-                <button
-                    class="btn-equip"
-                    onclick="equipItem('rare')"
-                >
-                    Đeo [F]
-                </button>
-            </div>
-
-        </div>
-
-        <div class="item-row">
-
-            <span>
-                💜 Epic
-                (<span id="inv-epic">0</span>)
-                [Lv.<span id="lvl-epic">1</span>]
-            </span>
-
-            <div>
-
-                <button
-                    class="btn-up"
-                    onclick="upgradeItem('epic')"
-                >
-                    Nâng
-                    (<span id="rate-epic">30</span>%)
-                </button>
-
-                <button
-                    class="btn-equip"
-                    onclick="equipItem('epic')"
-                >
-                    Đeo [F]
-                </button>
-
-            </div>
-
-        </div>
-
-        <div class="item-row">
-
-            <span>
-                👑 Legendary
-                (<span id="inv-legendary">0</span>)
-                [Lv.<span id="lvl-legendary">1</span>]
-            </span>
-
-            <div>
-
-                <span style="font-size:10px;color:#ffd700;">
-                    MAX RATE
-                </span>
-
-                <button
-                    class="btn-up"
-                    onclick="upgradeItem('legendary')"
-                >
-                    Nâng
-                    (<span id="rate-legendary">0.1</span>%)
-                </button>
-
-                <button
-                    class="btn-equip"
-                    onclick="equipItem('legendary')"
-                >
-                    Đeo [F]
-                </button>
-
-            </div>
-
-        </div>
-
-        <div
-            style="
-                background:rgba(255,255,255,0.08);
-                padding:9px;
-                border-radius:6px;
-                margin-top:10px;
-                font-size:12px;
-                text-align:center;
-            "
-        >
-            ✨
-            <span
-                class="lang-txt"
-                data-vi="Đang đeo"
-                data-en="Equipped"
-            >
-                Đang đeo
-            </span>:
-
-            <span
-                id="txt-equipped"
-                style="color:#00ffcc;font-weight:bold;"
-            >
-                Chưa có
-            </span>
-        </div>
-
-        <div
-            style="
-                text-align:center;
-                font-size:11px;
-                margin-top:10px;
-                color:#aaa;
-            "
-            class="lang-txt"
-            data-vi="Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ"
-            data-en="Press [TAB] to close | Press [V] change language"
-        >
-            Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ
-        </div>
-
-    </div>
-
-    <!-- NPC CUSTOMIZE -->
-
-    <div
-        id="color-modal"
-        class="modal-box"
-        style="border-color:#00ffcc;"
-    >
-
-        <h3
-            style="color:#00ffcc;"
-            class="lang-txt"
-            data-vi="🎨 TÙY CHỈNH & KHU DRAFT"
-            data-en="🎨 CUSTOMIZE & DRAFT ZONE"
-        >
-            🎨 TÙY CHỈNH & KHU DRAFT
-        </h3>
-
-        <label>
-            <span
-                class="lang-txt"
-                data-vi="Màu áo nhân vật"
-                data-en="Body Color"
-            >
-                Màu áo nhân vật
-            </span>:
-
-            <input
-                type="color"
-                id="picker-body"
-                value="#1a1a24"
-            >
-        </label>
-
-        <label>
-            <span
-                class="lang-txt"
-                data-vi="Màu da nhân vật"
-                data-en="Skin Color"
-            >
-                Màu da nhân vật
-            </span>:
-
-            <input
-                type="color"
-                id="picker-skin"
-                value="#d4a373"
-            >
-        </label>
-
-        <label>
-            <span
-                class="lang-txt"
-                data-vi="Màu hào quang"
-                data-en="Halo Color"
-            >
-                Màu hào quang
-            </span>:
-
-            <input
-                type="color"
-                id="picker-halo"
-                value="#000000"
-            >
-        </label>
-
-        <div
-            style="text-align:center;font-size:11px;margin-top:15px;color:#aaa;"
-            class="lang-txt"
-            data-vi="Bấm [O] để đóng"
-            data-en="Press [O] to close"
-        >
-            Bấm [O] để đóng
-        </div>
-
-    </div>
-
-    <div id="instructions">
-
-        <b>[WASD]</b>
-        <span
-            class="lang-txt"
-            data-vi="Di chuyển"
-            data-en="Move"
-        >
-            Di chuyển
+    <div class="stat-box" id="sword-box">
+        🗡️ KIẾM:
+        <span id="val-sword" style="color:#aaa">
+            Common Lv.1 (+10 DMG)
         </span>
+    </div>
 
-        |
+    <div class="stat-box" id="kill-box">
+        💀 QUÁI ĐÃ HẠ:
+        <span id="val-kills">0</span> / 999
+    </div>
 
-        <b>[Chuột + Kéo]</b>
-        <span
-            class="lang-txt"
-            data-vi="Xoay 360°"
-            data-en="Rotate 360°"
-        >
-            Xoay 360°
-        </span>
+    <div class="stat-box" id="loop-box">
+        🔄 VÒNG CHƠI:
+        <span id="val-loop">1</span>
+    </div>
 
-        |
+</div>
 
-        <b>[Cuộn]</b>
-        Zoom
+<div id="boss-hp-bar">
 
-        |
+    <div id="boss-title"
+         style="font-size:12px;margin-bottom:3px;font-weight:bold;color:#ff4d4d">
+        BOSS MA VƯƠNG (2.000.000 HP)
+    </div>
 
-        <b>[TAB]</b>
-        <span
-            class="lang-txt"
-            data-vi="Túi đồ"
-            data-en="Inventory"
-        >
-            Túi đồ
-        </span>
+    <div style="background:#222;border-radius:6px;overflow:hidden">
+        <div id="boss-hp-inner"></div>
+    </div>
 
-        |
+    <div id="boss-hp-text"
+         style="font-size:11px;margin-top:2px">
+        2000000 / 2000000
+    </div>
 
-        <b>[F]</b>
-        <span
-            class="lang-txt"
-            data-vi="Đeo đồ"
-            data-en="Equip"
-        >
-            Đeo đồ
-        </span>
+</div>
 
-        |
+<!-- BẢNG NÂNG CẤP -->
 
-        <b>[V]</b>
-        <span
-            class="lang-txt"
-            data-vi="Ngôn ngữ"
-            data-en="Language"
-        >
-            Ngôn ngữ
-        </span>:
+<div id="upgrade-modal" class="modal-box">
 
-        <span id="lang-indicator">VI</span>
+    <h3 class="upgrade-title">
+        🟧 DRAFT - KHU NÂNG CẤP
+    </h3>
+
+    <div class="upgrade-card">
+
+        <h4 id="upgrade-item-name">
+            📦 COMMON
+        </h4>
+
+        <div class="upgrade-info">
+            <span>Cấp hiện tại:</span>
+            <b id="upgrade-current-level">Lv.1</b>
+        </div>
+
+        <div class="upgrade-info">
+            <span>Tỉ lệ thành công:</span>
+            <b id="upgrade-chance">60%</b>
+        </div>
+
+        <div class="upgrade-info">
+            <span>Số lượng:</span>
+            <b id="upgrade-count">0</b>
+        </div>
 
     </div>
 
-    <div id="victory-screen">
+    <select id="upgrade-select"
+            style="width:100%;padding:10px;border-radius:7px;background:#222;color:white;border:1px solid #ff9900">
 
-        <h1 id="win-title">
-            WIN
-        </h1>
+        <option value="common">📦 Common</option>
+        <option value="rare">🔷 Rare</option>
+        <option value="epic">💜 Epic</option>
+        <option value="legendary">👑 Legendary</option>
 
-        <p
-            id="win-desc"
-            style="
-                font-size:22px;
-                color:#ffd700;
-                font-weight:bold;
-                margin-top:15px;
-                max-width:800px;
-                line-height:1.6;
-            "
-        ></p>
+    </select>
 
-        <p
-            style="
-                font-size:14px;
-                color:#aaa;
-                margin-top:25px;
-            "
-        >
-            — By @viluong673 —
-        </p>
+    <button id="upgrade-button"
+            class="upgrade-big-button"
+            onclick="doUpgrade()">
+        ⚡ NÂNG CẤP
+    </button>
 
+    <div id="upgrade-result"></div>
+
+    <div style="font-size:11px;color:#aaa;text-align:center;margin-top:10px">
+        ❗ Nâng cấp thất bại cũng mất 1 item
+        <br>
+        ⏱️ Thời gian chờ giữa 2 lần: 0.2 giây
+        <br>
+        Nhấn [O] để đóng
     </div>
 
-    <script>
+</div>
 
-        let audioCtx = null;
+<!-- CUSTOMIZE -->
 
-        function initAudio() {
+<div id="color-modal" class="modal-box"
+     style="border-color:#00ffcc">
 
-            if (!audioCtx) {
+    <h3 style="color:#00ffcc">
+        🎨 TÙY CHỈNH NHÂN VẬT
+    </h3>
 
-                try {
+    <label>
+        Màu áo:
+        <input type="color" id="picker-body" value="#7a1018">
+    </label>
 
-                    audioCtx =
-                        new (window.AudioContext ||
-                        window.webkitAudioContext)();
+    <label>
+        Màu da:
+        <input type="color" id="picker-skin" value="#d4a373">
+    </label>
 
-                } catch(e) {}
+    <label>
+        Màu hào quang:
+        <input type="color" id="picker-halo" value="#000000">
+    </label>
 
-            }
+    <div style="text-align:center;font-size:11px;color:#aaa;margin-top:15px">
+        Bấm [O] để đóng
+    </div>
 
-        }
+</div>
 
-        function triggerNO() {
+<div id="instructions">
 
-            const hud =
-                document.getElementById('hud');
+    <b>[WASD]</b> Di chuyển |
+    <b>[Chuột + Kéo]</b> Xoay Camera 360° |
+    <b>[Click]</b> Đánh |
+    <b>[O]</b> Tùy chỉnh |
+    <b>[V]</b> Ngôn ngữ
 
-            const instructions =
-                document.getElementById('instructions');
+</div>
 
-            const error =
-                document.getElementById('error-no');
+<div id="victory-screen">
 
-            if (hud)
-                hud.style.display = 'none';
+    <h1 id="win-title">WIN</h1>
 
-            if (instructions)
-                instructions.style.display = 'none';
+    <p id="win-desc"
+       style="font-size:22px;color:#ffd700;font-weight:bold">
+    </p>
 
-            if (error)
-                error.style.display = 'flex';
-        }
+    <p style="font-size:14px;color:#aaa">
+        — By @viluong673 —
+    </p>
 
-        function playBeepSound() {
+</div>
 
-            if (!audioCtx) return;
+<script>
+
+if(typeof THREE === "undefined") {
+
+    document.getElementById("error-no").style.display = "flex";
+
+} else {
+
+try {
+
+let power = 10;
+let killCount = 0;
+let swordLevel = 0;
+let luckMultiplier = 1;
+let gameLoop = 1;
+let currentLang = "vi";
+
+let gameStage = 1;
+
+let redMonsterHP = 50;
+let octopusHP = 3000;
+
+let currentBossMaxHP = 2000000;
+let bossHP = 2000000;
+
+let isGameEnded = false;
+
+let isDragging = false;
+
+let cameraAngleX = 0;
+let cameraAngleY = 0.5;
+let cameraDistance = 10;
+
+let upgradeCooldown = false;
+
+const keys = {};
+
+const inventory = {
+    common: 0,
+    rare: 0,
+    epic: 0,
+    legendary: 0
+};
+
+const itemLevels = {
+    common: 1,
+    rare: 1,
+    epic: 1,
+    legendary: 1
+};
+
+const upgradeRates = {
+    common: 60,
+    rare: 45,
+    epic: 30,
+    legendary: 0.1
+};
+
+let equippedItemType = null;
+
+const swordNames = [
+    "Common",
+    "Rare",
+    "Epic",
+    "Legendary"
+];
+
+const swordColors = [
+    0xaaaaaa,
+    0x0088ff,
+    0xa335ee,
+    0xffd700
+];
+
+const swordDmgs = [
+    10,
+    50,
+    250,
+    1000
+];
+
+
+// ================= AUDIO =================
+
+let audioCtx = null;
+
+function initAudio() {
+
+    if(!audioCtx) {
+
+        audioCtx =
+            new(window.AudioContext ||
+            window.webkitAudioContext)();
+
+    }
+
+}
+
+function beep() {
+
+    if(!audioCtx) return;
+
+    const osc =
+        audioCtx.createOscillator();
+
+    const gain =
+        audioCtx.createGain();
+
+    osc.frequency.value = 180;
+
+    gain.gain.setValueAtTime(
+        0.2,
+        audioCtx.currentTime
+    );
+
+    gain.gain.exponentialRampToValueAtTime(
+        0.01,
+        audioCtx.currentTime + 0.12
+    );
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + 0.12);
+
+}
+
+function legendarySound() {
+
+    if(!audioCtx) return;
+
+    const notes =
+        [523,659,784,1046];
+
+    notes.forEach((freq,i)=>{
+
+        setTimeout(()=>{
+
+            if(!audioCtx) return;
 
             const osc =
                 audioCtx.createOscillator();
@@ -791,17 +664,8 @@
             const gain =
                 audioCtx.createGain();
 
-            osc.type = 'sawtooth';
-
-            osc.frequency.setValueAtTime(
-                180,
-                audioCtx.currentTime
-            );
-
-            osc.frequency.exponentialRampToValueAtTime(
-                80,
-                audioCtx.currentTime + 0.15
-            );
+            osc.type = "triangle";
+            osc.frequency.value = freq;
 
             gain.gain.setValueAtTime(
                 0.25,
@@ -809,8 +673,8 @@
             );
 
             gain.gain.exponentialRampToValueAtTime(
-                0.01,
-                audioCtx.currentTime + 0.15
+                0.001,
+                audioCtx.currentTime + 0.25
             );
 
             osc.connect(gain);
@@ -818,2881 +682,2027 @@
 
             osc.start();
             osc.stop(
-                audioCtx.currentTime + 0.15
+                audioCtx.currentTime + 0.25
             );
+
+        },i*120);
+
+    });
+
+}
+
+
+// ================= SCENE =================
+
+const scene =
+    new THREE.Scene();
+
+scene.background =
+    new THREE.Color(0x06030d);
+
+scene.fog =
+    new THREE.FogExp2(
+        0x06030d,
+        0.018
+    );
+
+const camera =
+    new THREE.PerspectiveCamera(
+        75,
+        window.innerWidth /
+        window.innerHeight,
+        0.1,
+        1000
+    );
+
+const renderer =
+    new THREE.WebGLRenderer({
+        antialias:true
+    });
+
+renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+);
+
+document.body.appendChild(
+    renderer.domElement
+);
+
+
+// ================= LIGHT =================
+
+scene.add(
+    new THREE.AmbientLight(
+        0x3a2b5e,
+        1.6
+    )
+);
+
+const dirLight =
+    new THREE.DirectionalLight(
+        0x9966ff,
+        1.8
+    );
+
+dirLight.position.set(
+    15,25,10
+);
+
+scene.add(dirLight);
+
+
+// ================= STARS =================
+
+const starsGeo =
+    new THREE.BufferGeometry();
+
+const starsCount = 500;
+
+const positions =
+    new Float32Array(
+        starsCount * 3
+    );
+
+for(let i=0;i<positions.length;i++) {
+
+    positions[i] =
+        (Math.random()-0.5)*120;
+
+}
+
+starsGeo.setAttribute(
+    "position",
+    new THREE.BufferAttribute(
+        positions,
+        3
+    )
+);
+
+const stars =
+    new THREE.Points(
+        starsGeo,
+        new THREE.PointsMaterial({
+            color:0xaa88ff,
+            size:0.6
+        })
+    );
+
+scene.add(stars);
+
+
+// ================= MAP =================
+
+const platformGroup =
+    new THREE.Group();
+
+const stoneMat =
+    new THREE.MeshStandardMaterial({
+        color:0x33285a,
+        roughness:0.8
+    });
+
+const floor =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            36,2,36
+        ),
+        stoneMat
+    );
+
+floor.position.y = -1;
+
+platformGroup.add(floor);
+
+const pillarMat =
+    new THREE.MeshStandardMaterial({
+        color:0x27203f,
+        roughness:0.6
+    });
+
+const crystalMat =
+    new THREE.MeshBasicMaterial({
+        color:0x00ffff
+    });
+
+function createPillar(x,z) {
+
+    const pillar =
+        new THREE.Mesh(
+            new THREE.CylinderGeometry(
+                0.5,
+                0.6,
+                6,
+                12
+            ),
+            pillarMat
+        );
+
+    pillar.position.set(
+        x,2,z
+    );
+
+    const crystal =
+        new THREE.Mesh(
+            new THREE.OctahedronGeometry(
+                0.3
+            ),
+            crystalMat
+        );
+
+    crystal.position.set(
+        0,1.5,0.55
+    );
+
+    pillar.add(crystal);
+
+    platformGroup.add(pillar);
+
+}
+
+for(let x=-15;x<=15;x+=7.5) {
+
+    createPillar(x,-15);
+    createPillar(x,15);
+
+}
+
+for(let z=-7.5;z<=7.5;z+=7.5) {
+
+    if(z!==0) {
+
+        createPillar(-15,z);
+        createPillar(15,z);
+
+    }
+
+}
+
+
+// ================= NPC CAM =================
+
+const npcGroup =
+    new THREE.Group();
+
+const npcBodyMat =
+    new THREE.MeshLambertMaterial({
+        color:0xff9900
+    });
+
+const npcSkinMat =
+    new THREE.MeshLambertMaterial({
+        color:0xd4a373
+    });
+
+const npcBody =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.8,1.1,0.5
+        ),
+        npcBodyMat
+    );
+
+npcBody.position.y = 1.3;
+
+const npcHead =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.5,0.5,0.5
+        ),
+        npcSkinMat
+    );
+
+npcHead.position.y = 2.1;
+
+const npcRing =
+    new THREE.Mesh(
+        new THREE.TorusGeometry(
+            1.2,
+            0.05,
+            12,
+            24
+        ),
+        new THREE.MeshBasicMaterial({
+            color:0xffd700
+        })
+    );
+
+npcRing.rotation.x =
+    Math.PI/2;
+
+npcRing.position.y =
+    0.05;
+
+npcGroup.add(
+    npcBody,
+    npcHead,
+    npcRing
+);
+
+npcGroup.position.set(
+    -8,
+    0,
+    -5
+);
+
+platformGroup.add(
+    npcGroup
+);
+
+
+// ================= GATE =================
+
+const gateGroup =
+    new THREE.Group();
+
+const arch1 =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            1.2,8,1.2
+        ),
+        pillarMat
+    );
+
+arch1.position.set(
+    -4,3,-16
+);
+
+const arch2 =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            1.2,8,1.2
+        ),
+        pillarMat
+    );
+
+arch2.position.set(
+    4,3,-16
+);
+
+const archTop =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            10,1.5,1.5
+        ),
+        pillarMat
+    );
+
+archTop.position.set(
+    0,7.5,-16
+);
+
+const gateLightMat =
+    new THREE.MeshBasicMaterial({
+        color:0x00ffff,
+        transparent:true,
+        opacity:0.5
+    });
+
+const gateLight =
+    new THREE.Mesh(
+        new THREE.PlaneGeometry(
+            6.8,7
+        ),
+        gateLightMat
+    );
+
+gateLight.position.set(
+    0,3.5,-15.8
+);
+
+gateGroup.add(
+    arch1,
+    arch2,
+    archTop,
+    gateLight
+);
+
+platformGroup.add(gateGroup);
+
+scene.add(platformGroup);
+
+
+// ================= PLAYER =================
+
+const playerGroup =
+    new THREE.Group();
+
+const playerBodyMat =
+    new THREE.MeshStandardMaterial({
+        color:0x7a1018
+    });
+
+const skinMat =
+    new THREE.MeshStandardMaterial({
+        color:0xd4a373
+    });
+
+
+// ÁO ĐỎ
+
+const body =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.75,1.15,0.45
+        ),
+        playerBodyMat
+    );
+
+body.position.y = 1.35;
+
+
+// ĐẦU
+
+const head =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.5,0.52,0.5
+        ),
+        skinMat
+    );
+
+head.position.y = 2.15;
+
+
+// TÓC ĐEN
+
+const hairMat =
+    new THREE.MeshStandardMaterial({
+        color:0x111018
+    });
+
+const hair =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.58,0.55,0.56
+        ),
+        hairMat
+    );
+
+hair.position.set(
+    0,
+    2.36,
+    0
+);
+
+
+// TÓC SAU
+
+const backHair =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.48,
+            0.85,
+            0.28
+        ),
+        hairMat
+    );
+
+backHair.position.set(
+    0,
+    1.95,
+    -0.30
+);
+
+
+// TÓC NHỌN
+
+for(let i=-1;i<=1;i++) {
+
+    const hairSpike =
+        new THREE.Mesh(
+            new THREE.ConeGeometry(
+                0.09,
+                0.42,
+                5
+            ),
+            hairMat
+        );
+
+    hairSpike.rotation.x =
+        Math.PI;
+
+    hairSpike.position.set(
+        i*0.17,
+        2.15,
+        -0.32
+    );
+
+    playerGroup.add(
+        hairSpike
+    );
+
+}
+
+
+// MẮT
+
+const eyeMat =
+    new THREE.MeshBasicMaterial({
+        color:0xffffff
+    });
+
+const eyeL =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.08,0.08,0.025
+        ),
+        eyeMat
+    );
+
+eyeL.position.set(
+    -0.12,
+    2.17,
+    0.26
+);
+
+const eyeR =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.08,0.08,0.025
+        ),
+        eyeMat
+    );
+
+eyeR.position.set(
+    0.12,
+    2.17,
+    0.26
+);
+
+
+// ÁO CHOÀNG ĐỎ
+
+const cloak =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            1.0,1.35,0.18
+        ),
+        new THREE.MeshStandardMaterial({
+            color:0x9e1822
+        })
+    );
+
+cloak.position.set(
+    0,
+    1.3,
+    -0.28
+);
+
+
+// DẢI TÓC ĐỎ
+
+const ribbonMat =
+    new THREE.MeshStandardMaterial({
+        color:0x9e1822
+    });
+
+const ribbon =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.1,
+            0.7,
+            0.05
+        ),
+        ribbonMat
+    );
+
+ribbon.position.set(
+    0.22,
+    2.15,
+    -0.34
+);
+
+ribbon.rotation.z =
+    -0.25;
+
+
+// CHÂN
+
+const legMat =
+    new THREE.MeshStandardMaterial({
+        color:0x16151c
+    });
+
+const legL =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.28,0.8,0.3
+        ),
+        legMat
+    );
+
+legL.position.set(
+    -0.19,
+    0.4,
+    0
+);
+
+const legR =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.28,0.8,0.3
+        ),
+        legMat
+    );
+
+legR.position.set(
+    0.19,
+    0.4,
+    0
+);
+
+
+// KIẾM
+
+const swordGroup =
+    new THREE.Group();
+
+const swordMat =
+    new THREE.MeshBasicMaterial({
+        color:swordColors[0]
+    });
+
+const blade =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.1,1.5,0.05
+        ),
+        swordMat
+    );
+
+blade.position.y =
+    0.75;
+
+const guard =
+    new THREE.Mesh(
+        new THREE.BoxGeometry(
+            0.5,0.08,0.08
+        ),
+        new THREE.MeshBasicMaterial({
+            color:0xffd700
+        })
+    );
+
+guard.position.y =
+    0.08;
+
+swordGroup.add(
+    blade,
+    guard
+);
+
+swordGroup.position.set(
+    0.6,
+    1.25,
+    -0.3
+);
+
+swordGroup.rotation.x =
+    Math.PI/3;
+
+
+playerGroup.add(
+    body,
+    head,
+    hair,
+    backHair,
+    cloak,
+    ribbon,
+    eyeL,
+    eyeR,
+    legL,
+    legR,
+    swordGroup
+);
+
+playerGroup.position.set(
+    0,0,6
+);
+
+scene.add(playerGroup);
+
+
+// ================= HALO =================
+
+const haloMat =
+    new THREE.MeshBasicMaterial({
+        color:0x000000
+    });
+
+const halo =
+    new THREE.Mesh(
+        new THREE.TorusGeometry(
+            0.45,
+            0.08,
+            16,
+            32
+        ),
+        haloMat
+    );
+
+halo.rotation.x =
+    Math.PI/2;
+
+halo.position.y =
+    2.7;
+
+playerGroup.add(halo);
+
+
+// ================= RED MONSTER =================
+
+function createRedMonster() {
+
+    const group =
+        new THREE.Group();
+
+    const mat =
+        new THREE.MeshLambertMaterial({
+            color:0xff4d4d
+        });
+
+    const body =
+        new THREE.Mesh(
+            new THREE.BoxGeometry(
+                1.6,1,0.8
+            ),
+            mat
+        );
+
+    body.position.y = 1.8;
+
+    const eye =
+        new THREE.MeshBasicMaterial({
+            color:0x00ffcc
+        });
+
+    const eye1 =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                0.15,10,10
+            ),
+            eye
+        );
+
+    eye1.position.set(
+        -0.4,
+        1.9,
+        0.42
+    );
+
+    const eye2 =
+        eye1.clone();
+
+    eye2.position.x =
+        0.4;
+
+    const hornMat =
+        new THREE.MeshLambertMaterial({
+            color:0xffd700
+        });
+
+    const horn1 =
+        new THREE.Mesh(
+            new THREE.ConeGeometry(
+                0.15,0.5,8
+            ),
+            hornMat
+        );
+
+    horn1.position.set(
+        -0.6,
+        2.5,
+        0
+    );
+
+    const horn2 =
+        horn1.clone();
+
+    horn2.position.x =
+        0.6;
+
+    group.add(
+        body,
+        eye1,
+        eye2,
+        horn1,
+        horn2
+    );
+
+    return group;
+
+}
+
+const redMonster =
+    createRedMonster();
+
+redMonster.position.set(
+    0,0,-4
+);
+
+scene.add(redMonster);
+
+
+// ================= OCTOPUS =================
+
+function createOctopusMonster() {
+
+    const group =
+        new THREE.Group();
+
+    const bodyMat =
+        new THREE.MeshLambertMaterial({
+            color:0x3399ff
+        });
+
+    const head =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                1.2,24,24
+            ),
+            bodyMat
+        );
+
+    head.position.y =
+        1.4;
+
+    group.add(head);
+
+    const eyeMat =
+        new THREE.MeshBasicMaterial({
+            color:0x00ffff
+        });
+
+    const e1 =
+        new THREE.Mesh(
+            new THREE.SphereGeometry(
+                0.18,12,12
+            ),
+            eyeMat
+        );
+
+    e1.position.set(
+        -0.4,1.5,1
+    );
+
+    const e2 =
+        e1.clone();
+
+    e2.position.x =
+        0.4;
+
+    group.add(e1,e2);
+
+    const legMat =
+        new THREE.MeshLambertMaterial({
+            color:0x1a75ff
+        });
+
+    for(let i=0;i<8;i++) {
+
+        const angle =
+            i / 8 * Math.PI * 2;
+
+        const leg =
+            new THREE.Mesh(
+                new THREE.CylinderGeometry(
+                    0.07,
+                    0.07,
+                    1.4
+                ),
+                legMat
+            );
+
+        leg.rotation.z =
+            Math.PI/2;
+
+        leg.rotation.y =
+            angle;
+
+        leg.position.set(
+            Math.cos(angle)*0.9,
+            0.6,
+            Math.sin(angle)*0.9
+        );
+
+        group.add(leg);
+
+    }
+
+    return group;
+
+}
+
+const octopusMonster =
+    createOctopusMonster();
+
+octopusMonster.position.set(
+    0,0,-4
+);
+
+octopusMonster.visible = false;
+
+scene.add(octopusMonster);
+
+
+// ================= BOSS =================
+
+const bossMonster =
+    createOctopusMonster();
+
+bossMonster.scale.set(
+    3.5,
+    3.5,
+    3.5
+);
+
+bossMonster.position.set(
+    0,0,-5
+);
+
+bossMonster.visible = false;
+
+bossMonster.traverse(
+    child => {
+
+        if(child.isMesh) {
+
+            child.material =
+                new THREE.MeshLambertMaterial({
+                    color:0x440000
+                });
+
         }
 
-        function playLegendarySound() {
+    }
+);
 
-            if (!audioCtx) return;
+scene.add(bossMonster);
 
-            const notes = [
-                523.25,
-                659.25,
-                783.99,
-                1046.50
-            ];
 
-            notes.forEach((freq,index) => {
+// ================= DROP SYSTEM =================
 
-                setTimeout(() => {
+function handleItemDrops(amount) {
 
-                    if (!audioCtx) return;
+    amount =
+        Math.min(
+            999,
+            Math.max(0,amount)
+        );
 
-                    const osc =
-                        audioCtx.createOscillator();
+    if(amount <= 0)
+        return;
 
-                    const gain =
-                        audioCtx.createGain();
+    let legendary = 0;
+    let epic = 0;
+    let rare = 0;
+    let common = 0;
 
-                    osc.type = 'triangle';
+    for(let i=0;i<amount;i++) {
 
-                    osc.frequency.setValueAtTime(
-                        freq,
-                        audioCtx.currentTime
-                    );
+        const rand =
+            Math.random()*100;
 
-                    gain.gain.setValueAtTime(
-                        0.3,
-                        audioCtx.currentTime
-                    );
+        const legendaryChance =
+            0.05 * luckMultiplier;
 
-                    gain.gain.exponentialRampToValueAtTime(
-                        0.001,
-                        audioCtx.currentTime + 0.3
-                    );
+        const epicChance =
+            2 * luckMultiplier;
 
-                    osc.connect(gain);
-                    gain.connect(audioCtx.destination);
+        const rareChance =
+            15 * luckMultiplier;
 
-                    osc.start();
+        const commonChance =
+            45 * luckMultiplier;
 
-                    osc.stop(
-                        audioCtx.currentTime + 0.3
-                    );
+        if(rand < legendaryChance) {
 
-                }, index * 150);
+            legendary++;
 
-            });
+        } else if(rand < epicChance) {
+
+            epic++;
+
+        } else if(rand < rareChance) {
+
+            rare++;
+
+        } else if(rand < commonChance) {
+
+            common++;
+
         }
 
-        if (typeof THREE === 'undefined') {
+    }
 
-            triggerNO();
+    inventory.common += common;
+    inventory.rare += rare;
+    inventory.epic += epic;
+    inventory.legendary += legendary;
 
-        } else {
+    if(legendary > 0) {
 
-            try {
+        showToast(
+            `👑 LEGENDARY +${legendary}`
+        );
 
-                let power = 10;
+        legendarySound();
 
-                let killCount = 0;
+    } else if(epic > 0) {
 
-                let swordLevel = 0;
+        showToast(
+            `💜 EPIC +${epic}`
+        );
 
-                let luckMultiplier = 1;
+    } else if(rare > 0) {
 
-                let gameLoop = 1;
+        showToast(
+            `🔷 RARE +${rare}`
+        );
 
-                let currentLang = 'vi';
+    } else if(common > 0) {
 
-                const inventory = {
+        showToast(
+            `📦 COMMON +${common}`
+        );
 
-                    common: 0,
-                    rare: 0,
-                    epic: 0,
-                    legendary: 0
+    }
 
-                };
+    updateUpgradeUI();
 
-                const itemLevels = {
+}
 
-                    common: 1,
-                    rare: 1,
-                    epic: 1,
-                    legendary: 1
 
-                };
+// ================= UPGRADE UI =================
 
-                const upgradeRates = {
+function updateUpgradeUI() {
 
-                    common: 60,
-                    rare: 45,
-                    epic: 30,
-                    legendary: 0.1
+    const type =
+        document.getElementById(
+            "upgrade-select"
+        ).value;
 
-                };
+    document.getElementById(
+        "upgrade-item-name"
+    ).innerText =
+        type.toUpperCase();
 
-                let equippedItemType = null;
+    document.getElementById(
+        "upgrade-current-level"
+    ).innerText =
+        "Lv." + itemLevels[type];
 
-                const swordNames = [
-                    "Common",
-                    "Rare",
-                    "Epic",
-                    "Legendary"
+    document.getElementById(
+        "upgrade-chance"
+    ).innerText =
+        upgradeRates[type] + "%";
+
+    document.getElementById(
+        "upgrade-count"
+    ).innerText =
+        inventory[type];
+
+}
+
+document.getElementById(
+    "upgrade-select"
+).addEventListener(
+    "change",
+    updateUpgradeUI
+);
+
+
+// ================= UPGRADE =================
+
+window.doUpgrade = function() {
+
+    if(upgradeCooldown)
+        return;
+
+    const type =
+        document.getElementById(
+            "upgrade-select"
+        ).value;
+
+    if(inventory[type] <= 0) {
+
+        document.getElementById(
+            "upgrade-result"
+        ).innerHTML =
+            "❌ KHÔNG CÓ ITEM!";
+
+        return;
+
+    }
+
+    upgradeCooldown = true;
+
+    const button =
+        document.getElementById(
+            "upgrade-button"
+        );
+
+    button.disabled = true;
+
+    // LUÔN MẤT 1 ITEM
+
+    inventory[type]--;
+
+    const rate =
+        upgradeRates[type];
+
+    const success =
+        Math.random()*100 <= rate;
+
+    if(success) {
+
+        itemLevels[type]++;
+
+        document.getElementById(
+            "upgrade-result"
+        ).innerHTML =
+            `✨ THÀNH CÔNG! ${type.toUpperCase()} → Lv.${itemLevels[type]}`;
+
+        legendarySound();
+
+        if(type === "common") {
+
+            upgradeRates.common =
+                Math.max(
+                    5,
+                    upgradeRates.common - 5
+                );
+
+        }
+
+        if(type === "rare") {
+
+            upgradeRates.rare =
+                Math.max(
+                    5,
+                    upgradeRates.rare - 4
+                );
+
+        }
+
+        if(type === "epic") {
+
+            upgradeRates.epic =
+                Math.max(
+                    5,
+                    upgradeRates.epic - 2.5
+                );
+
+        }
+
+    } else {
+
+        document.getElementById(
+            "upgrade-result"
+        ).innerHTML =
+            `❌ THẤT BẠI! Mất 1 ${type.toUpperCase()}`;
+
+    }
+
+    updateUpgradeUI();
+
+    setTimeout(()=>{
+
+        upgradeCooldown = false;
+        button.disabled = false;
+
+    },200);
+
+};
+
+
+// ================= EQUIP =================
+
+function equip(type) {
+
+    if(inventory[type] <= 0) {
+
+        showToast(
+            "❌ Bạn không có item này!"
+        );
+
+        return;
+
+    }
+
+    equippedItemType =
+        type;
+
+    showToast(
+        "🛡️ Đã đeo " +
+        type.toUpperCase()
+    );
+
+}
+
+window.equipItem =
+    equip;
+
+
+// ================= COLORS =================
+
+document.getElementById(
+    "picker-body"
+).addEventListener(
+    "input",
+    e => {
+        playerBodyMat.color.set(
+            e.target.value
+        );
+    }
+);
+
+document.getElementById(
+    "picker-skin"
+).addEventListener(
+    "input",
+    e => {
+        skinMat.color.set(
+            e.target.value
+        );
+    }
+);
+
+document.getElementById(
+    "picker-halo"
+).addEventListener(
+    "input",
+    e => {
+        haloMat.color.set(
+            e.target.value
+        );
+    }
+);
+
+
+// ================= INVENTORY AUTO UI =================
+
+function showUpgradePanel() {
+
+    document.getElementById(
+        "upgrade-modal"
+    ).style.display =
+        "block";
+
+    updateUpgradeUI();
+
+}
+
+function hideUpgradePanel() {
+
+    document.getElementById(
+        "upgrade-modal"
+    ).style.display =
+        "none";
+
+}
+
+
+// ================= TOAST =================
+
+function showToast(text) {
+
+    const toast =
+        document.getElementById(
+            "toast"
+        );
+
+    toast.innerText =
+        text;
+
+    toast.style.display =
+        "block";
+
+    clearTimeout(
+        toast.timer
+    );
+
+    toast.timer =
+        setTimeout(
+            ()=>{
+                toast.style.display =
+                    "none";
+            },
+            1800
+        );
+
+}
+
+
+// ================= CAMERA 360 =================
+
+let previousMousePosition = {
+    x:0,
+    y:0
+};
+
+window.addEventListener(
+    "mousedown",
+    e => {
+
+        if(e.target.tagName !== "CANVAS")
+            return;
+
+        isDragging = true;
+
+        previousMousePosition = {
+            x:e.clientX,
+            y:e.clientY
+        };
+
+    }
+);
+
+window.addEventListener(
+    "mousemove",
+    e => {
+
+        if(!isDragging)
+            return;
+
+        const dx =
+            e.clientX -
+            previousMousePosition.x;
+
+        const dy =
+            e.clientY -
+            previousMousePosition.y;
+
+        // KHÔNG GIỚI HẠN GÓC X
+        // Có thể xoay 360° liên tục
+
+        cameraAngleX -=
+            dx * 0.008;
+
+        cameraAngleY +=
+            dy * 0.008;
+
+        cameraAngleY =
+            Math.max(
+                0.05,
+                Math.min(
+                    1.5,
+                    cameraAngleY
+                )
+            );
+
+        previousMousePosition = {
+            x:e.clientX,
+            y:e.clientY
+        };
+
+    }
+);
+
+window.addEventListener(
+    "mouseup",
+    ()=>{
+        isDragging = false;
+    }
+);
+
+
+// ================= KEYBOARD =================
+
+window.addEventListener(
+    "keydown",
+    e => {
+
+        initAudio();
+
+        const k =
+            e.key.toLowerCase();
+
+        keys[k] = true;
+
+        if(k === "o") {
+
+            const color =
+                document.getElementById(
+                    "color-modal"
+                );
+
+            color.style.display =
+                color.style.display === "block"
+                ? "none"
+                : "block";
+
+        }
+
+        if(k === "v") {
+
+            currentLang =
+                currentLang === "vi"
+                ? "en"
+                : "vi";
+
+            showToast(
+                currentLang === "vi"
+                ? "🇻🇳 Tiếng Việt"
+                : "🇬🇧 English"
+            );
+
+        }
+
+        if(k === "f") {
+
+            if(inventory.legendary > 0)
+                equip("legendary");
+
+            else if(inventory.epic > 0)
+                equip("epic");
+
+            else if(inventory.rare > 0)
+                equip("rare");
+
+            else if(inventory.common > 0)
+                equip("common");
+
+        }
+
+    }
+);
+
+window.addEventListener(
+    "keyup",
+    e => {
+
+        keys[
+            e.key.toLowerCase()
+        ] = false;
+
+    }
+);
+
+
+// ================= ATTACK =================
+
+window.addEventListener(
+    "click",
+    e => {
+
+        if(e.target.tagName !== "CANVAS")
+            return;
+
+        if(isGameEnded)
+            return;
+
+        if(
+            document.getElementById(
+                "color-modal"
+            ).style.display === "block"
+        )
+            return;
+
+        initAudio();
+
+        beep();
+
+        let itemMultiplier = 1;
+
+        if(equippedItemType) {
+
+            const lvl =
+                itemLevels[
+                    equippedItemType
                 ];
 
-                const swordColors = [
-                    0xaaaaaa,
-                    0x0088ff,
-                    0xa335ee,
-                    0xffd700
-                ];
-
-                const swordDmgs = [
-                    10,
-                    50,
-                    250,
-                    1000
-                ];
-
-                let gameStage = 1;
-
-                let redMonsterHP = 50;
-
-                let octopusHP = 3000;
-
-                let currentBossMaxHP = 2000000;
-
-                let bossHP = 2000000;
-
-                let isGameEnded = false;
-
-                const scene =
-                    new THREE.Scene();
-
-                scene.background =
-                    new THREE.Color(0x06030d);
-
-                scene.fog =
-                    new THREE.FogExp2(
-                        0x06030d,
-                        0.02
-                    );
-
-                const camera =
-                    new THREE.PerspectiveCamera(
-                        75,
-                        window.innerWidth /
-                        window.innerHeight,
-                        0.1,
-                        1000
-                    );
-
-                const renderer =
-                    new THREE.WebGLRenderer({
-                        antialias: true
-                    });
-
-                renderer.setSize(
-                    window.innerWidth,
-                    window.innerHeight
-                );
-
-                renderer.setPixelRatio(
-                    Math.min(
-                        window.devicePixelRatio,
-                        2
-                    )
-                );
-
-                document.body.appendChild(
-                    renderer.domElement
-                );
-
-                scene.add(
-                    new THREE.AmbientLight(
-                        0x3a2b5e,
-                        1.5
-                    )
-                );
-
-                const dirLight =
-                    new THREE.DirectionalLight(
-                        0x9966ff,
-                        1.8
-                    );
-
-                dirLight.position.set(
-                    15,
-                    25,
-                    10
-                );
-
-                scene.add(dirLight);
-
-                const starsGeo =
-                    new THREE.BufferGeometry();
-
-                const starsCnt = 500;
-
-                const posArr =
-                    new Float32Array(
-                        starsCnt * 3
-                    );
-
-                for (
-                    let i = 0;
-                    i < starsCnt * 3;
-                    i++
-                ) {
-
-                    posArr[i] =
-                        (Math.random() - 0.5) * 120;
-
-                }
-
-                starsGeo.setAttribute(
-                    'position',
-                    new THREE.BufferAttribute(
-                        posArr,
-                        3
-                    )
-                );
-
-                const starField =
-                    new THREE.Points(
-                        starsGeo,
-                        new THREE.PointsMaterial({
-                            color: 0xaa88ff,
-                            size: 0.6
-                        })
-                    );
-
-                scene.add(starField);
-
-                const platformGroup =
-                    new THREE.Group();
-
-                const stoneMat =
-                    new THREE.MeshStandardMaterial({
-                        color: 0x2e293d,
-                        roughness: 0.8
-                    });
-
-                const floorMesh =
-                    new THREE.Mesh(
-                        new THREE.BoxGeometry(
-                            36,
-                            2,
-                            36
-                        ),
-                        stoneMat
-                    );
-
-                floorMesh.position.y = -1;
-
-                platformGroup.add(
-                    floorMesh
-                );
-
-                const pillarMat =
-                    new THREE.MeshStandardMaterial({
-                        color: 0x423a56,
-                        roughness: 0.6
-                    });
-
-                const crystalMat =
-                    new THREE.MeshBasicMaterial({
-                        color: 0x00ffff
-                    });
-
-                function createPillar(x,z) {
-
-                    const pillar =
-                        new THREE.Mesh(
-                            new THREE.CylinderGeometry(
-                                0.5,
-                                0.6,
-                                6,
-                                12
-                            ),
-                            pillarMat
-                        );
-
-                    pillar.position.set(
-                        x,
-                        2,
-                        z
-                    );
-
-                    const crystal =
-                        new THREE.Mesh(
-                            new THREE.OctahedronGeometry(
-                                0.3
-                            ),
-                            crystalMat
-                        );
-
-                    crystal.position.set(
-                        0,
-                        1.5,
-                        0.55
-                    );
-
-                    pillar.add(crystal);
-
-                    platformGroup.add(
-                        pillar
-                    );
-                }
-
-                for (
-                    let x = -15;
-                    x <= 15;
-                    x += 7.5
-                ) {
-
-                    createPillar(
-                        x,
-                        -15
-                    );
-
-                    createPillar(
-                        x,
-                        15
-                    );
-
-                }
-
-                for (
-                    let z = -7.5;
-                    z <= 7.5;
-                    z += 7.5
-                ) {
-
-                    if (z !== 0) {
-
-                        createPillar(
-                            -15,
-                            z
-                        );
-
-                        createPillar(
-                            15,
-                            z
-                        );
-
-                    }
-
-                }
-
-                /* =========================
-                   NPC CAM CAM
-                ========================= */
-
-                function createUpgradeDraftNPC(x,z) {
-
-                    const group =
-                        new THREE.Group();
-
-                    const bodyMat =
-                        new THREE.MeshStandardMaterial({
-                            color: 0xff8800,
-                            roughness: 0.4,
-                            metalness: 0.15
-                        });
-
-                    const skinMat =
-                        new THREE.MeshStandardMaterial({
-                            color: 0xd4a373,
-                            roughness: 0.8
-                        });
-
-                    const darkMat =
-                        new THREE.MeshStandardMaterial({
-                            color: 0x351400,
-                            roughness: 0.6
-                        });
-
-                    const goldMat =
-                        new THREE.MeshStandardMaterial({
-                            color: 0xffd700,
-                            metalness: 0.7,
-                            roughness: 0.25
-                        });
-
-                    const glowMat =
-                        new THREE.MeshBasicMaterial({
-                            color: 0x00ffff
-                        });
-
-                    const body =
-                        new THREE.Mesh(
-                            new THREE.BoxGeometry(
-                                0.9,
-                                1.15,
-                                0.55
-                            ),
-                            bodyMat
-                        );
-
-                    body.position.y = 1.25;
-
-                    const head =
-                        new THREE.Mesh(
-                            new THREE.BoxGeometry(
-                                0.58,
-                                0.58,
-                                0.58
-                            ),
-                            skinMat
-                        );
-
-                    head.position.y = 2.12;
-
-                    const hair =
-                        new THREE.Mesh(
-                            new THREE.BoxGeometry(
-                                0.62,
-                                0.18,
-                                0.62
-                            ),
-                            darkMat
-                        );
-
-                    hair.position.y = 2.45;
-
-                    const eyeMat =
-                        new THREE.MeshBasicMaterial({
-                            color: 0xffffff
-                        });
-
-                    const eyeL =
-                        new THREE.Mesh(
-                            new THREE.BoxGeometry(
-                                0.09,
-                                0.09,
-                                0.03
-                            ),
-                            eyeMat
-                        );
-
-                    eyeL.position.set(
-                        -0.14,
-                        2.16,
-                        0.3
-                    );
-
-                    const eyeR =
-                        new THREE.Mesh(
-                            new THREE.BoxGeometry(
-                                0.09,
-                                0.09,
-                                0.03
-                            ),
-                            eyeMat
-                        );
-
-                    eyeR.position.set(
-                        0.14,
-                        2.16,
-                        0.3
-                    );
-
-                    const beard =
-                        new THREE.Mesh(
-                            new THREE.BoxGeometry(
-                                0.28,
-                                0.18,
-                                0.12
-                            ),
-                            darkMat
-                        );
-
-                    beard.position.set(
-                        0,
-                        1.93,
-                        0.3
-                    );
-
-                    const belt =
-                        new THREE.Mesh(
-                            new THREE.BoxGeometry(
-                                0.95,
-                                0.12,
-                                0.6
-                            ),
-                            goldMat
-                        );
-
-                    belt.position.y = 0.95;
-
-                    const staff =
-                        new THREE.Group();
-
-                    const staffWood =
-                        new THREE.Mesh(
-                            new THREE.CylinderGeometry(
-                                0.055,
-                                0.07,
-                                2.2,
-                                10
-                            ),
-                            darkMat
-                        );
-
-                    staffWood.position.y = 1.1;
-
-                    const staffCrystal =
-                        new THREE.Mesh(
-                            new THREE.OctahedronGeometry(
-                                0.22
-                            ),
-                            glowMat
-                        );
-
-                    staffCrystal.position.y =
-                        2.25;
-
-                    staff.add(
-                        staffWood,
-                        staffCrystal
-                    );
-
-                    staff.position.set(
-                        0.75,
-                        0,
-                        0
-                    );
-
-                    const ring =
-                        new THREE.Mesh(
-                            new THREE.TorusGeometry(
-                                1.35,
-                                0.055,
-                                16,
-                                40
-                            ),
-                            goldMat
-                        );
-
-                    ring.rotation.x =
-                        Math.PI / 2;
-
-                    ring.position.y =
-                        0.05;
-
-                    const ring2 =
-                        new THREE.Mesh(
-                            new THREE.TorusGeometry(
-                                0.9,
-                                0.025,
-                                12,
-                                32
-                            ),
-                            glowMat
-                        );
-
-                    ring2.rotation.x =
-                        Math.PI / 2;
-
-                    ring2.position.y =
-                        0.08;
-
-                    const floatingCrystal =
-                        new THREE.Mesh(
-                            new THREE.OctahedronGeometry(
-                                0.18
-                            ),
-                            glowMat
-                        );
-
-                    floatingCrystal.position.set(
-                        0,
-                        3.0,
-                        0
-                    );
-
-                    group.add(
-                        body,
-                        head,
-                        hair,
-                        eyeL,
-                        eyeR,
-                        beard,
-                        belt,
-                        staff,
-                        ring,
-                        ring2,
-                        floatingCrystal
-                    );
-
-                    group.position.set(
-                        x,
-                        0,
-                        z
-                    );
-
-                    platformGroup.add(
-                        group
-                    );
-
-                    group.userData.baseY = 0;
-
-                    return group;
-                }
-
-                const upgradeNPC =
-                    createUpgradeDraftNPC(
-                        -8,
-                        -5
-                    );
-
-                /* =========================
-                   GATE
-                ========================= */
-
-                const gateGroup =
-                    new THREE.Group();
-
-                const archPillar1 =
-                    new THREE.Mesh(
-                        new THREE.BoxGeometry(
-                            1.2,
-                            8,
-                            1.2
-                        ),
-                        pillarMat
-                    );
-
-                archPillar1.position.set(
-                    -4,
-                    3,
-                    -16
-                );
-
-                const archPillar2 =
-                    new THREE.Mesh(
-                        new THREE.BoxGeometry(
-                            1.2,
-                            8,
-                            1.2
-                        ),
-                        pillarMat
-                    );
-
-                archPillar2.position.set(
-                    4,
-                    3,
-                    -16
-                );
-
-                const archTop =
-                    new THREE.Mesh(
-                        new THREE.BoxGeometry(
-                            10,
-                            1.5,
-                            1.5
-                        ),
-                        pillarMat
-                    );
-
-                archTop.position.set(
-                    0,
-                    7.5,
-                    -16
-                );
-
-                const gateLightMat =
-                    new THREE.MeshBasicMaterial({
-                        color: 0x00ffff,
-                        transparent: true,
-                        opacity: 0.5
-                    });
-
-                const gateLight =
-                    new THREE.Mesh(
-                        new THREE.PlaneGeometry(
-                            6.8,
-                            7
-                        ),
-                        gateLightMat
-                    );
-
-                gateLight.position.set(
-                    0,
-                    3.5,
-                    -15.8
-                );
-
-                gateGroup.add(
-                    archPillar1,
-                    archPillar2,
-                    archTop,
-                    gateLight
-                );
-
-                platformGroup.add(
-                    gateGroup
-                );
-
-                scene.add(
-                    platformGroup
-                );
-
-                /* =========================
-                   PLAYER
-                ========================= */
-
-                const playerGroup =
-                    new THREE.Group();
-
-                const playerBodyMat =
-                    new THREE.MeshStandardMaterial({
-                        color: 0x1a1a24
-                    });
-
-                const skinMat =
-                    new THREE.MeshStandardMaterial({
-                        color: 0xd4a373
-                    });
-
-                const body =
-                    new THREE.Mesh(
-                        new THREE.BoxGeometry(
-                            0.8,
-                            1.1,
-                            0.5
-                        ),
-                        playerBodyMat
-                    );
-
-                body.position.y = 1.3;
-
-                const head =
-                    new THREE.Mesh(
-                        new THREE.BoxGeometry(
-                            0.5,
-                            0.5,
-                            0.5
-                        ),
-                        skinMat
-                    );
-
-                head.position.y = 2.1;
-
-                const eyeMat =
-                    new THREE.MeshBasicMaterial({
-                        color: 0xffffff
-                    });
-
-                const eyeL =
-                    new THREE.Mesh(
-                        new THREE.BoxGeometry(
-                            0.08,
-                            0.08,
-                            0.02
-                        ),
-                        eyeMat
-                    );
-
-                eyeL.position.set(
-                    -0.12,
-                    2.15,
-                    0.26
-                );
-
-                const eyeR =
-                    new THREE.Mesh(
-                        new THREE.BoxGeometry(
-                            0.08,
-                            0.08,
-                            0.02
-                        ),
-                        eyeMat
-                    );
-
-                eyeR.position.set(
-                    0.12,
-                    2.15,
-                    0.26
-                );
-
-                const nose =
-                    new THREE.Mesh(
-                        new THREE.BoxGeometry(
-                            0.06,
-                            0.08,
-                            0.04
-                        ),
-                        skinMat
-                    );
-
-                nose.position.set(
-                    0,
-                    2.05,
-                    0.26
-                );
-
-                const mouth =
-                    new THREE.Mesh(
-                        new THREE.BoxGeometry(
-                            0.18,
-                            0.04,
-                            0.02
-                        ),
-                        new THREE.MeshBasicMaterial({
-                            color: 0x331111
-                        })
-                    );
-
-                mouth.position.set(
-                    0,
-                    1.95,
-                    0.26
-                );
-
-                const haloMat =
-                    new THREE.MeshBasicMaterial({
-                        color: 0x000000
-                    });
-
-                const haloRing =
-                    new THREE.Mesh(
-                        new THREE.TorusGeometry(
-                            0.45,
-                            0.08,
-                            16,
-                            32
-                        ),
-                        haloMat
-                    );
-
-                haloRing.rotation.x =
-                    Math.PI / 2;
-
-                haloRing.position.y =
-                    2.55;
-
-                const legL =
-                    new THREE.Mesh(
-                        new THREE.BoxGeometry(
-                            0.3,
-                            0.8,
-                            0.3
-                        ),
-                        playerBodyMat
-                    );
-
-                legL.position.set(
-                    -0.2,
-                    0.4,
-                    0
-                );
-
-                const legR =
-                    new THREE.Mesh(
-                        new THREE.BoxGeometry(
-                            0.3,
-                            0.8,
-                            0.3
-                        ),
-                        playerBodyMat
-                    );
-
-                legR.position.set(
-                    0.2,
-                    0.4,
-                    0
-                );
-
-                const swordGroup =
-                    new THREE.Group();
-
-                const swordMat =
-                    new THREE.MeshBasicMaterial({
-                        color: swordColors[0]
-                    });
-
-                const swordBlade =
-                    new THREE.Mesh(
-                        new THREE.BoxGeometry(
-                            0.1,
-                            1.5,
-                            0.05
-                        ),
-                        swordMat
-                    );
-
-                swordBlade.position.y =
-                    0.75;
-
-                swordGroup.add(
-                    swordBlade
-                );
-
-                swordGroup.position.set(
-                    0.6,
-                    1.3,
-                    -0.3
-                );
-
-                swordGroup.rotation.x =
-                    Math.PI / 3;
-
-                playerGroup.add(
-                    body,
-                    head,
-                    eyeL,
-                    eyeR,
-                    nose,
-                    mouth,
-                    haloRing,
-                    legL,
-                    legR,
-                    swordGroup
-                );
-
-                playerGroup.position.set(
-                    0,
-                    0,
-                    6
-                );
-
-                scene.add(
-                    playerGroup
-                );
-
-                /* =========================
-                   RED MONSTER
-                ========================= */
-
-                function createRedMonster() {
-
-                    const group =
-                        new THREE.Group();
-
-                    const rBody =
-                        new THREE.Mesh(
-                            new THREE.BoxGeometry(
-                                1.6,
-                                1.0,
-                                0.8
-                            ),
-                            new THREE.MeshLambertMaterial({
-                                color: 0xff4d4d
-                            })
-                        );
-
-                    rBody.position.y = 1.8;
-
-                    const eWhite =
-                        new THREE.MeshBasicMaterial({
-                            color: 0xffffff
-                        });
-
-                    const eGreen =
-                        new THREE.MeshBasicMaterial({
-                            color: 0x00cc66
-                        });
-
-                    const eL =
-                        new THREE.Mesh(
-                            new THREE.CylinderGeometry(
-                                0.25,
-                                0.25,
-                                0.05,
-                                16
-                            ),
-                            eWhite
-                        );
-
-                    eL.rotation.x =
-                        Math.PI / 2;
-
-                    eL.position.set(
-                        -0.4,
-                        1.85,
-                        0.42
-                    );
-
-                    const eL_in =
-                        new THREE.Mesh(
-                            new THREE.CylinderGeometry(
-                                0.12,
-                                0.12,
-                                0.06,
-                                16
-                            ),
-                            eGreen
-                        );
-
-                    eL_in.rotation.x =
-                        Math.PI / 2;
-
-                    eL_in.position.set(
-                        -0.4,
-                        1.85,
-                        0.43
-                    );
-
-                    const eR =
-                        new THREE.Mesh(
-                            new THREE.CylinderGeometry(
-                                0.25,
-                                0.25,
-                                0.05,
-                                16
-                            ),
-                            eWhite
-                        );
-
-                    eR.rotation.x =
-                        Math.PI / 2;
-
-                    eR.position.set(
-                        0.4,
-                        1.85,
-                        0.42
-                    );
-
-                    const eR_in =
-                        new THREE.Mesh(
-                            new THREE.CylinderGeometry(
-                                0.12,
-                                0.12,
-                                0.06,
-                                16
-                            ),
-                            eGreen
-                        );
-
-                    eR_in.rotation.x =
-                        Math.PI / 2;
-
-                    eR_in.position.set(
-                        0.4,
-                        1.85,
-                        0.43
-                    );
-
-                    const hornMat =
-                        new THREE.MeshLambertMaterial({
-                            color: 0xffd700
-                        });
-
-                    const hStickL =
-                        new THREE.Mesh(
-                            new THREE.CylinderGeometry(
-                                0.04,
-                                0.04,
-                                0.6
-                            ),
-                            hornMat
-                        );
-
-                    hStickL.position.set(
-                        -0.7,
-                        2.5,
-                        0
-                    );
-
-                    hStickL.rotation.z =
-                        -0.4;
-
-                    const hBallL =
-                        new THREE.Mesh(
-                            new THREE.SphereGeometry(
-                                0.18,
-                                12,
-                                12
-                            ),
-                            hornMat
-                        );
-
-                    hBallL.position.set(
-                        -0.82,
-                        2.8,
-                        0
-                    );
-
-                    const hStickR =
-                        new THREE.Mesh(
-                            new THREE.CylinderGeometry(
-                                0.04,
-                                0.04,
-                                0.6
-                            ),
-                            hornMat
-                        );
-
-                    hStickR.position.set(
-                        0.7,
-                        2.5,
-                        0
-                    );
-
-                    hStickR.rotation.z =
-                        0.4;
-
-                    const hBallR =
-                        new THREE.Mesh(
-                            new THREE.SphereGeometry(
-                                0.18,
-                                12,
-                                12
-                            ),
-                            hornMat
-                        );
-
-                    hBallR.position.set(
-                        0.82,
-                        2.8,
-                        0
-                    );
-
-                    const legMat =
-                        new THREE.MeshLambertMaterial({
-                            color: 0x4dd2ff
-                        });
-
-                    const leg1 =
-                        new THREE.Mesh(
-                            new THREE.CylinderGeometry(
-                                0.05,
-                                0.05,
-                                1.5
-                            ),
-                            legMat
-                        );
-
-                    leg1.position.set(
-                        -0.5,
-                        0.75,
-                        0
-                    );
-
-                    const leg2 =
-                        new THREE.Mesh(
-                            new THREE.CylinderGeometry(
-                                0.05,
-                                0.05,
-                                1.5
-                            ),
-                            legMat
-                        );
-
-                    leg2.position.set(
-                        0.5,
-                        0.75,
-                        0
-                    );
-
-                    const foot1 =
-                        new THREE.Mesh(
-                            new THREE.SphereGeometry(
-                                0.15,
-                                10,
-                                10
-                            ),
-                            hornMat
-                        );
-
-                    foot1.position.set(
-                        -0.5,
-                        0.05,
-                        0
-                    );
-
-                    const foot2 =
-                        new THREE.Mesh(
-                            new THREE.SphereGeometry(
-                                0.15,
-                                10,
-                                10
-                            ),
-                            hornMat
-                        );
-
-                    foot2.position.set(
-                        0.5,
-                        0.05,
-                        0
-                    );
-
-                    group.add(
-                        rBody,
-                        eL,
-                        eL_in,
-                        eR,
-                        eR_in,
-                        hStickL,
-                        hBallL,
-                        hStickR,
-                        hBallR,
-                        leg1,
-                        leg2,
-                        foot1,
-                        foot2
-                    );
-
-                    return group;
-                }
-
-                const redMonster =
-                    createRedMonster();
-
-                redMonster.position.set(
-                    0,
-                    0,
-                    -4
-                );
-
-                scene.add(
-                    redMonster
-                );
-
-                /* =========================
-                   OCTOPUS
-                ========================= */
-
-                function createOctopusMonster() {
-
-                    const group =
-                        new THREE.Group();
-
-                    const bodyMat =
-                        new THREE.MeshLambertMaterial({
-                            color: 0x3399ff
-                        });
-
-                    const headBall =
-                        new THREE.Mesh(
-                            new THREE.SphereGeometry(
-                                1.2,
-                                24,
-                                24
-                            ),
-                            bodyMat
-                        );
-
-                    headBall.position.y =
-                        1.4;
-
-                    const eWhite =
-                        new THREE.MeshBasicMaterial({
-                            color: 0xffffff
-                        });
-
-                    const eCyan =
-                        new THREE.MeshBasicMaterial({
-                            color: 0x00cccc
-                        });
-
-                    const eL =
-                        new THREE.Mesh(
-                            new THREE.CylinderGeometry(
-                                0.3,
-                                0.3,
-                                0.05,
-                                16
-                            ),
-                            eWhite
-                        );
-
-                    eL.rotation.x =
-                        Math.PI / 2;
-
-                    eL.position.set(
-                        -0.4,
-                        1.5,
-                        1
-                    );
-
-                    const eL_in =
-                        new THREE.Mesh(
-                            new THREE.CylinderGeometry(
-                                0.15,
-                                0.15,
-                                0.06,
-                                16
-                            ),
-                            eCyan
-                        );
-
-                    eL_in.rotation.x =
-                        Math.PI / 2;
-
-                    eL_in.position.set(
-                        -0.4,
-                        1.5,
-                        1.02
-                    );
-
-                    const eR =
-                        new THREE.Mesh(
-                            new THREE.CylinderGeometry(
-                                0.3,
-                                0.3,
-                                0.05,
-                                16
-                            ),
-                            eWhite
-                        );
-
-                    eR.rotation.x =
-                        Math.PI / 2;
-
-                    eR.position.set(
-                        0.4,
-                        1.5,
-                        1
-                    );
-
-                    const eR_in =
-                        new THREE.Mesh(
-                            new THREE.CylinderGeometry(
-                                0.15,
-                                0.15,
-                                0.06,
-                                16
-                            ),
-                            eCyan
-                        );
-
-                    eR_in.rotation.x =
-                        Math.PI / 2;
-
-                    eR_in.position.set(
-                        0.4,
-                        1.5,
-                        1.02
-                    );
-
-                    const legMat =
-                        new THREE.MeshLambertMaterial({
-                            color: 0x1a75ff
-                        });
-
-                    for (
-                        let i = 0;
-                        i < 8;
-                        i++
-                    ) {
-
-                        const angle =
-                            (i / 8) *
-                            Math.PI *
-                            2;
-
-                        const leg =
-                            new THREE.Mesh(
-                                new THREE.CylinderGeometry(
-                                    0.07,
-                                    0.07,
-                                    1.4
-                                ),
-                                legMat
-                            );
-
-                        leg.rotation.z =
-                            Math.PI / 2;
-
-                        leg.rotation.y =
-                            angle;
-
-                        leg.position.set(
-                            Math.cos(angle) * 0.9,
-                            0.6,
-                            Math.sin(angle) * 0.9
-                        );
-
-                        group.add(
-                            leg
-                        );
-                    }
-
-                    group.add(
-                        headBall,
-                        eL,
-                        eL_in,
-                        eR,
-                        eR_in
-                    );
-
-                    return group;
-                }
-
-                const octopusMonster =
-                    createOctopusMonster();
-
-                octopusMonster.position.set(
-                    0,
-                    0,
-                    -4
-                );
-
-                octopusMonster.visible =
-                    false;
-
-                scene.add(
-                    octopusMonster
-                );
-
-                /* =========================
-                   BOSS
-                ========================= */
-
-                const bossMonster =
-                    createOctopusMonster();
-
-                bossMonster.scale.set(
-                    3.5,
-                    3.5,
-                    3.5
-                );
-
-                bossMonster.position.set(
-                    0,
-                    0,
-                    -5
-                );
-
-                bossMonster.visible =
-                    false;
-
-                bossMonster.traverse(
-                    child => {
-
-                        if (
-                            child.isMesh &&
-                            child.material
-                        ) {
-
-                            child.material =
-                                new THREE.MeshLambertMaterial({
-                                    color: 0x440000
-                                });
-
-                        }
-
-                    }
-                );
-
-                scene.add(
-                    bossMonster
-                );
-
-                /* =========================
-                   DROP ITEM
-                ========================= */
-
-                function handleItemDrop() {
-
-                    const rand =
-                        Math.random() * 100;
-
-                    const legendaryChance =
-                        0.05 *
-                        luckMultiplier;
-
-                    const epicChance =
-                        2.0 *
-                        luckMultiplier;
-
-                    const rareChance =
-                        15.0 *
-                        luckMultiplier;
-
-                    const commonChance =
-                        45.0 *
-                        luckMultiplier;
-
-                    if (
-                        rand <
-                        legendaryChance
-                    ) {
-
-                        inventory.legendary++;
-
-                        showToast(
-                            currentLang === 'vi'
-                            ? "👑 RƠI: LEGENDARY +1"
-                            : "👑 DROP: LEGENDARY +1"
-                        );
-
-                        playLegendarySound();
-
-                    } else if (
-                        rand <
-                        epicChance
-                    ) {
-
-                        inventory.epic++;
-
-                        showToast(
-                            currentLang === 'vi'
-                            ? "💜 RƠI: EPIC +1"
-                            : "💜 DROP: EPIC +1"
-                        );
-
-                    } else if (
-                        rand <
-                        rareChance
-                    ) {
-
-                        inventory.rare++;
-
-                        showToast(
-                            currentLang === 'vi'
-                            ? "🔷 RƠI: RARE +1"
-                            : "🔷 DROP: RARE +1"
-                        );
-
-                    } else if (
-                        rand <
-                        commonChance
-                    ) {
-
-                        inventory.common++;
-
-                        showToast(
-                            currentLang === 'vi'
-                            ? "📦 RƠI: COMMON +1"
-                            : "📦 DROP: COMMON +1"
-                        );
-
-                    }
-
-                    updateInventoryUI();
-                }
-
-                function updateInventoryUI() {
-
-                    document.getElementById(
-                        'inv-common'
-                    ).innerText =
-                        inventory.common;
-
-                    document.getElementById(
-                        'inv-rare'
-                    ).innerText =
-                        inventory.rare;
-
-                    document.getElementById(
-                        'inv-epic'
-                    ).innerText =
-                        inventory.epic;
-
-                    document.getElementById(
-                        'inv-legendary'
-                    ).innerText =
-                        inventory.legendary;
-
-                    document.getElementById(
-                        'lvl-common'
-                    ).innerText =
-                        itemLevels.common;
-
-                    document.getElementById(
-                        'lvl-rare'
-                    ).innerText =
-                        itemLevels.rare;
-
-                    document.getElementById(
-                        'lvl-epic'
-                    ).innerText =
-                        itemLevels.epic;
-
-                    document.getElementById(
-                        'lvl-legendary'
-                    ).innerText =
-                        itemLevels.legendary;
-
-                    document.getElementById(
-                        'rate-common'
-                    ).innerText =
-                        upgradeRates.common;
-
-                    document.getElementById(
-                        'rate-rare'
-                    ).innerText =
-                        upgradeRates.rare;
-
-                    document.getElementById(
-                        'rate-epic'
-                    ).innerText =
-                        upgradeRates.epic;
-
-                    document.getElementById(
-                        'rate-legendary'
-                    ).innerText =
-                        upgradeRates.legendary;
-                }
-
-                /* =========================
-                   SELL
-                ========================= */
-
-                window.sellItem =
-                    function(type) {
-
-                        if (
-                            type === 'common' &&
-                            inventory.common >= 10
-                        ) {
-
-                            inventory.common -= 10;
-
-                            power += 490;
-
-                            showToast(
-                                currentLang === 'vi'
-                                ? "💰 BÁN 10 COMMON: +490 POWER"
-                                : "💰 SOLD 10 COMMON: +490 POWER"
-                            );
-
-                        } else if (
-                            type === 'rare' &&
-                            inventory.rare >= 10
-                        ) {
-
-                            inventory.rare -= 10;
-
-                            power += 555;
-
-                            showToast(
-                                currentLang === 'vi'
-                                ? "💰 BÁN 10 RARE: +555 POWER"
-                                : "💰 SOLD 10 RARE: +555 POWER"
-                            );
-
-                        } else {
-
-                            showToast(
-                                currentLang === 'vi'
-                                ? "❌ KHÔNG ĐỦ 10 ITEM ĐỂ BÁN!"
-                                : "❌ NOT ENOUGH ITEMS TO SELL!"
-                            );
-
-                        }
-
-                        document.getElementById(
-                            'val-power'
-                        ).innerText =
-                            Math.floor(power);
-
-                        updateInventoryUI();
-                    };
-
-                /* =========================
-                   UPGRADE ITEM
-                   THẤT BẠI CŨNG MẤT 1 ITEM
-                ========================= */
-
-                window.upgradeItem =
-                    function(type) {
-
-                        const distToDraft =
-                            Math.hypot(
-                                playerGroup.position.x + 8,
-                                playerGroup.position.z + 5
-                            );
-
-                        if (
-                            distToDraft > 4
-                        ) {
-
-                            showToast(
-                                currentLang === 'vi'
-                                ? "❌ HÃY ĐẾN GẦN NPC CAM CAM ĐỂ NÂNG CẤP!"
-                                : "❌ MOVE CLOSE TO THE ORANGE NPC!"
-                            );
-
-                            return;
-                        }
-
-                        if (
-                            inventory[type] <= 0
-                        ) {
-
-                            showToast(
-                                currentLang === 'vi'
-                                ? "❌ BẠN KHÔNG CÓ ITEM NÀY!"
-                                : "❌ YOU DON'T HAVE THIS ITEM!"
-                            );
-
-                            return;
-                        }
-
-                        /*
-                           QUAN TRỌNG:
-                           Mất 1 item ngay khi nâng cấp.
-                           Thành công hay thất bại đều mất.
-                        */
-
-                        inventory[type]--;
-
-                        const currentRate =
-                            upgradeRates[type];
-
-                        const rand =
-                            Math.random() * 100;
-
-                        if (
-                            rand <= currentRate
-                        ) {
-
-                            itemLevels[type]++;
-
-                            playLegendarySound();
-
-                            showToast(
-                                currentLang === 'vi'
-                                ? `✨ NÂNG ${type.toUpperCase()} THÀNH CÔNG! LV.${itemLevels[type]}`
-                                : `✨ ${type.toUpperCase()} UPGRADED! LV.${itemLevels[type]}`
-                            );
-
-                            if (
-                                type === 'common'
-                            ) {
-
-                                upgradeRates.common =
-                                    Math.max(
-                                        5,
-                                        upgradeRates.common - 5
-                                    );
-
-                            }
-
-                            if (
-                                type === 'rare'
-                            ) {
-
-                                upgradeRates.rare =
-                                    Math.max(
-                                        5,
-                                        upgradeRates.rare - 4
-                                    );
-
-                            }
-
-                            if (
-                                type === 'epic'
-                            ) {
-
-                                upgradeRates.epic =
-                                    Math.max(
-                                        5,
-                                        upgradeRates.epic - 2.5
-                                    );
-
-                            }
-
-                        } else {
-
-                            showToast(
-                                currentLang === 'vi'
-                                ? `💥 NÂNG CẤP THẤT BẠI! -1 ${type.toUpperCase()}`
-                                : `💥 UPGRADE FAILED! -1 ${type.toUpperCase()}`
-                            );
-
-                        }
-
-                        updateInventoryUI();
-                    };
-
-                /* =========================
-                   EQUIP
-                ========================= */
-
-                window.equipItem =
-                    function(type) {
-
-                        if (
-                            inventory[type] <= 0
-                        ) {
-
-                            showToast(
-                                currentLang === 'vi'
-                                ? "❌ BẠN KHÔNG CÓ ITEM NÀY!"
-                                : "❌ YOU DON'T HAVE THIS ITEM!"
-                            );
-
-                            return;
-                        }
-
-                        equippedItemType =
-                            type;
-
-                        document.getElementById(
-                            'txt-equipped'
-                        ).innerText =
-                            type.toUpperCase() +
-                            ` (Lv.${itemLevels[type]})`;
-
-                        showToast(
-                            currentLang === 'vi'
-                            ? `🛡️ ĐÃ ĐEO ${type.toUpperCase()} LV.${itemLevels[type]}`
-                            : `🛡️ EQUIPPED ${type.toUpperCase()} LV.${itemLevels[type]}`
-                        );
-                    };
-
-                /* =========================
-                   LANGUAGE
-                ========================= */
-
-                function toggleLanguage() {
-
-                    currentLang =
-                        currentLang === 'vi'
-                        ? 'en'
-                        : 'vi';
-
-                    document.getElementById(
-                        'lang-indicator'
-                    ).innerText =
-                        currentLang.toUpperCase();
-
-                    const elements =
-                        document.querySelectorAll(
-                            '.lang-txt'
-                        );
-
-                    elements.forEach(el => {
-
-                        el.innerText =
-                            el.getAttribute(
-                                `data-${currentLang}`
-                            );
-
-                    });
-
-                    showToast(
-                        currentLang === 'vi'
-                        ? "🇻🇳 ĐÃ CHUYỂN SANG TIẾNG VIỆT"
-                        : "🇬🇧 SWITCHED TO ENGLISH"
-                    );
-                }
-
-                /* =========================
-                   COLOR
-                ========================= */
-
-                document.getElementById(
-                    'picker-body'
-                ).addEventListener(
-                    'input',
-                    e => {
-
-                        playerBodyMat.color.set(
-                            e.target.value
-                        );
-
-                    }
-                );
-
-                document.getElementById(
-                    'picker-skin'
-                ).addEventListener(
-                    'input',
-                    e => {
-
-                        skinMat.color.set(
-                            e.target.value
-                        );
-
-                    }
-                );
-
-                document.getElementById(
-                    'picker-halo'
-                ).addEventListener(
-                    'input',
-                    e => {
-
-                        haloMat.color.set(
-                            e.target.value
-                        );
-
-                    }
-                );
-
-                /* =========================
-                   CAMERA 360
-                ========================= */
-
-                let isDragging = false;
-
-                let previousMousePosition = {
-                    x: 0,
-                    y: 0
-                };
-
-                let cameraAngleX = 0;
-
-                let cameraAngleY = 0.55;
-
-                let cameraDistance = 10;
-
-                window.addEventListener(
-                    'mousedown',
-                    e => {
-
-                        if (
-                            e.target.tagName !==
-                            'CANVAS'
-                        )
-                            return;
-
-                        isDragging = true;
-
-                        previousMousePosition = {
-                            x: e.clientX,
-                            y: e.clientY
-                        };
-
-                    }
-                );
-
-                window.addEventListener(
-                    'mousemove',
-                    e => {
-
-                        if (!isDragging)
-                            return;
-
-                        const deltaX =
-                            e.clientX -
-                            previousMousePosition.x;
-
-                        const deltaY =
-                            e.clientY -
-                            previousMousePosition.y;
-
-                        /*
-                           Xoay ngang không giới hạn.
-                           Vì góc được tính bằng sin/cos
-                           nên quay bao nhiêu vòng cũng được.
-                        */
-
-                        cameraAngleX -=
-                            deltaX * 0.01;
-
-                        cameraAngleY +=
-                            deltaY * 0.01;
-
-                        cameraAngleY =
-                            Math.max(
-                                0.12,
-                                Math.min(
-                                    1.45,
-                                    cameraAngleY
-                                )
-                            );
-
-                        previousMousePosition = {
-                            x: e.clientX,
-                            y: e.clientY
-                        };
-
-                    }
-                );
-
-                window.addEventListener(
-                    'mouseup',
-                    () => {
-                        isDragging = false;
-                    }
-                );
-
-                window.addEventListener(
-                    'mouseleave',
-                    () => {
-                        isDragging = false;
-                    }
-                );
-
-                /*
-                   Zoom bằng bánh xe
-                */
-
-                window.addEventListener(
-                    'wheel',
-                    e => {
-
-                        cameraDistance +=
-                            e.deltaY * 0.01;
-
-                        cameraDistance =
-                            Math.max(
-                                4,
-                                Math.min(
-                                    18,
-                                    cameraDistance
-                                )
-                            );
-
-                    },
-                    { passive: true }
-                );
-
-                /* =========================
-                   KEYBOARD
-                ========================= */
-
-                const keys = {};
-
-                let isInvOpen = false;
-
-                let isColorOpen = false;
-
-                window.addEventListener(
-                    'keydown',
-                    e => {
-
-                        initAudio();
-
-                        const k =
-                            e.key.toLowerCase();
-
-                        keys[k] = true;
-
-                        if (
-                            e.key === 'Tab'
-                        ) {
-
-                            e.preventDefault();
-
-                            isInvOpen =
-                                !isInvOpen;
-
-                            document.getElementById(
-                                'inventory-modal'
-                            ).style.display =
-                                isInvOpen
-                                ? 'block'
-                                : 'none';
-
-                        }
-
-                        if (k === 'o') {
-
-                            isColorOpen =
-                                !isColorOpen;
-
-                            document.getElementById(
-                                'color-modal'
-                            ).style.display =
-                                isColorOpen
-                                ? 'block'
-                                : 'none';
-
-                        }
-
-                        if (k === 'v') {
-
-                            toggleLanguage();
-
-                        }
-
-                        if (k === 'f') {
-
-                            if (
-                                inventory.legendary > 0
-                            ) {
-
-                                equipItem(
-                                    'legendary'
-                                );
-
-                            } else if (
-                                inventory.epic > 0
-                            ) {
-
-                                equipItem(
-                                    'epic'
-                                );
-
-                            } else if (
-                                inventory.rare > 0
-                            ) {
-
-                                equipItem(
-                                    'rare'
-                                );
-
-                            } else if (
-                                inventory.common > 0
-                            ) {
-
-                                equipItem(
-                                    'common'
-                                );
-
-                            } else {
-
-                                showToast(
-                                    currentLang === 'vi'
-                                    ? "❌ BẠN CHƯA CÓ ITEM!"
-                                    : "❌ YOU HAVE NO ITEMS!"
-                                );
-
-                            }
-
-                        }
-
-                    }
-                );
-
-                window.addEventListener(
-                    'keyup',
-                    e => {
-
-                        keys[
-                            e.key.toLowerCase()
-                        ] = false;
-
-                    }
-                );
-
-                /* =========================
-                   ATTACK
-                ========================= */
-
-                window.addEventListener(
-                    'click',
-                    e => {
-
-                        if (
-                            e.target.tagName !==
-                            'CANVAS'
-                        )
-                            return;
-
-                        initAudio();
-
-                        if (
-                            isGameEnded ||
-                            isInvOpen ||
-                            isColorOpen
-                        )
-                            return;
-
-                        playBeepSound();
-
-                        let itemBonusMultiplier =
-                            1;
-
-                        if (
-                            equippedItemType
-                        ) {
-
-                            const lvl =
-                                itemLevels[
-                                    equippedItemType
-                                ];
-
-                            if (
-                                equippedItemType ===
-                                'legendary'
-                            ) {
-
-                                itemBonusMultiplier =
-                                    1 +
-                                    (lvl * 2.0);
-
-                            } else {
-
-                                itemBonusMultiplier =
-                                    1 +
-                                    ((lvl - 1) *
-                                    0.25);
-
-                            }
-
-                        }
-
-                        const totalDmg =
-                            Math.floor(
-                                (power / 2) +
-                                swordDmgs[
-                                    swordLevel
-                                ]
-                            ) *
-                            itemBonusMultiplier;
-
-                        if (
-                            gameStage === 1
-                        ) {
-
-                            let monstersKilledInOneHit =
-                                Math.floor(
-                                    totalDmg /
-                                    redMonsterHP
-                                );
-
-                            if (
-                                monstersKilledInOneHit < 1
-                            )
-                                monstersKilledInOneHit = 1;
-
-                            killCount +=
-                                monstersKilledInOneHit;
-
-                            power +=
-                                monstersKilledInOneHit *
-                                2;
-
-                            checkUpgradeSword();
-
-                            if (
-                                killCount > 999
-                            )
-                                killCount = 999;
-
-                            document.getElementById(
-                                'val-kills'
-                            ).innerText =
-                                killCount;
-
-                            document.getElementById(
-                                'val-power'
-                            ).innerText =
-                                Math.floor(power);
-
-                            for (
-                                let i = 0;
-                                i < monstersKilledInOneHit;
-                                i++
-                            ) {
-
-                                handleItemDrop();
-
-                            }
-
-                            redMonster.visible =
-                                false;
-
-                            setTimeout(
-                                () => {
-
-                                    if (
-                                        gameStage === 1 &&
-                                        !isGameEnded
-                                    ) {
-
-                                        redMonster.visible =
-                                            true;
-
-                                    }
-
-                                },
-                                100
-                            );
-
-                            if (
-                                killCount >= 999
-                            ) {
-
-                                showToast(
-                                    currentLang === 'vi'
-                                    ? "🌟 ĐÃ ĐẠT 999 MẠNG! CỔNG ĐÃ MỞ!"
-                                    : "🌟 REACHED 999 KILLS! GATE OPEN!"
-                                );
-
-                                gateLightMat.color.setHex(
-                                    0xffd700
-                                );
-
-                            }
-
-                        } else if (
-                            gameStage === 2
-                        ) {
-
-                            octopusHP -=
-                                totalDmg;
-
-                            handleItemDrop();
-
-                            octopusMonster.visible =
-                                false;
-
-                            setTimeout(
-                                () => {
-
-                                    if (
-                                        gameStage === 2 &&
-                                        !isGameEnded
-                                    ) {
-
-                                        octopusMonster.visible =
-                                            true;
-
-                                    }
-
-                                },
-                                100
-                            );
-
-                            if (
-                                octopusHP <= 0
-                            ) {
-
-                                octopusMonster.visible =
-                                    false;
-
-                                gameStage = 3;
-
-                                bossMonster.visible =
-                                    true;
-
-                                document.getElementById(
-                                    'boss-hp-bar'
-                                ).style.display =
-                                    'block';
-
-                                showToast(
-                                    currentLang === 'vi'
-                                    ? `⚠️ BOSS MA VƯƠNG (${currentBossMaxHP.toLocaleString()} HP) XUẤT HIỆN!`
-                                    : `⚠️ DEMON BOSS (${currentBossMaxHP.toLocaleString()} HP) APPEARED!`
-                                );
-
-                            }
-
-                        } else if (
-                            gameStage === 3
-                        ) {
-
-                            bossHP -=
-                                totalDmg;
-
-                            if (
-                                bossHP < 0
-                            )
-                                bossHP = 0;
-
-                            const hpPercent =
-                                Math.max(
-                                    0,
-                                    (bossHP /
-                                    currentBossMaxHP) *
-                                    100
-                                );
-
-                            document.getElementById(
-                                'boss-hp-inner'
-                            ).style.width =
-                                hpPercent + '%';
-
-                            document.getElementById(
-                                'boss-hp-text'
-                            ).innerText =
-                                `${Math.floor(bossHP)} / ${currentBossMaxHP}`;
-
-                            if (
-                                bossHP <= 0
-                            ) {
-
-                                bossMonster.visible =
-                                    false;
-
-                                document.getElementById(
-                                    'boss-hp-bar'
-                                ).style.display =
-                                    'none';
-
-                                gameStage = 4;
-
-                                showToast(
-                                    currentLang === 'vi'
-                                    ? "👑 BOSS ĐÃ GỤC! HÃY BƯỚC QUA CỔNG!"
-                                    : "👑 BOSS DEFEATED! WALK THROUGH GATE!"
-                                );
-
-                                gateLightMat.color.setHex(
-                                    0xffffff
-                                );
-
-                            }
-
-                        }
-
-                    }
-                );
-
-                /* =========================
-                   SWORD UPGRADE
-                ========================= */
-
-                function checkUpgradeSword() {
-
-                    let newLevel =
-                        swordLevel;
-
-                    if (
-                        killCount >= 200 &&
-                        swordLevel < 1
-                    )
-                        newLevel = 1;
-
-                    if (
-                        killCount >= 500 &&
-                        swordLevel < 2
-                    )
-                        newLevel = 2;
-
-                    if (
-                        killCount >= 850 &&
-                        swordLevel < 3
-                    )
-                        newLevel = 3;
-
-                    if (
-                        newLevel !== swordLevel
-                    ) {
-
-                        swordLevel =
-                            newLevel;
-
-                        swordMat.color.setHex(
-                            swordColors[
-                                swordLevel
-                            ]
-                        );
-
-                        showToast(
-                            `🗡️ ${
-                                currentLang === 'vi'
-                                ? 'NÂNG CẤP KIẾM'
-                                : 'SWORD UPGRADE'
-                            }: ${
-                                swordNames[
-                                    swordLevel
-                                ]
-                            }!`
-                        );
-
-                        document.getElementById(
-                            'val-sword'
-                        ).innerText =
-                            `${swordNames[swordLevel]} (+${swordDmgs[swordLevel]})`;
-
-                        document.getElementById(
-                            'val-sword'
-                        ).style.color =
-                            '#' +
-                            swordColors[
-                                swordLevel
-                            ].toString(16);
-
-                    }
-
-                }
-
-                /* =========================
-                   TOAST
-                ========================= */
-
-                let toastTimer = null;
-
-                function showToast(text) {
-
-                    const toast =
-                        document.getElementById(
-                            'toast'
-                        );
-
-                    toast.innerText =
-                        text;
-
-                    toast.style.display =
-                        'block';
-
-                    clearTimeout(
-                        toastTimer
-                    );
-
-                    toastTimer =
-                        setTimeout(
-                            () => {
-
-                                toast.style.display =
-                                    'none';
-
-                            },
-                            2200
-                        );
-                }
-
-                /* =========================
-                   GAME LOOP
-                ========================= */
-
-                let walkTime = 0;
-
-                function animate() {
-
-                    requestAnimationFrame(
-                        animate
-                    );
-
-                    const speed =
-                        0.12;
-
-                    let isMoving =
-                        false;
-
-                    if (
-                        keys['w'] ||
-                        keys['arrowup']
-                    ) {
-
-                        playerGroup.position.z -=
-                            speed;
-
-                        isMoving = true;
-                    }
-
-                    if (
-                        keys['s'] ||
-                        keys['arrowdown']
-                    ) {
-
-                        playerGroup.position.z +=
-                            speed;
-
-                        isMoving = true;
-                    }
-
-                    if (
-                        keys['a'] ||
-                        keys['arrowleft']
-                    ) {
-
-                        playerGroup.position.x -=
-                            speed;
-
-                        isMoving = true;
-                    }
-
-                    if (
-                        keys['d'] ||
-                        keys['arrowright']
-                    ) {
-
-                        playerGroup.position.x +=
-                            speed;
-
-                        isMoving = true;
-                    }
-
-                    if (isMoving) {
-
-                        walkTime +=
-                            0.2;
-
-                        legL.rotation.x =
-                            Math.sin(walkTime) *
-                            0.5;
-
-                        legR.rotation.x =
-                            -Math.sin(walkTime) *
-                            0.5;
-
-                    } else {
-
-                        legL.rotation.x = 0;
-
-                        legR.rotation.x = 0;
-
-                    }
-
-                    playerGroup.position.x =
-                        Math.max(
-                            -16,
-                            Math.min(
-                                16,
-                                playerGroup.position.x
-                            )
-                        );
-
-                    playerGroup.position.z =
-                        Math.max(
-                            -16,
-                            Math.min(
-                                16,
-                                playerGroup.position.z
-                            )
-                        );
-
-                    /* =========================
-                       NPC ANIMATION
-                    ========================= */
-
-                    const time =
-                        performance.now() *
-                        0.002;
-
-                    upgradeNPC.rotation.y +=
-                        0.003;
-
-                    upgradeNPC.position.y =
-                        Math.sin(time) *
-                        0.04;
-
-                    const npcCrystal =
-                        upgradeNPC.children[
-                            upgradeNPC.children.length - 1
-                        ];
-
-                    if (npcCrystal) {
-
-                        npcCrystal.rotation.y +=
-                            0.02;
-
-                        npcCrystal.position.y =
-                            3 +
-                            Math.sin(time * 2) *
-                            0.12;
-
-                    }
-
-                    /* =========================
-                       GATE
-                    ========================= */
-
-                    const distToGate =
-                        Math.hypot(
-                            playerGroup.position.x,
-                            playerGroup.position.z + 15.5
-                        );
-
-                    const gateMsg =
-                        document.getElementById(
-                            'gate-msg'
-                        );
-
-                    if (
-                        distToGate < 3.5
-                    ) {
-
-                        if (
-                            gameStage === 1 &&
-                            killCount >= 999
-                        ) {
-
-                            gameStage = 2;
-
-                            redMonster.visible =
-                                false;
-
-                            octopusMonster.visible =
-                                true;
-
-                            playerGroup.position.z =
-                                6;
-
-                            showToast(
-                                currentLang === 'vi'
-                                ? "🐙 QUA CỔNG! TIÊU DIỆT BẠCH TUỘC!"
-                                : "🐙 ENTERED GATE! DEFEAT OCTOPUS!"
-                            );
-
-                        } else if (
-                            gameStage === 4
-                        ) {
-
-                            if (
-                                gameLoop === 1
-                            ) {
-
-                                gameLoop = 2;
-
-                                power *= 3;
-
-                                luckMultiplier *=
-                                    3;
-
-                                killCount = 0;
-
-                                gameStage = 1;
-
-                                currentBossMaxHP =
-                                    5000000;
-
-                                bossHP =
-                                    5000000;
-
-                                document.getElementById(
-                                    'val-power'
-                                ).innerText =
-                                    Math.floor(power);
-
-                                document.getElementById(
-                                    'val-kills'
-                                ).innerText =
-                                    killCount;
-
-                                document.getElementById(
-                                    'val-loop'
-                                ).innerText =
-                                    gameLoop;
-
-                                document.getElementById(
-                                    'boss-title'
-                                ).innerText =
-                                    `BOSS MA VƯƠNG (5.000.000 HP)`;
-
-                                document.getElementById(
-                                    'boss-hp-inner'
-                                ).style.width =
-                                    '100%';
-
-                                document.getElementById(
-                                    'boss-hp-text'
-                                ).innerText =
-                                    '5000000 / 5000000';
-
-                                playerGroup.position.z =
-                                    6;
-
-                                gateLightMat.color.setHex(
-                                    0x00ffff
-                                );
-
-                                redMonster.visible =
-                                    true;
-
-                                octopusMonster.visible =
-                                    false;
-
-                                bossMonster.visible =
-                                    false;
-
-                                showToast(
-                                    currentLang === 'vi'
-                                    ? "🔄 VÒNG 2! POWER & LUCK ĐÃ NHÂN 3!"
-                                    : "🔄 LOOP 2! POWER & LUCK *3!"
-                                );
-
-                            } else {
-
-                                isGameEnded =
-                                    true;
-
-                                document.getElementById(
-                                    'victory-screen'
-                                ).style.display =
-                                    'flex';
-
-                                document.getElementById(
-                                    'win-title'
-                                ).innerText =
-                                    "END GAME";
-
-                                document.getElementById(
-                                    'win-desc'
-                                ).innerText =
-                                    currentLang === 'vi'
-                                    ? "✨ CHÚC MỪNG! BẠN ĐÃ HOÀN THÀNH TẤT CẢ THỬ THÁCH VÀ CHINH PHỤC MYSTIC TEMPLE! ✨"
-                                    : "✨ CONGRATULATIONS! YOU COMPLETED ALL MYSTIC TEMPLE CHALLENGES! ✨";
-
-                            }
-
-                        } else if (
-                            gameStage === 1
-                        ) {
-
-                            gateMsg.style.display =
-                                'block';
-
-                        }
-
-                    } else {
-
-                        gateMsg.style.display =
-                            'none';
-
-                    }
-
-                    /* =========================
-                       CAMERA
-                    ========================= */
-
-                    const horizontalDistance =
-                        cameraDistance *
-                        Math.cos(cameraAngleY);
-
-                    camera.position.x =
-                        playerGroup.position.x +
-                        horizontalDistance *
-                        Math.sin(cameraAngleX);
-
-                    camera.position.y =
-                        playerGroup.position.y +
-                        cameraDistance *
-                        Math.sin(cameraAngleY) +
-                        1;
-
-                    camera.position.z =
-                        playerGroup.position.z +
-                        horizontalDistance *
-                        Math.cos(cameraAngleX);
-
-                    camera.lookAt(
-                        playerGroup.position.x,
-                        playerGroup.position.y + 1,
-                        playerGroup.position.z
-                    );
-
-                    starField.rotation.y +=
-                        0.0005;
-
-                    if (
-                        bossMonster.visible
-                    ) {
-
-                        bossMonster.rotation.y +=
-                            0.01;
-
-                    }
-
-                    renderer.render(
-                        scene,
-                        camera
-                    );
-                }
-
-                animate();
-
-                /* =========================
-                   RESIZE
-                ========================= */
-
-                window.addEventListener(
-                    'resize',
-                    () => {
-
-                        camera.aspect =
-                            window.innerWidth /
-                            window.innerHeight;
-
-                        camera.updateProjectionMatrix();
-
-                        renderer.setSize(
-                            window.innerWidth,
-                            window.innerHeight
-                        );
-
-                    }
-                );
-
-                updateInventoryUI();
-
-            } catch(err) {
-
-                console.error(err);
-
-                triggerNO();
+            if(
+                equippedItemType ===
+                "legendary"
+            ) {
+
+                itemMultiplier =
+                    1 + lvl * 2;
+
+            } else {
+
+                itemMultiplier =
+                    1 +
+                    (lvl-1)*0.25;
 
             }
 
         }
 
-    </script>
+        const totalDmg =
+            Math.floor(
+                power/2 +
+                swordDmgs[swordLevel]
+            ) *
+            itemMultiplier;
+
+
+        // STAGE 1
+
+        if(gameStage === 1) {
+
+            let kills =
+                Math.floor(
+                    totalDmg /
+                    redMonsterHP
+                );
+
+            if(kills < 1)
+                kills = 1;
+
+            // QUAN TRỌNG:
+            // MỖI CLICK TỐI ĐA 999
+
+            kills =
+                Math.min(
+                    999,
+                    kills
+                );
+
+            const oldKills =
+                killCount;
+
+            killCount =
+                Math.min(
+                    999,
+                    killCount + kills
+                );
+
+            const realKills =
+                killCount - oldKills;
+
+            power +=
+                realKills * 2;
+
+            checkUpgradeSword();
+
+            document.getElementById(
+                "val-kills"
+            ).innerText =
+                killCount;
+
+            document.getElementById(
+                "val-power"
+            ).innerText =
+                Math.floor(power);
+
+            // DROP GỘP
+            handleItemDrops(
+                realKills
+            );
+
+            redMonster.visible =
+                false;
+
+            setTimeout(
+                ()=>{
+                    if(
+                        gameStage === 1 &&
+                        !isGameEnded
+                    )
+                        redMonster.visible =
+                            true;
+                },
+                100
+            );
+
+            if(killCount >= 999) {
+
+                showToast(
+                    "🌟 ĐỦ 999 MẠNG! CỔNG ĐÃ MỞ!"
+                );
+
+                gateLightMat.color.setHex(
+                    0xffd700
+                );
+
+            }
+
+        }
+
+
+        // STAGE 2
+
+        else if(gameStage === 2) {
+
+            octopusHP -=
+                totalDmg;
+
+            handleItemDrops(1);
+
+            octopusMonster.visible =
+                false;
+
+            setTimeout(
+                ()=>{
+                    if(gameStage === 2)
+                        octopusMonster.visible =
+                            true;
+                },
+                100
+            );
+
+            if(octopusHP <= 0) {
+
+                octopusMonster.visible =
+                    false;
+
+                gameStage = 3;
+
+                bossMonster.visible =
+                    true;
+
+                document.getElementById(
+                    "boss-hp-bar"
+                ).style.display =
+                    "block";
+
+                showToast(
+                    "⚠️ BOSS MA VƯƠNG XUẤT HIỆN!"
+                );
+
+            }
+
+        }
+
+
+        // STAGE 3
+
+        else if(gameStage === 3) {
+
+            bossHP -=
+                totalDmg;
+
+            if(bossHP < 0)
+                bossHP = 0;
+
+            const percent =
+                bossHP /
+                currentBossMaxHP *
+                100;
+
+            document.getElementById(
+                "boss-hp-inner"
+            ).style.width =
+                percent + "%";
+
+            document.getElementById(
+                "boss-hp-text"
+            ).innerText =
+                Math.floor(bossHP) +
+                " / " +
+                currentBossMaxHP;
+
+            if(bossHP <= 0) {
+
+                bossMonster.visible =
+                    false;
+
+                document.getElementById(
+                    "boss-hp-bar"
+                ).style.display =
+                    "none";
+
+                gameStage = 4;
+
+                showToast(
+                    "👑 BOSS ĐÃ GỤC! HÃY ĐI QUA CỔNG!"
+                );
+
+                gateLightMat.color.setHex(
+                    0xffffff
+                );
+
+            }
+
+        }
+
+    }
+);
+
+
+// ================= SWORD UPGRADE =================
+
+function checkUpgradeSword() {
+
+    let newLevel =
+        swordLevel;
+
+    if(
+        killCount >= 200 &&
+        swordLevel < 1
+    )
+        newLevel = 1;
+
+    if(
+        killCount >= 500 &&
+        swordLevel < 2
+    )
+        newLevel = 2;
+
+    if(
+        killCount >= 850 &&
+        swordLevel < 3
+    )
+        newLevel = 3;
+
+    if(
+        newLevel !== swordLevel
+    ) {
+
+        swordLevel =
+            newLevel;
+
+        swordMat.color.setHex(
+            swordColors[
+                swordLevel
+            ]
+        );
+
+        document.getElementById(
+            "val-sword"
+        ).innerText =
+            swordNames[swordLevel] +
+            " (+" +
+            swordDmgs[swordLevel] +
+            " DMG)";
+
+        showToast(
+            "🗡️ KIẾM NÂNG CẤP: " +
+            swordNames[swordLevel]
+        );
+
+    }
+
+}
+
+
+// ================= ANIMATE =================
+
+let walkTime = 0;
+
+function animate() {
+
+    requestAnimationFrame(
+        animate
+    );
+
+    const speed =
+        0.12;
+
+    let moving = false;
+
+    if(keys["w"]) {
+
+        playerGroup.position.z -=
+            speed;
+
+        moving = true;
+
+    }
+
+    if(keys["s"]) {
+
+        playerGroup.position.z +=
+            speed;
+
+        moving = true;
+
+    }
+
+    if(keys["a"]) {
+
+        playerGroup.position.x -=
+            speed;
+
+        moving = true;
+
+    }
+
+    if(keys["d"]) {
+
+        playerGroup.position.x +=
+            speed;
+
+        moving = true;
+
+    }
+
+
+    if(moving) {
+
+        walkTime +=
+            0.2;
+
+        legL.rotation.x =
+            Math.sin(walkTime)*0.5;
+
+        legR.rotation.x =
+            -Math.sin(walkTime)*0.5;
+
+    } else {
+
+        legL.rotation.x = 0;
+        legR.rotation.x = 0;
+
+    }
+
+
+    playerGroup.position.x =
+        Math.max(
+            -16,
+            Math.min(
+                16,
+                playerGroup.position.x
+            )
+        );
+
+    playerGroup.position.z =
+        Math.max(
+            -16,
+            Math.min(
+                16,
+                playerGroup.position.z
+            )
+        );
+
+
+    // ================= NPC UPGRADE =================
+
+    const npcDistance =
+        Math.hypot(
+            playerGroup.position.x + 8,
+            playerGroup.position.z + 5
+        );
+
+    if(npcDistance < 4) {
+
+        document.getElementById(
+            "upgrade-near"
+        ).style.display =
+            "block";
+
+        if(
+            document.getElementById(
+                "upgrade-modal"
+            ).style.display !== "block"
+        ) {
+
+            showUpgradePanel();
+
+        }
+
+    } else {
+
+        document.getElementById(
+            "upgrade-near"
+        ).style.display =
+            "none";
+
+        hideUpgradePanel();
+
+    }
+
+
+    // ================= GATE =================
+
+    const gateDistance =
+        Math.hypot(
+            playerGroup.position.x,
+            playerGroup.position.z + 15.5
+        );
+
+    const gateMsg =
+        document.getElementById(
+            "gate-msg"
+        );
+
+    if(gateDistance < 3.5) {
+
+        if(
+            gameStage === 1 &&
+            killCount >= 999
+        ) {
+
+            gameStage = 2;
+
+            redMonster.visible =
+                false;
+
+            octopusMonster.visible =
+                true;
+
+            playerGroup.position.z =
+                6;
+
+            showToast(
+                "🐙 QUA CỔNG! ĐÁNH BẠCH TUỘC!"
+            );
+
+        }
+
+        else if(gameStage === 4) {
+
+            if(gameLoop === 1) {
+
+                gameLoop = 2;
+
+                power *= 3;
+
+                luckMultiplier *= 3;
+
+                killCount = 0;
+
+                gameStage = 1;
+
+                currentBossMaxHP =
+                    5000000;
+
+                bossHP =
+                    5000000;
+
+                document.getElementById(
+                    "val-power"
+                ).innerText =
+                    Math.floor(power);
+
+                document.getElementById(
+                    "val-kills"
+                ).innerText =
+                    0;
+
+                document.getElementById(
+                    "val-loop"
+                ).innerText =
+                    2;
+
+                playerGroup.position.z =
+                    6;
+
+                gateLightMat.color.setHex(
+                    0x00ffff
+                );
+
+                showToast(
+                    "🔄 LOOP 2! POWER ×3! LUCK ×3!"
+                );
+
+            } else {
+
+                isGameEnded =
+                    true;
+
+                document.getElementById(
+                    "victory-screen"
+                ).style.display =
+                    "flex";
+
+                document.getElementById(
+                    "win-desc"
+                ).innerText =
+                    "✨ CHÚC MỪNG! BẠN ĐÃ CHINH PHỤC MYSTIC TEMPLE! ✨";
+
+            }
+
+        }
+
+        else if(gameStage === 1) {
+
+            gateMsg.style.display =
+                "block";
+
+        }
+
+    } else {
+
+        gateMsg.style.display =
+            "none";
+
+    }
+
+
+    // ================= CAMERA =================
+
+    camera.position.x =
+        playerGroup.position.x +
+        cameraDistance *
+        Math.sin(cameraAngleX) *
+        Math.cos(cameraAngleY);
+
+    camera.position.y =
+        playerGroup.position.y +
+        cameraDistance *
+        Math.sin(cameraAngleY) +
+        1;
+
+    camera.position.z =
+        playerGroup.position.z +
+        cameraDistance *
+        Math.cos(cameraAngleX) *
+        Math.cos(cameraAngleY);
+
+    camera.lookAt(
+        playerGroup.position.x,
+        playerGroup.position.y + 1,
+        playerGroup.position.z
+    );
+
+
+    stars.rotation.y +=
+        0.0005;
+
+    if(bossMonster.visible)
+        bossMonster.rotation.y +=
+            0.01;
+
+    npcRing.rotation.z +=
+        0.01;
+
+    renderer.render(
+        scene,
+        camera
+    );
+
+}
+
+animate();
+
+
+// ================= RESIZE =================
+
+window.addEventListener(
+    "resize",
+    ()=>{
+
+        camera.aspect =
+            window.innerWidth /
+            window.innerHeight;
+
+        camera.updateProjectionMatrix();
+
+        renderer.setSize(
+            window.innerWidth,
+            window.innerHeight
+        );
+
+    }
+);
+
+
+} catch(error) {
+
+    document.getElementById(
+        "error-no"
+    ).style.display =
+        "flex";
+
+}
+
+}
+
+</script>
 
 </body>
 </html>
