@@ -125,13 +125,73 @@
             transform: translateX(-50%);
             background: rgba(10, 5, 20, 0.85);
             color: #ddd;
-            padding: 10px 20px;
-            border-radius: 15px;
+            padding: 8px 18px;
+            border-radius: 20px;
             font-size: 13px;
             text-align: center;
             border: 1px solid #a335ee;
-            pointer-events: none;
             z-index: 10;
+            cursor: pointer;
+            user-select: none;
+        }
+
+        /* ===== QUICK ACTION ICON BUTTONS (top-right, like reference UI) ===== */
+
+        #quick-actions {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            z-index: 20;
+        }
+
+        .qa-btn {
+            position: relative;
+            width: 58px;
+            height: 58px;
+            border-radius: 14px;
+            background: linear-gradient(160deg, rgba(40,20,60,0.92), rgba(15,8,25,0.92));
+            border: 2px solid #a335ee;
+            box-shadow: 0 0 12px rgba(163,53,238,0.55), inset 0 0 10px rgba(163,53,238,0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 26px;
+            cursor: pointer;
+            transition: transform 0.12s ease, box-shadow 0.12s ease;
+        }
+
+        .qa-btn:active {
+            transform: scale(0.92);
+        }
+
+        .qa-btn:hover {
+            box-shadow: 0 0 18px rgba(163,53,238,0.85), inset 0 0 10px rgba(163,53,238,0.25);
+        }
+
+        .qa-btn .qa-badge {
+            position: absolute;
+            top: -6px;
+            left: -6px;
+            background: #ffd700;
+            color: #1a1a24;
+            font-size: 10px;
+            font-weight: 900;
+            padding: 1px 5px;
+            border-radius: 6px;
+            border: 1px solid rgba(0,0,0,0.4);
+            letter-spacing: 0.5px;
+        }
+
+        #qa-login {
+            border-color: #ffd700;
+            box-shadow: 0 0 12px rgba(255,215,0,0.55), inset 0 0 10px rgba(255,215,0,0.15);
+        }
+
+        #qa-login:hover {
+            box-shadow: 0 0 18px rgba(255,215,0,0.85), inset 0 0 10px rgba(255,215,0,0.25);
         }
 
         .modal-box {
@@ -355,6 +415,20 @@
         🔒 CẦN ĐỦ 999 MẠNG ĐỂ MỞ CỔNG!
     </div>
 
+    <div id="quick-actions">
+
+        <div class="qa-btn" id="qa-inventory" onclick="toggleInventory()">
+            <span class="qa-badge">TAB</span>
+            🎒
+        </div>
+
+        <div class="qa-btn" id="qa-login" onclick="toggleLogin()">
+            <span class="qa-badge">J</span>
+            🔑
+        </div>
+
+    </div>
+
     <div id="hud">
 
         <div class="stat-box" id="power-box">
@@ -397,25 +471,6 @@
                 TK
             </span>:
             <span id="val-account">--</span>
-        </div>
-
-    </div>
-
-    <div id="boss-hp-bar">
-
-        <div
-            id="boss-title"
-            style="font-size:12px;margin-bottom:3px;font-weight:bold;color:#ff4d4d;"
-        >
-            BOSS MA VƯƠNG (2.000.000 HP)
-        </div>
-
-        <div style="background:#222;border-radius:6px;overflow:hidden;">
-            <div id="boss-hp-inner"></div>
-        </div>
-
-        <div id="boss-hp-text" style="font-size:11px;margin-top:2px;">
-            2000000 / 2000000
         </div>
 
     </div>
@@ -762,80 +817,9 @@
 
     </div>
 
-    <div id="instructions">
+    <div id="instructions" onclick="toggleLanguage()">
 
-        <b>[WASD]</b>
-        <span
-            class="lang-txt"
-            data-vi="Di chuyển"
-            data-en="Move"
-        >
-            Di chuyển
-        </span>
-
-        |
-
-        <b>[Chuột + Kéo]</b>
-        <span
-            class="lang-txt"
-            data-vi="Xoay 360°"
-            data-en="Rotate 360°"
-        >
-            Xoay 360°
-        </span>
-
-        |
-
-        <b>[Cuộn]</b>
-        Zoom
-
-        |
-
-        <b>[TAB]</b>
-        <span
-            class="lang-txt"
-            data-vi="Túi đồ"
-            data-en="Inventory"
-        >
-            Túi đồ
-        </span>
-
-        |
-
-        <b>[F]</b>
-        <span
-            class="lang-txt"
-            data-vi="Đeo đồ"
-            data-en="Equip"
-        >
-            Đeo đồ
-        </span>
-
-        |
-
-        <b>[G]</b>
-        <span
-            class="lang-txt"
-            data-vi="Gộp kiếm GoD"
-            data-en="Fuse GoD Sword"
-        >
-            Gộp kiếm GoD
-        </span>
-
-        |
-
-        <b>[J]</b>
-        <span
-            class="lang-txt"
-            data-vi="Đăng nhập/Lưu"
-            data-en="Login/Save"
-        >
-            Đăng nhập/Lưu
-        </span>
-
-        |
-
-        <b>[V]</b>
+        🌐
         <span
             class="lang-txt"
             data-vi="Ngôn ngữ"
@@ -845,6 +829,8 @@
         </span>:
 
         <span id="lang-indicator">VI</span>
+
+        <b style="opacity:0.6;font-weight:normal;">[V]</b>
 
     </div>
 
@@ -3070,6 +3056,66 @@
                     };
 
                 /* =========================
+                   INVENTORY / LOGIN TOGGLES
+                   (dùng chung cho phím tắt & nút icon)
+                ========================= */
+
+                window.toggleInventory =
+                    function() {
+
+                        isInvOpen =
+                            !isInvOpen;
+
+                        document.getElementById(
+                            'inventory-modal'
+                        ).style.display =
+                            isInvOpen
+                            ? 'block'
+                            : 'none';
+
+                    };
+
+                window.toggleLogin =
+                    function() {
+
+                        isLoginOpen =
+                            !isLoginOpen;
+
+                        document.getElementById(
+                            'login-modal'
+                        ).style.display =
+                            isLoginOpen
+                            ? 'block'
+                            : 'none';
+
+                        document.getElementById(
+                            'login-status'
+                        ).innerText = '';
+
+                        if (
+                            isLoginOpen
+                        ) {
+
+                            setTimeout(
+                                () => {
+
+                                    const inp =
+                                        document.getElementById(
+                                            'login-input'
+                                        );
+
+                                    if (inp)
+                                        inp.focus();
+
+                                },
+                                50
+                            );
+
+                        }
+
+                    };
+
+                /* =========================
                    LANGUAGE
                 ========================= */
 
@@ -3400,15 +3446,7 @@
 
                             e.preventDefault();
 
-                            isInvOpen =
-                                !isInvOpen;
-
-                            document.getElementById(
-                                'inventory-modal'
-                            ).style.display =
-                                isInvOpen
-                                ? 'block'
-                                : 'none';
+                            toggleInventory();
 
                         }
 
@@ -3440,36 +3478,7 @@
 
                         if (k === 'j') {
 
-                            isLoginOpen =
-                                !isLoginOpen;
-
-                            document.getElementById(
-                                'login-modal'
-                            ).style.display =
-                                isLoginOpen
-                                ? 'block'
-                                : 'none';
-
-                            document.getElementById(
-                                'login-status'
-                            ).innerText = '';
-
-                            if (
-                                isLoginOpen
-                            ) {
-
-                                setTimeout(
-                                    () => {
-
-                                        document.getElementById(
-                                            'login-input'
-                                        ).focus();
-
-                                    },
-                                    50
-                                );
-
-                            }
+                            toggleLogin();
 
                         }
 
@@ -4453,6 +4462,39 @@
                         legR.rotation.x =
                             -Math.sin(walkTime) *
                             0.5;
+
+                        /*
+                           Nhân vật xoay mặt theo
+                           hướng di chuyển (WASD)
+                        */
+
+                        let moveX = 0;
+                        let moveZ = 0;
+
+                        if (keys['w'] || keys['arrowup']) moveZ -= 1;
+                        if (keys['s'] || keys['arrowdown']) moveZ += 1;
+                        if (keys['a'] || keys['arrowleft']) moveX -= 1;
+                        if (keys['d'] || keys['arrowright']) moveX += 1;
+
+                        if (moveX !== 0 || moveZ !== 0) {
+
+                            const targetAngle =
+                                Math.atan2(moveX, moveZ);
+
+                            let angleDiff =
+                                targetAngle -
+                                playerGroup.rotation.y;
+
+                            angleDiff =
+                                Math.atan2(
+                                    Math.sin(angleDiff),
+                                    Math.cos(angleDiff)
+                                );
+
+                            playerGroup.rotation.y +=
+                                angleDiff * 0.25;
+
+                        }
 
                     } else {
 
