@@ -194,6 +194,17 @@
             box-shadow: 0 0 18px rgba(255,215,0,0.85), inset 0 0 10px rgba(255,215,0,0.25);
         }
 
+        #qa-music {
+            border-color: #00ffcc;
+            box-shadow: 0 0 12px rgba(0,255,204,0.4), inset 0 0 10px rgba(0,255,204,0.1);
+            opacity: 0.6;
+        }
+
+        #qa-music.qa-music-on {
+            opacity: 1;
+            box-shadow: 0 0 18px rgba(0,255,204,0.9), inset 0 0 10px rgba(0,255,204,0.3);
+        }
+
         .modal-box {
             position: absolute;
             top: 50%;
@@ -425,6 +436,11 @@
         <div class="qa-btn" id="qa-login" onclick="toggleLogin()">
             <span class="qa-badge">J</span>
             🔑
+        </div>
+
+        <div class="qa-btn" id="qa-music" onclick="toggleMusic()">
+            <span class="qa-badge">M</span>
+            🎵
         </div>
 
     </div>
@@ -1089,6 +1105,167 @@
             });
         }
 
+        /* =========================
+           NHẠC NỀN CHILL
+           (tạo bằng oscillator, không cần
+           file nhạc ngoài, bật/tắt bằng nút)
+        ========================= */
+
+        let isMusicOn = false;
+
+        let musicGain = null;
+
+        let musicNodes = [];
+
+        let musicTimer = null;
+
+        function startMusic() {
+
+            initAudio();
+
+            if (!audioCtx) return;
+
+            if (musicGain) return;
+
+            musicGain =
+                audioCtx.createGain();
+
+            musicGain.gain.setValueAtTime(
+                0,
+                audioCtx.currentTime
+            );
+
+            musicGain.gain.linearRampToValueAtTime(
+                0.06,
+                audioCtx.currentTime + 1.5
+            );
+
+            musicGain.connect(
+                audioCtx.destination
+            );
+
+            const chordFreqs = [
+                130.81,
+                164.81,
+                196.00,
+                246.94
+            ];
+
+            chordFreqs.forEach(freq => {
+
+                const osc =
+                    audioCtx.createOscillator();
+
+                const lfo =
+                    audioCtx.createOscillator();
+
+                const lfoGain =
+                    audioCtx.createGain();
+
+                osc.type = 'sine';
+
+                osc.frequency.setValueAtTime(
+                    freq,
+                    audioCtx.currentTime
+                );
+
+                lfo.type = 'sine';
+
+                lfo.frequency.setValueAtTime(
+                    0.08 + Math.random() * 0.05,
+                    audioCtx.currentTime
+                );
+
+                lfoGain.gain.setValueAtTime(
+                    2,
+                    audioCtx.currentTime
+                );
+
+                lfo.connect(lfoGain);
+
+                lfoGain.connect(
+                    osc.frequency
+                );
+
+                osc.connect(musicGain);
+
+                lfo.start();
+                osc.start();
+
+                musicNodes.push(osc, lfo);
+
+            });
+
+        }
+
+        function stopMusic() {
+
+            if (!musicGain) return;
+
+            const g = musicGain;
+
+            const nodes = musicNodes;
+
+            if (audioCtx) {
+
+                g.gain.linearRampToValueAtTime(
+                    0,
+                    audioCtx.currentTime + 0.8
+                );
+
+            }
+
+            setTimeout(() => {
+
+                nodes.forEach(n => {
+
+                    try { n.stop(); } catch(e) {}
+
+                });
+
+                try { g.disconnect(); } catch(e) {}
+
+            }, 900);
+
+            musicGain = null;
+
+            musicNodes = [];
+
+        }
+
+        window.toggleMusic =
+            function() {
+
+                initAudio();
+
+                isMusicOn = !isMusicOn;
+
+                if (isMusicOn) {
+
+                    startMusic();
+
+                } else {
+
+                    stopMusic();
+
+                }
+
+                const btn =
+                    document.getElementById(
+                        'qa-music'
+                    );
+
+                if (btn) {
+
+                    btn.classList.toggle(
+                        'qa-music-on',
+                        isMusicOn
+                    );
+
+                }
+
+            };
+
         if (typeof THREE === 'undefined') {
 
             triggerNO();
@@ -1182,6 +1359,22 @@
                 let bossHP = 2000000;
 
                 let isGameEnded = false;
+
+                /* =========================
+                   FINAL BOSS STATE
+                   (thử thách phụ sau vòng 2,
+                   mở bằng phím D tại cổng)
+                ========================= */
+
+                let finalBossActive = false;
+
+                const finalBossMaxHP =
+                    1000000000;
+
+                let finalBossHP =
+                    finalBossMaxHP;
+
+                let hasBossTitle = false;
 
                 const scene =
                     new THREE.Scene();
@@ -2392,6 +2585,141 @@
 
                 scene.add(
                     redMonster
+                );
+
+                /* =========================
+                   FINAL BOSS (con quái đỏ khổng lồ)
+                   1.000.000.000 HP - mở khoá bằng phím D
+                   sau khi hoàn thành vòng 2
+                ========================= */
+
+                const finalBossMonster =
+                    createRedMonster();
+
+                finalBossMonster.scale.set(
+                    4.5,
+                    4.5,
+                    4.5
+                );
+
+                finalBossMonster.traverse(
+                    child => {
+
+                        if (
+                            child.isMesh &&
+                            child.material &&
+                            child.material.color &&
+                            child.material.color.getHex() === 0xff4d4d
+                        ) {
+
+                            child.material =
+                                new THREE.MeshLambertMaterial({
+                                    color: 0x8b0000
+                                });
+
+                        }
+
+                    }
+                );
+
+                finalBossMonster.position.set(
+                    0,
+                    0,
+                    -6
+                );
+
+                finalBossMonster.visible =
+                    false;
+
+                scene.add(
+                    finalBossMonster
+                );
+
+                /* =========================
+                   DANH HIỆU [BOSS] CẦU VỒNG
+                   (hiện phía trên đầu nhân vật
+                   sau khi hạ gục FINAL BOSS)
+                ========================= */
+
+                function createBossTitleSprite() {
+
+                    const canvas =
+                        document.createElement('canvas');
+
+                    canvas.width = 256;
+                    canvas.height = 64;
+
+                    const ctx =
+                        canvas.getContext('2d');
+
+                    ctx.clearRect(0, 0, 256, 64);
+
+                    ctx.font =
+                        'bold 42px Impact, sans-serif';
+
+                    ctx.textAlign = 'center';
+
+                    ctx.textBaseline = 'middle';
+
+                    ctx.lineWidth = 6;
+
+                    ctx.strokeStyle =
+                        'rgba(0,0,0,0.85)';
+
+                    ctx.strokeText(
+                        '[BOSS]',
+                        128,
+                        34
+                    );
+
+                    ctx.fillStyle =
+                        '#ffffff';
+
+                    ctx.fillText(
+                        '[BOSS]',
+                        128,
+                        34
+                    );
+
+                    const tex =
+                        new THREE.CanvasTexture(
+                            canvas
+                        );
+
+                    const mat =
+                        new THREE.SpriteMaterial({
+                            map: tex,
+                            transparent: true,
+                            depthTest: false
+                        });
+
+                    const sprite =
+                        new THREE.Sprite(
+                            mat
+                        );
+
+                    sprite.scale.set(
+                        2.2,
+                        0.55,
+                        1
+                    );
+
+                    sprite.position.set(
+                        0,
+                        3.1,
+                        0
+                    );
+
+                    sprite.visible = false;
+
+                    return sprite;
+                }
+
+                const bossTitleSprite =
+                    createBossTitleSprite();
+
+                playerGroup.add(
+                    bossTitleSprite
                 );
 
                 /* =========================
