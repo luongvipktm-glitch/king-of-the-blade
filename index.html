@@ -479,7 +479,7 @@
             🎵
         </div>
 
-        <div class="qa-btn" id="qa-fuse" onclick="fuseGoDSword()">
+        <div class="qa-btn" id="qa-fuse" onclick="handleGAction()">
             <span class="qa-badge">G</span>
             🗡️
         </div>
@@ -494,6 +494,14 @@
                 SỨC MẠNH
             </span>:
             <span id="val-power">10</span>
+        </div>
+
+        <div class="stat-box" id="hp-box" style="border-color:#00ffcc;color:#00ffcc;">
+            ❤️
+            <span class="lang-txt" data-vi="MÁU" data-en="HP">
+                MÁU
+            </span>:
+            <span id="val-hp">1m / 1m</span>
         </div>
 
         <div class="stat-box" id="sword-box">
@@ -1420,6 +1428,134 @@
                 const FINAL_BOSS_KILLS_NEEDED = 9999;
 
                 let hasBossTitle = false;
+
+                let readyForGoDTitle = false;
+
+                /* =========================
+                   FORMAT SỐ: 10000 -> 10k,
+                   1000000 -> 1m, 1000000000 -> 1b
+                ========================= */
+
+                function formatNum(n) {
+
+                    n = Math.floor(n);
+
+                    const sign = n < 0 ? '-' : '';
+
+                    n = Math.abs(n);
+
+                    if (n >= 1000000000) {
+
+                        return sign +
+                            (n / 1000000000)
+                                .toFixed(
+                                    (n % 1000000000 === 0) ? 0 : 2
+                                ) + 'b';
+
+                    }
+
+                    if (n >= 1000000) {
+
+                        return sign +
+                            (n / 1000000)
+                                .toFixed(
+                                    (n % 1000000 === 0) ? 0 : 2
+                                ) + 'm';
+
+                    }
+
+                    if (n >= 1000) {
+
+                        return sign +
+                            (n / 1000)
+                                .toFixed(
+                                    (n % 1000 === 0) ? 0 : 1
+                                ) + 'k';
+
+                    }
+
+                    return sign + n;
+                }
+
+                /* =========================
+                   MÁU NGƯỜI CHƠI
+                   (tăng theo đồ đang đeo / kiếm GoD)
+                ========================= */
+
+                const PLAYER_BASE_HP = 1000000;
+
+                function getPlayerMaxHP() {
+
+                    if (hasGoDSword)
+                        return 500000000;
+
+                    if (equippedItemType === 'legendary')
+                        return 350000000;
+
+                    if (equippedItemType === 'epic')
+                        return 200000000;
+
+                    if (equippedItemType === 'rare')
+                        return 60000000;
+
+                    if (equippedItemType === 'common')
+                        return 30000000;
+
+                    return PLAYER_BASE_HP;
+                }
+
+                let playerMaxHP = PLAYER_BASE_HP;
+
+                let playerHP = PLAYER_BASE_HP;
+
+                function updatePlayerHPUI() {
+
+                    const el =
+                        document.getElementById(
+                            'val-hp'
+                        );
+
+                    if (!el) return;
+
+                    el.innerText =
+                        formatNum(playerHP) +
+                        ' / ' +
+                        formatNum(playerMaxHP);
+
+                    const ratio =
+                        playerHP / playerMaxHP;
+
+                    el.style.color =
+                        ratio > 0.6
+                        ? '#00ffcc'
+                        : (ratio > 0.3 ? '#ffcc00' : '#ff4444');
+
+                }
+
+                function refreshPlayerMaxHP() {
+
+                    playerMaxHP =
+                        getPlayerMaxHP();
+
+                    playerHP =
+                        playerMaxHP;
+
+                    updatePlayerHPUI();
+
+                }
+
+                /* =========================
+                   AFK TRACKING
+                ========================= */
+
+                let lastMoveTime =
+                    performance.now();
+
+                let lastBossAttackTime =
+                    performance.now();
+
+                let lastAfkAttackTime =
+                    performance.now();
 
                 const scene =
                     new THREE.Scene();
@@ -2828,7 +2964,7 @@
                         'rgba(0,0,0,0.85)';
 
                     ctx.strokeText(
-                        '[BOSS]',
+                        '[GoD]',
                         128,
                         34
                     );
@@ -2837,7 +2973,7 @@
                         '#ffffff';
 
                     ctx.fillText(
-                        '[BOSS]',
+                        '[GoD]',
                         128,
                         34
                     );
@@ -3485,7 +3621,7 @@
                         document.getElementById(
                             'val-power'
                         ).innerText =
-                            Math.floor(power);
+                            formatNum(power);
 
                         updateInventoryUI();
 
@@ -3634,6 +3770,8 @@
                         equippedItemType =
                             type;
 
+                        refreshPlayerMaxHP();
+
                         document.getElementById(
                             'txt-equipped'
                         ).innerText =
@@ -3700,6 +3838,8 @@
 
                         hasGoDSword = true;
 
+                        refreshPlayerMaxHP();
+
                         swordMat.color.setHex(
                             0xffffff
                         );
@@ -3735,6 +3875,68 @@
                         updateInventoryUI();
 
                         saveCurrentAccount();
+                    };
+
+                /* =========================
+                   NHẬN DANH HIỆU [GoD] CẦU VỒNG
+                   (sau khi hạ đủ 9999 BOSS cuối,
+                   phải bấm G để nhận)
+                ========================= */
+
+                function claimGoDTitle() {
+
+                    if (!readyForGoDTitle || hasBossTitle)
+                        return;
+
+                    readyForGoDTitle = false;
+
+                    hasBossTitle = true;
+
+                    playGoDFusionSound();
+
+                    document.getElementById(
+                        'victory-screen'
+                    ).style.display =
+                        'flex';
+
+                    document.getElementById(
+                        'win-title'
+                    ).innerText =
+                        "UPDATE MORE";
+
+                    document.getElementById(
+                        'win-desc'
+                    ).innerText =
+                        currentLang === 'vi'
+                        ? `🌈 BẠN ĐÃ NHẬN DANH HIỆU [GoD] CẦU VỒNG! ✨`
+                        : `🌈 YOU EARNED THE RAINBOW [GoD] TITLE! ✨`;
+
+                    saveCurrentAccount();
+
+                }
+
+                /*
+                   Phím/nút [G]: nếu đã đủ điều kiện
+                   nhận danh hiệu [GoD] thì nhận trước,
+                   còn không thì gộp kiếm GoD như cũ
+                */
+
+                window.handleGAction =
+                    function() {
+
+                        if (
+                            readyForGoDTitle &&
+                            !hasBossTitle
+                        ) {
+
+                            claimGoDTitle();
+
+                        } else {
+
+                            fuseGoDSword();
+
+                        }
+
                     };
 
                 /* =========================
@@ -4154,7 +4356,7 @@
 
                         if (k === 'g') {
 
-                            fuseGoDSword();
+                            handleGAction();
 
                         }
 
@@ -4290,17 +4492,7 @@
                    ATTACK
                 ========================= */
 
-                window.addEventListener(
-                    'click',
-                    e => {
-
-                        if (
-                            e.target.tagName !==
-                            'CANVAS'
-                        )
-                            return;
-
-                        initAudio();
+                function performAttack(isAfk) {
 
                         if (
                             isGameEnded ||
@@ -4310,7 +4502,8 @@
                         )
                             return;
 
-                        playBeepSound();
+                        if (!isAfk)
+                            playBeepSound();
 
                         let itemBonusMultiplier =
                             1;
@@ -4351,12 +4544,26 @@
                                 swordLevel
                             ];
 
-                        const totalDmg =
+                        let totalDmg =
                             Math.floor(
                                 (power / 2) +
                                 baseSwordDmg
                             ) *
                             itemBonusMultiplier;
+
+                        /*
+                           AFK chỉ được cộng 50%
+                           sát thương vì afk quá mạnh
+                        */
+
+                        if (isAfk) {
+
+                            totalDmg =
+                                Math.floor(
+                                    totalDmg * 0.5
+                                );
+
+                        }
 
                         if (
                             gameStage === 1
@@ -4395,7 +4602,7 @@
                             document.getElementById(
                                 'val-power'
                             ).innerText =
-                                Math.floor(power);
+                                formatNum(power);
 
                             for (
                                 let i = 0;
@@ -4515,7 +4722,7 @@
                             document.getElementById(
                                 'val-power'
                             ).innerText =
-                                Math.floor(power);
+                                formatNum(power);
 
                             if (
                                 bossHP < 0
@@ -4538,7 +4745,7 @@
                             document.getElementById(
                                 'boss-hp-text'
                             ).innerText =
-                                `${Math.floor(bossHP)} / ${currentBossMaxHP}`;
+                                `${formatNum(bossHP)} / ${formatNum(currentBossMaxHP)}`;
 
                             if (
                                 bossHP <= 0
@@ -4584,7 +4791,7 @@
                             document.getElementById(
                                 'val-power'
                             ).innerText =
-                                Math.floor(power);
+                                formatNum(power);
 
                             if (
                                 finalBossHP < 0
@@ -4607,7 +4814,7 @@
                             document.getElementById(
                                 'boss-hp-text'
                             ).innerText =
-                                `${Math.floor(finalBossHP).toLocaleString()} / ${finalBossMaxHP.toLocaleString()}`;
+                                `${formatNum(finalBossHP)} / ${formatNum(finalBossMaxHP)}`;
 
                             if (
                                 finalBossHP <= 0
@@ -4630,28 +4837,17 @@
                                     ).style.display =
                                         'none';
 
-                                    hasBossTitle = true;
-
                                     gameStage = 4;
 
-                                    playGoDFusionSound();
+                                    readyForGoDTitle = true;
 
-                                    document.getElementById(
-                                        'victory-screen'
-                                    ).style.display =
-                                        'flex';
-
-                                    document.getElementById(
-                                        'win-title'
-                                    ).innerText =
-                                        "UPDATE MORE";
-
-                                    document.getElementById(
-                                        'win-desc'
-                                    ).innerText =
+                                    showToast(
                                         currentLang === 'vi'
-                                        ? `🌈 BẠN ĐÃ HẠ GỤC ${FINAL_BOSS_KILLS_NEEDED} [BOSS] CUỐI VÀ NHẬN DANH HIỆU [BOSS] CẦU VỒNG! ✨`
-                                        : `🌈 YOU DEFEATED ${FINAL_BOSS_KILLS_NEEDED} FINAL [BOSS]ES AND EARNED THE RAINBOW [BOSS] TITLE! ✨`;
+                                        ? `🌈 ĐÃ ĐỦ ${FINAL_BOSS_KILLS_NEEDED}! BẤM [G] ĐỂ NHẬN DANH HIỆU [GoD]!`
+                                        : `🌈 REACHED ${FINAL_BOSS_KILLS_NEEDED}! PRESS [G] TO CLAIM THE [GoD] TITLE!`
+                                    );
+
+                                    saveCurrentAccount();
 
                                 } else {
 
@@ -4676,6 +4872,26 @@
                             }
 
                         }
+
+                }
+
+                /* =========================
+                   ATTACK (click chuột)
+                ========================= */
+
+                window.addEventListener(
+                    'click',
+                    e => {
+
+                        if (
+                            e.target.tagName !==
+                            'CANVAS'
+                        )
+                            return;
+
+                        initAudio();
+
+                        performAttack(false);
 
                     }
                 );
@@ -4862,6 +5078,12 @@
 
                         hasBossTitle: hasBossTitle,
 
+                        readyForGoDTitle: readyForGoDTitle,
+
+                        playerHP: playerHP,
+
+                        playerMaxHP: playerMaxHP,
+
                         currentLang: currentLang,
 
                         playerX: playerGroup.position.x,
@@ -4937,6 +5159,29 @@
 
                     hasBossTitle =
                         data.hasBossTitle || false;
+
+                    readyForGoDTitle =
+                        data.readyForGoDTitle || false;
+
+                    refreshPlayerMaxHP();
+
+                    if (
+                        typeof data.playerHP === 'number' &&
+                        typeof data.playerMaxHP === 'number'
+                    ) {
+
+                        playerMaxHP =
+                            getPlayerMaxHP();
+
+                        playerHP =
+                            Math.min(
+                                data.playerHP,
+                                playerMaxHP
+                            );
+
+                        updatePlayerHPUI();
+
+                    }
 
                     currentLang = data.currentLang;
 
@@ -5058,7 +5303,7 @@
                         document.getElementById(
                             'boss-hp-text'
                         ).innerText =
-                            `${Math.floor(finalBossHP).toLocaleString()} / ${finalBossMaxHP.toLocaleString()}`;
+                            `${formatNum(finalBossHP)} / ${formatNum(finalBossMaxHP)}`;
 
                     } else {
 
@@ -5083,7 +5328,7 @@
                         document.getElementById(
                             'boss-hp-text'
                         ).innerText =
-                            `${Math.floor(bossHP)} / ${currentBossMaxHP}`;
+                            `${formatNum(bossHP)} / ${formatNum(currentBossMaxHP)}`;
 
                     }
 
@@ -5093,7 +5338,7 @@
                     document.getElementById(
                         'val-power'
                     ).innerText =
-                        Math.floor(power);
+                        formatNum(power);
 
                     document.getElementById(
                         'val-kills'
@@ -5329,13 +5574,36 @@
                     let isMoving =
                         false;
 
+                    /*
+                       Di chuyển theo hướng camera:
+                       W luôn đi thẳng về hướng camera
+                       đang nhìn, không còn bị khoá
+                       theo trục world cố định
+                    */
+
+                    const forwardX =
+                        -Math.sin(cameraAngleX);
+
+                    const forwardZ =
+                        -Math.cos(cameraAngleX);
+
+                    const rightX =
+                        forwardZ;
+
+                    const rightZ =
+                        -forwardX;
+
+                    let moveDX = 0;
+
+                    let moveDZ = 0;
+
                     if (
                         keys['w'] ||
                         keys['arrowup']
                     ) {
 
-                        playerGroup.position.z -=
-                            speed;
+                        moveDX += forwardX;
+                        moveDZ += forwardZ;
 
                         isMoving = true;
                     }
@@ -5345,8 +5613,8 @@
                         keys['arrowdown']
                     ) {
 
-                        playerGroup.position.z +=
-                            speed;
+                        moveDX -= forwardX;
+                        moveDZ -= forwardZ;
 
                         isMoving = true;
                     }
@@ -5356,8 +5624,8 @@
                         keys['arrowleft']
                     ) {
 
-                        playerGroup.position.x -=
-                            speed;
+                        moveDX -= rightX;
+                        moveDZ -= rightZ;
 
                         isMoving = true;
                     }
@@ -5367,13 +5635,35 @@
                         keys['arrowright']
                     ) {
 
-                        playerGroup.position.x +=
-                            speed;
+                        moveDX += rightX;
+                        moveDZ += rightZ;
 
                         isMoving = true;
                     }
 
+                    if (
+                        moveDX !== 0 ||
+                        moveDZ !== 0
+                    ) {
+
+                        const len =
+                            Math.hypot(
+                                moveDX,
+                                moveDZ
+                            );
+
+                        playerGroup.position.x +=
+                            (moveDX / len) * speed;
+
+                        playerGroup.position.z +=
+                            (moveDZ / len) * speed;
+
+                    }
+
                     if (isMoving) {
+
+                        lastMoveTime =
+                            performance.now();
 
                         walkTime +=
                             0.2;
@@ -5388,21 +5678,16 @@
 
                         /*
                            Nhân vật xoay mặt theo
-                           hướng di chuyển (WASD)
+                           hướng đang di chuyển thật sự
                         */
 
-                        let moveX = 0;
-                        let moveZ = 0;
-
-                        if (keys['w'] || keys['arrowup']) moveZ -= 1;
-                        if (keys['s'] || keys['arrowdown']) moveZ += 1;
-                        if (keys['a'] || keys['arrowleft']) moveX -= 1;
-                        if (keys['d'] || keys['arrowright']) moveX += 1;
-
-                        if (moveX !== 0 || moveZ !== 0) {
+                        if (
+                            moveDX !== 0 ||
+                            moveDZ !== 0
+                        ) {
 
                             const targetAngle =
-                                Math.atan2(moveX, moveZ);
+                                Math.atan2(moveDX, moveDZ);
 
                             let angleDiff =
                                 targetAngle -
@@ -5551,7 +5836,7 @@
                                 document.getElementById(
                                     'val-power'
                                 ).innerText =
-                                    Math.floor(power);
+                                    formatNum(power);
 
                                 document.getElementById(
                                     'val-kills'
@@ -5697,6 +5982,32 @@
                         bossMonster.rotation.y +=
                             0.01;
 
+                        /*
+                           BOSS có thể di chuyển
+                           đuổi theo người chơi
+                        */
+
+                        const dxB =
+                            playerGroup.position.x -
+                            bossMonster.position.x;
+
+                        const dzB =
+                            playerGroup.position.z -
+                            bossMonster.position.z;
+
+                        const distB =
+                            Math.hypot(dxB, dzB);
+
+                        if (distB > 3) {
+
+                            bossMonster.position.x +=
+                                (dxB / distB) * 0.03;
+
+                            bossMonster.position.z +=
+                                (dzB / distB) * 0.03;
+
+                        }
+
                     }
 
                     if (
@@ -5705,6 +6016,113 @@
 
                         finalBossMonster.rotation.y +=
                             0.015;
+
+                        const dxF =
+                            playerGroup.position.x -
+                            finalBossMonster.position.x;
+
+                        const dzF =
+                            playerGroup.position.z -
+                            finalBossMonster.position.z;
+
+                        const distF =
+                            Math.hypot(dxF, dzF);
+
+                        if (distF > 3.5) {
+
+                            finalBossMonster.position.x +=
+                                (dxF / distF) * 0.035;
+
+                            finalBossMonster.position.z +=
+                                (dzF / distF) * 0.035;
+
+                        }
+
+                    }
+
+                    /* =========================
+                       BOSS PHẢN ĐÒN NGƯỜI CHƠI
+                       (đứng góc tường thì không
+                       bị nhân sát thương)
+                    ========================= */
+
+                    const nowTime =
+                        performance.now();
+
+                    if (
+                        !isGameEnded &&
+                        (gameStage === 2 ||
+                        gameStage === 3 ||
+                        gameStage === 5) &&
+                        (nowTime - lastBossAttackTime > 1500)
+                    ) {
+
+                        lastBossAttackTime =
+                            nowTime;
+
+                        let bossDmg = 0;
+
+                        if (gameStage === 2)
+                            bossDmg = 10000000;
+
+                        else if (
+                            gameStage === 3 ||
+                            gameStage === 5
+                        )
+                            bossDmg = 50000000;
+
+                        const inCorner =
+                            Math.abs(playerGroup.position.x) > 13 &&
+                            Math.abs(playerGroup.position.z) > 13;
+
+                        const dmgMultiplier =
+                            inCorner ? 1 : 2;
+
+                        playerHP -=
+                            bossDmg * dmgMultiplier;
+
+                        if (playerHP <= 0) {
+
+                            playerHP =
+                                playerMaxHP;
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? "💥 BẠN GỤC! ĐÃ HỒI ĐẦY MÁU!"
+                                : "💥 YOU WENT DOWN! HP FULLY RESTORED!"
+                            );
+
+                        }
+
+                        updatePlayerHPUI();
+
+                    }
+
+                    /* =========================
+                       AFK TỰ ĐỘNG ĐÁNH
+                       (đứng yên >2s gần quái/boss)
+                    ========================= */
+
+                    const isAfkNow =
+                        !isGameEnded &&
+                        !isInvOpen &&
+                        !isColorOpen &&
+                        !isLoginOpen &&
+                        (nowTime - lastMoveTime > 2000) &&
+                        (gameStage === 1 ||
+                        gameStage === 2 ||
+                        gameStage === 3 ||
+                        gameStage === 5);
+
+                    if (
+                        isAfkNow &&
+                        (nowTime - lastAfkAttackTime > 1000)
+                    ) {
+
+                        lastAfkAttackTime =
+                            nowTime;
+
+                        performAttack(true);
 
                     }
 
@@ -5765,6 +6183,8 @@
                 );
 
                 updateInventoryUI();
+
+                refreshPlayerMaxHP();
 
             } catch(err) {
 
