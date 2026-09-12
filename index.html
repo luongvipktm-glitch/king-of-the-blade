@@ -136,6 +136,22 @@
             text-align: center;
         }
 
+        #supreme-boss-msg {
+            position: absolute;
+            bottom: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 15, 20, 0.92);
+            padding: 12px 26px;
+            border-radius: 12px;
+            font-weight: bold;
+            font-size: 15px;
+            display: none;
+            z-index: 15;
+            border: 2px solid #00ffff;
+            text-align: center;
+        }
+
         #instructions {
             position: absolute;
             bottom: 15px;
@@ -460,6 +476,16 @@
         data-en="👑 DO YOU WANT TO FACE THE FINAL [BOSS]? PRESS [D]!"
     >
         👑 BẠN CÓ MUỐN ĐỐI ĐẦU [BOSS] CUỐI? NHẤN [D]!
+    </div>
+
+    <div
+        id="supreme-boss-msg"
+        class="lang-txt"
+        data-vi="🌌 NHIỆM VỤ MỚI MỞ KHOÁ: ĐẠI BOSS TỐI THƯỢNG! NHẤN [D]!"
+        data-en="🌌 NEW QUEST UNLOCKED: THE ULTIMATE BOSS! PRESS [D]!"
+        style="border-color:#00ffff;color:#00ffff;box-shadow:0 0 15px rgba(0,255,255,0.7);"
+    >
+        🌌 NHIỆM VỤ MỚI MỞ KHOÁ: ĐẠI BOSS TỐI THƯỢNG! NHẤN [D]!
     </div>
 
     <div id="quick-actions">
@@ -1432,6 +1458,22 @@
                 let readyForGoDTitle = false;
 
                 /* =========================
+                   ĐẠI BOSS TỐI THƯỢNG
+                   (mở khoá sau khi có danh hiệu [GoD],
+                   1000t = 1.000.000.000.000.000 HP)
+                ========================= */
+
+                let supremeBossActive = false;
+
+                let supremeBossDefeated = false;
+
+                const supremeBossMaxHP =
+                    1000000000000000;
+
+                let supremeBossHP =
+                    supremeBossMaxHP;
+
+                /* =========================
                    FORMAT SỐ: 10000 -> 10k,
                    1000000 -> 1m, 1000000000 -> 1b
                 ========================= */
@@ -1443,6 +1485,26 @@
                     const sign = n < 0 ? '-' : '';
 
                     n = Math.abs(n);
+
+                    if (n >= 1000000000000000) {
+
+                        return sign +
+                            (n / 1000000000000000)
+                                .toFixed(
+                                    (n % 1000000000000000 === 0) ? 0 : 2
+                                ) + 'q';
+
+                    }
+
+                    if (n >= 1000000000000) {
+
+                        return sign +
+                            (n / 1000000000000)
+                                .toFixed(
+                                    (n % 1000000000000 === 0) ? 0 : 2
+                                ) + 't';
+
+                    }
 
                     if (n >= 1000000000) {
 
@@ -4426,6 +4488,64 @@
 
                             }
 
+                            else if (
+                                distToGateForBoss < 3.5 &&
+                                gameStage === 4 &&
+                                hasBossTitle &&
+                                !supremeBossActive &&
+                                !supremeBossDefeated
+                            ) {
+
+                                supremeBossActive = true;
+
+                                gameStage = 6;
+
+                                supremeBossHP =
+                                    supremeBossMaxHP;
+
+                                finalBossMonster.visible =
+                                    true;
+
+                                finalBossMonster.scale.set(
+                                    7,
+                                    7,
+                                    7
+                                );
+
+                                finalBossMonster.position.set(
+                                    0,
+                                    0,
+                                    -6
+                                );
+
+                                playerGroup.position.z =
+                                    6;
+
+                                document.getElementById(
+                                    'final-boss-msg'
+                                ).style.display =
+                                    'none';
+
+                                document.getElementById(
+                                    'boss-hp-bar'
+                                ).style.display =
+                                    'block';
+
+                                document.getElementById(
+                                    'boss-title'
+                                ).innerText =
+                                    currentLang === 'vi'
+                                    ? `🌌 ĐẠI BOSS TỐI THƯỢNG (${formatNum(supremeBossMaxHP)} HP)`
+                                    : `🌌 ULTIMATE BOSS (${formatNum(supremeBossMaxHP)} HP)`;
+
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? `🌌 ĐẠI BOSS TỐI THƯỢNG XUẤT HIỆN! (${formatNum(supremeBossMaxHP)} HP)`
+                                    : `🌌 ULTIMATE BOSS APPEARED! (${formatNum(supremeBossMaxHP)} HP)`
+                                );
+
+                            }
+
                         }
 
                         if (k === 'f') {
@@ -4777,9 +4897,6 @@
                             gameStage === 5
                         ) {
 
-                            finalBossHP -=
-                                totalDmg;
-
                             power +=
                                 Math.max(
                                     1,
@@ -4792,6 +4909,45 @@
                                 'val-power'
                             ).innerText =
                                 formatNum(power);
+
+                            /*
+                               Có bao nhiêu dmg thì hạ gục
+                               bấy nhiêu con cùng lúc:
+                               vd dmg 10b, boss 1b máu
+                               -> hạ 10 con 1 lượt
+                            */
+
+                            const killsThisHit =
+                                Math.floor(
+                                    totalDmg /
+                                    finalBossMaxHP
+                                );
+
+                            if (killsThisHit >= 1) {
+
+                                finalBossKillCount +=
+                                    killsThisHit;
+
+                                finalBossHP =
+                                    finalBossMaxHP;
+
+                            } else {
+
+                                finalBossHP -=
+                                    totalDmg;
+
+                                if (
+                                    finalBossHP <= 0
+                                ) {
+
+                                    finalBossKillCount++;
+
+                                    finalBossHP =
+                                        finalBossMaxHP;
+
+                                }
+
+                            }
 
                             if (
                                 finalBossHP < 0
@@ -4817,57 +4973,139 @@
                                 `${formatNum(finalBossHP)} / ${formatNum(finalBossMaxHP)}`;
 
                             if (
-                                finalBossHP <= 0
+                                finalBossKillCount >=
+                                FINAL_BOSS_KILLS_NEEDED
                             ) {
 
-                                finalBossKillCount++;
+                                finalBossKillCount =
+                                    FINAL_BOSS_KILLS_NEEDED;
 
-                                if (
-                                    finalBossKillCount >=
-                                    FINAL_BOSS_KILLS_NEEDED
-                                ) {
+                                finalBossActive = false;
 
-                                    finalBossActive = false;
+                                finalBossMonster.visible =
+                                    false;
 
-                                    finalBossMonster.visible =
-                                        false;
+                                document.getElementById(
+                                    'boss-hp-bar'
+                                ).style.display =
+                                    'none';
 
-                                    document.getElementById(
-                                        'boss-hp-bar'
-                                    ).style.display =
-                                        'none';
+                                gameStage = 4;
 
-                                    gameStage = 4;
+                                readyForGoDTitle = true;
 
-                                    readyForGoDTitle = true;
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? `🌈 ĐÃ ĐỦ ${FINAL_BOSS_KILLS_NEEDED}! BẤM [G] ĐỂ NHẬN DANH HIỆU [GoD]!`
+                                    : `🌈 REACHED ${FINAL_BOSS_KILLS_NEEDED}! PRESS [G] TO CLAIM THE [GoD] TITLE!`
+                                );
 
-                                    showToast(
-                                        currentLang === 'vi'
-                                        ? `🌈 ĐÃ ĐỦ ${FINAL_BOSS_KILLS_NEEDED}! BẤM [G] ĐỂ NHẬN DANH HIỆU [GoD]!`
-                                        : `🌈 REACHED ${FINAL_BOSS_KILLS_NEEDED}! PRESS [G] TO CLAIM THE [GoD] TITLE!`
-                                    );
+                                saveCurrentAccount();
 
-                                    saveCurrentAccount();
+                            } else {
 
-                                } else {
+                                document.getElementById(
+                                    'boss-title'
+                                ).innerText =
+                                    currentLang === 'vi'
+                                    ? `👑 [BOSS] CUỐI (Đã hạ: ${finalBossKillCount}/${FINAL_BOSS_KILLS_NEEDED})`
+                                    : `👑 FINAL [BOSS] (Defeated: ${finalBossKillCount}/${FINAL_BOSS_KILLS_NEEDED})`;
 
-                                    finalBossHP =
-                                        finalBossMaxHP;
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? `💀 ĐÃ HẠ ${finalBossKillCount}/${FINAL_BOSS_KILLS_NEEDED} [BOSS] CUỐI!`
+                                    : `💀 DEFEATED ${finalBossKillCount}/${FINAL_BOSS_KILLS_NEEDED} FINAL [BOSS]!`
+                                );
 
-                                    document.getElementById(
-                                        'boss-title'
-                                    ).innerText =
-                                        currentLang === 'vi'
-                                        ? `👑 [BOSS] CUỐI (Đã hạ: ${finalBossKillCount}/${FINAL_BOSS_KILLS_NEEDED})`
-                                        : `👑 FINAL [BOSS] (Defeated: ${finalBossKillCount}/${FINAL_BOSS_KILLS_NEEDED})`;
+                            }
 
-                                    showToast(
-                                        currentLang === 'vi'
-                                        ? `💀 ĐÃ HẠ ${finalBossKillCount}/${FINAL_BOSS_KILLS_NEEDED} [BOSS] CUỐI!`
-                                        : `💀 DEFEATED ${finalBossKillCount}/${FINAL_BOSS_KILLS_NEEDED} FINAL [BOSS]!`
-                                    );
+                        } else if (
+                            gameStage === 6
+                        ) {
 
-                                }
+                            supremeBossHP -=
+                                totalDmg;
+
+                            power +=
+                                Math.max(
+                                    1,
+                                    Math.floor(
+                                        totalDmg / 500
+                                    )
+                                );
+
+                            document.getElementById(
+                                'val-power'
+                            ).innerText =
+                                formatNum(power);
+
+                            if (
+                                supremeBossHP < 0
+                            )
+                                supremeBossHP = 0;
+
+                            const supremeHpPercent =
+                                Math.max(
+                                    0,
+                                    (supremeBossHP /
+                                    supremeBossMaxHP) *
+                                    100
+                                );
+
+                            document.getElementById(
+                                'boss-hp-inner'
+                            ).style.width =
+                                supremeHpPercent + '%';
+
+                            document.getElementById(
+                                'boss-hp-text'
+                            ).innerText =
+                                `${formatNum(supremeBossHP)} / ${formatNum(supremeBossMaxHP)}`;
+
+                            if (
+                                supremeBossHP <= 0
+                            ) {
+
+                                supremeBossActive = false;
+
+                                supremeBossDefeated = true;
+
+                                finalBossMonster.visible =
+                                    false;
+
+                                finalBossMonster.scale.set(
+                                    4.5,
+                                    4.5,
+                                    4.5
+                                );
+
+                                document.getElementById(
+                                    'boss-hp-bar'
+                                ).style.display =
+                                    'none';
+
+                                gameStage = 4;
+
+                                playGoDFusionSound();
+
+                                document.getElementById(
+                                    'victory-screen'
+                                ).style.display =
+                                    'flex';
+
+                                document.getElementById(
+                                    'win-title'
+                                ).innerText =
+                                    "UPDATE MORE";
+
+                                document.getElementById(
+                                    'win-desc'
+                                ).innerText =
+                                    currentLang === 'vi'
+                                    ? `🌌 BẠN ĐÃ CHINH PHỤC ĐẠI BOSS TỐI THƯỢNG! ✨`
+                                    : `🌌 YOU CONQUERED THE ULTIMATE BOSS! ✨`;
+
+                                saveCurrentAccount();
 
                             }
 
@@ -5080,6 +5318,12 @@
 
                         readyForGoDTitle: readyForGoDTitle,
 
+                        supremeBossActive: supremeBossActive,
+
+                        supremeBossDefeated: supremeBossDefeated,
+
+                        supremeBossHP: supremeBossHP,
+
                         playerHP: playerHP,
 
                         playerMaxHP: playerMaxHP,
@@ -5162,6 +5406,17 @@
 
                     readyForGoDTitle =
                         data.readyForGoDTitle || false;
+
+                    supremeBossActive =
+                        data.supremeBossActive || false;
+
+                    supremeBossDefeated =
+                        data.supremeBossDefeated || false;
+
+                    supremeBossHP =
+                        (typeof data.supremeBossHP === 'number')
+                        ? data.supremeBossHP
+                        : supremeBossMaxHP;
 
                     refreshPlayerMaxHP();
 
@@ -5271,16 +5526,47 @@
                         (gameStage === 3);
 
                     finalBossMonster.visible =
-                        (gameStage === 5);
+                        (gameStage === 5 || gameStage === 6);
+
+                    finalBossMonster.scale.set(
+                        gameStage === 6 ? 7 : 4.5,
+                        gameStage === 6 ? 7 : 4.5,
+                        gameStage === 6 ? 7 : 4.5
+                    );
 
                     document.getElementById(
                         'boss-hp-bar'
                     ).style.display =
-                        (gameStage === 3 || gameStage === 5)
+                        (gameStage === 3 || gameStage === 5 || gameStage === 6)
                         ? 'block'
                         : 'none';
 
-                    if (gameStage === 5) {
+                    if (gameStage === 6) {
+
+                        document.getElementById(
+                            'boss-title'
+                        ).innerText =
+                            currentLang === 'vi'
+                            ? `🌌 ĐẠI BOSS TỐI THƯỢNG (${formatNum(supremeBossMaxHP)} HP)`
+                            : `🌌 ULTIMATE BOSS (${formatNum(supremeBossMaxHP)} HP)`;
+
+                        const supremeHpPercent =
+                            Math.max(
+                                0,
+                                (supremeBossHP / supremeBossMaxHP) * 100
+                            );
+
+                        document.getElementById(
+                            'boss-hp-inner'
+                        ).style.width =
+                            supremeHpPercent + '%';
+
+                        document.getElementById(
+                            'boss-hp-text'
+                        ).innerText =
+                            `${formatNum(supremeBossHP)} / ${formatNum(supremeBossMaxHP)}`;
+
+                    } else if (gameStage === 5) {
 
                         document.getElementById(
                             'boss-title'
@@ -5782,6 +6068,11 @@
                             'final-boss-msg'
                         );
 
+                    const supremeBossMsg =
+                        document.getElementById(
+                            'supreme-boss-msg'
+                        );
+
                     if (
                         distToGate < 3.5
                     ) {
@@ -5899,6 +6190,19 @@
                                 finalBossMsg.style.display =
                                     'block';
 
+                            } else if (
+                                !supremeBossDefeated
+                            ) {
+
+                                /*
+                                   Đã có danh hiệu [GoD],
+                                   mở khoá nhiệm vụ Đại Boss
+                                   Tối Thượng, mời bấm D
+                                */
+
+                                supremeBossMsg.style.display =
+                                    'block';
+
                             } else {
 
                                 isGameEnded =
@@ -5938,6 +6242,9 @@
                             'none';
 
                         finalBossMsg.style.display =
+                            'none';
+
+                        supremeBossMsg.style.display =
                             'none';
 
                     }
@@ -6042,8 +6349,8 @@
 
                     /* =========================
                        BOSS PHẢN ĐÒN NGƯỜI CHƠI
-                       (đứng góc tường thì không
-                       bị nhân sát thương)
+                       (đứng vào 1 trong 4 góc tường
+                       thì miễn nhiễm hoàn toàn)
                     ========================= */
 
                     const nowTime =
@@ -6053,48 +6360,63 @@
                         !isGameEnded &&
                         (gameStage === 2 ||
                         gameStage === 3 ||
-                        gameStage === 5) &&
+                        gameStage === 5 ||
+                        gameStage === 6) &&
                         (nowTime - lastBossAttackTime > 1500)
                     ) {
 
                         lastBossAttackTime =
                             nowTime;
 
-                        let bossDmg = 0;
-
-                        if (gameStage === 2)
-                            bossDmg = 10000000;
-
-                        else if (
-                            gameStage === 3 ||
-                            gameStage === 5
-                        )
-                            bossDmg = 50000000;
-
                         const inCorner =
                             Math.abs(playerGroup.position.x) > 13 &&
                             Math.abs(playerGroup.position.z) > 13;
 
-                        const dmgMultiplier =
-                            inCorner ? 1 : 2;
+                        if (!inCorner) {
 
-                        playerHP -=
-                            bossDmg * dmgMultiplier;
+                            let bossDmg = 0;
 
-                        if (playerHP <= 0) {
+                            if (gameStage === 2)
+                                bossDmg = 10000000;
 
-                            playerHP =
-                                playerMaxHP;
+                            else if (
+                                gameStage === 3 ||
+                                gameStage === 5 ||
+                                gameStage === 6
+                            )
+                                bossDmg = 50000000;
 
-                            showToast(
-                                currentLang === 'vi'
-                                ? "💥 BẠN GỤC! ĐÃ HỒI ĐẦY MÁU!"
-                                : "💥 YOU WENT DOWN! HP FULLY RESTORED!"
-                            );
+                            playerHP -=
+                                bossDmg;
+
+                            if (playerHP <= 0) {
+
+                                playerHP =
+                                    playerMaxHP;
+
+                                power =
+                                    Math.floor(
+                                        power * 0.9
+                                    );
+
+                                document.getElementById(
+                                    'val-power'
+                                ).innerText =
+                                    formatNum(power);
+
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? "💥 BẠN GỤC! MẤT 10% POWER, ĐÃ HỒI ĐẦY MÁU!"
+                                    : "💥 YOU WENT DOWN! LOST 10% POWER, HP RESTORED!"
+                                );
+
+                                saveCurrentAccount();
+
+                            }
+
+                            updatePlayerHPUI();
 
                         }
-
-                        updatePlayerHPUI();
 
                     }
 
@@ -6112,7 +6434,8 @@
                         (gameStage === 1 ||
                         gameStage === 2 ||
                         gameStage === 3 ||
-                        gameStage === 5);
+                        gameStage === 5 ||
+                        gameStage === 6);
 
                     if (
                         isAfkNow &&
