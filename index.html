@@ -223,6 +223,15 @@
             box-shadow: 0 0 18px rgba(0,255,204,0.9), inset 0 0 10px rgba(0,255,204,0.3);
         }
 
+        #qa-fuse {
+            border-color: #ff3333;
+            box-shadow: 0 0 12px rgba(255,51,51,0.5), inset 0 0 10px rgba(255,51,51,0.15);
+        }
+
+        #qa-fuse:hover {
+            box-shadow: 0 0 18px rgba(255,51,51,0.85), inset 0 0 10px rgba(255,51,51,0.25);
+        }
+
         .modal-box {
             position: absolute;
             top: 50%;
@@ -468,6 +477,11 @@
         <div class="qa-btn" id="qa-music" onclick="toggleMusic()">
             <span class="qa-badge">M</span>
             🎵
+        </div>
+
+        <div class="qa-btn" id="qa-fuse" onclick="fuseGoDSword()">
+            <span class="qa-badge">G</span>
+            🗡️
         </div>
 
     </div>
@@ -2667,6 +2681,122 @@
                 );
 
                 /* =========================
+                   FINAL BOSS - THÊM CHI TIẾT
+                   ĐÁNG SỢ HƠN (gai sống lưng,
+                   nanh, hào quang đỏ thẫm)
+                   Chỉ THÊM, không bớt phần cũ
+                ========================= */
+
+                const finalBossSpikeMat =
+                    new THREE.MeshStandardMaterial({
+                        color: 0x100000,
+                        roughness: 0.3,
+                        metalness: 0.5
+                    });
+
+                for (
+                    let sxi = -0.6;
+                    sxi <= 0.6;
+                    sxi += 0.3
+                ) {
+
+                    const spike =
+                        new THREE.Mesh(
+                            new THREE.ConeGeometry(
+                                0.13,
+                                0.55,
+                                8
+                            ),
+                            finalBossSpikeMat
+                        );
+
+                    spike.position.set(
+                        sxi,
+                        2.35,
+                        0
+                    );
+
+                    finalBossMonster.add(
+                        spike
+                    );
+
+                }
+
+                const finalBossFangMat =
+                    new THREE.MeshStandardMaterial({
+                        color: 0xf2f2e6,
+                        roughness: 0.4
+                    });
+
+                const fangL =
+                    new THREE.Mesh(
+                        new THREE.ConeGeometry(
+                            0.07,
+                            0.32,
+                            6
+                        ),
+                        finalBossFangMat
+                    );
+
+                fangL.position.set(
+                    -0.18,
+                    1.62,
+                    0.45
+                );
+
+                fangL.rotation.x =
+                    Math.PI;
+
+                const fangR =
+                    new THREE.Mesh(
+                        new THREE.ConeGeometry(
+                            0.07,
+                            0.32,
+                            6
+                        ),
+                        finalBossFangMat
+                    );
+
+                fangR.position.set(
+                    0.18,
+                    1.62,
+                    0.45
+                );
+
+                fangR.rotation.x =
+                    Math.PI;
+
+                finalBossMonster.add(
+                    fangL,
+                    fangR
+                );
+
+                const finalBossAuraMat =
+                    new THREE.MeshBasicMaterial({
+                        color: 0x990000,
+                        transparent: true,
+                        opacity: 0.15,
+                        side: THREE.BackSide
+                    });
+
+                const finalBossAura =
+                    new THREE.Mesh(
+                        new THREE.SphereGeometry(
+                            1.5,
+                            20,
+                            20
+                        ),
+                        finalBossAuraMat
+                    );
+
+                finalBossAura.position.y =
+                    1.8;
+
+                finalBossMonster.add(
+                    finalBossAura
+                );
+
+                /* =========================
                    DANH HIỆU [BOSS] CẦU VỒNG
                    (hiện phía trên đầu nhân vật
                    sau khi hạ gục FINAL BOSS)
@@ -3014,6 +3144,148 @@
 
                 scene.add(
                     bossMonster
+                );
+
+                /* =========================
+                   BOSS - THÊM CHI TIẾT ĐÁNG SỢ
+                   (gai nhọn, răng nanh, hào quang đỏ)
+                   Chỉ THÊM, không bớt phần cũ
+                ========================= */
+
+                const bossSpikeMat =
+                    new THREE.MeshStandardMaterial({
+                        color: 0x1a0000,
+                        roughness: 0.35,
+                        metalness: 0.4
+                    });
+
+                const bossHeadCenterY = 1.4;
+
+                const bossHeadRadius = 1.2;
+
+                for (
+                    let i = 0;
+                    i < 10;
+                    i++
+                ) {
+
+                    const theta =
+                        Math.random() * Math.PI * 2;
+
+                    const phi =
+                        Math.random() * Math.PI * 0.85;
+
+                    const sx =
+                        bossHeadRadius *
+                        Math.sin(phi) *
+                        Math.cos(theta);
+
+                    const sy =
+                        bossHeadCenterY +
+                        bossHeadRadius *
+                        Math.cos(phi);
+
+                    const sz =
+                        bossHeadRadius *
+                        Math.sin(phi) *
+                        Math.sin(theta);
+
+                    const spike =
+                        new THREE.Mesh(
+                            new THREE.ConeGeometry(
+                                0.16,
+                                0.65,
+                                8
+                            ),
+                            bossSpikeMat
+                        );
+
+                    spike.position.set(
+                        sx,
+                        sy,
+                        sz
+                    );
+
+                    spike.lookAt(
+                        sx * 2,
+                        bossHeadCenterY +
+                            (sy - bossHeadCenterY) * 2,
+                        sz * 2
+                    );
+
+                    spike.rotateX(
+                        Math.PI / 2
+                    );
+
+                    bossMonster.add(
+                        spike
+                    );
+
+                }
+
+                const bossToothMat =
+                    new THREE.MeshStandardMaterial({
+                        color: 0xf2f2e6,
+                        roughness: 0.5
+                    });
+
+                for (
+                    let i = 0;
+                    i < 8;
+                    i++
+                ) {
+
+                    const angle =
+                        (i / 8) * Math.PI * 2;
+
+                    const tooth =
+                        new THREE.Mesh(
+                            new THREE.ConeGeometry(
+                                0.09,
+                                0.32,
+                                6
+                            ),
+                            bossToothMat
+                        );
+
+                    tooth.position.set(
+                        Math.cos(angle) * 0.55,
+                        bossHeadCenterY - 0.75,
+                        Math.sin(angle) * 0.55
+                    );
+
+                    tooth.rotation.x =
+                        Math.PI;
+
+                    bossMonster.add(
+                        tooth
+                    );
+
+                }
+
+                const bossAuraMat =
+                    new THREE.MeshBasicMaterial({
+                        color: 0xff0000,
+                        transparent: true,
+                        opacity: 0.12,
+                        side: THREE.BackSide
+                    });
+
+                const bossAura =
+                    new THREE.Mesh(
+                        new THREE.SphereGeometry(
+                            bossHeadRadius * 1.35,
+                            20,
+                            20
+                        ),
+                        bossAuraMat
+                    );
+
+                bossAura.position.y =
+                    bossHeadCenterY;
+
+                bossMonster.add(
+                    bossAura
                 );
 
                 /* =========================
