@@ -444,6 +444,132 @@
             box-sizing: border-box;
         }
 
+        #draft-modal {
+            width: 620px;
+            max-width: 94vw;
+            border-color: #00ffcc;
+            box-shadow: 0 0 30px rgba(0,255,204,0.45);
+        }
+
+        #draft-modal h3 {
+            color: #00ffcc;
+            font-size: 24px;
+            margin-bottom: 6px;
+        }
+
+        #draft-near-text {
+            text-align: center;
+            color: #ffd700;
+            font-size: 12px;
+            margin-bottom: 14px;
+        }
+
+        .draft-items {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .draft-item {
+            border: 2px solid #555;
+            border-radius: 12px;
+            background: linear-gradient(160deg, rgba(35,35,50,0.96), rgba(12,12,20,0.96));
+            padding: 10px 6px;
+            min-height: 118px;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
+        }
+
+        .draft-item:hover {
+            transform: translateY(-2px);
+            border-color: #00ffcc;
+            box-shadow: 0 0 14px rgba(0,255,204,0.35);
+        }
+
+        .draft-item.selected {
+            border-color: #ffd700;
+            box-shadow: 0 0 18px rgba(255,215,0,0.5);
+        }
+
+        .draft-icon {
+            font-size: 32px;
+            margin-bottom: 3px;
+        }
+
+        .draft-name {
+            color: #fff;
+            font-weight: 900;
+            font-size: 14px;
+        }
+
+        .draft-count {
+            color: #aaa;
+            font-size: 11px;
+            margin-top: 3px;
+        }
+
+        .draft-level {
+            color: #00ffcc;
+            font-weight: 900;
+            font-size: 15px;
+            margin-top: 5px;
+        }
+
+        .draft-rate {
+            color: #ffd700;
+            font-weight: 900;
+            font-size: 13px;
+            margin-top: 2px;
+        }
+
+        #draft-detail {
+            margin-top: 14px;
+            background: rgba(255,255,255,0.06);
+            border: 1px solid rgba(0,255,204,0.45);
+            border-radius: 10px;
+            padding: 12px;
+            text-align: center;
+        }
+
+        #draft-detail-title {
+            color: #ffd700;
+            font-size: 18px;
+            font-weight: 900;
+        }
+
+        #draft-detail-info {
+            color: #fff;
+            margin-top: 5px;
+            font-size: 13px;
+        }
+
+        #draft-upgrade-btn {
+            background: linear-gradient(135deg, #00aa66, #00dd88);
+            color: #06120e;
+            border: 2px solid #00ffcc;
+            font-size: 17px;
+            padding: 11px 16px;
+            margin-top: 10px;
+        }
+
+        #draft-upgrade-btn:hover {
+            background: linear-gradient(135deg, #00dd88, #44ffbb);
+        }
+
+        #draft-cooldown {
+            min-height: 16px;
+            color: #ffcc00;
+            font-size: 11px;
+            margin-top: 6px;
+        }
+
+        @media(max-width:700px) {
+            .draft-items {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+
         @media(max-width:700px) {
             #boss-hp-bar {
                 width: 90vw;
@@ -620,6 +746,69 @@
 
         <div id="boss-hp-text" style="font-size:11px;margin-top:2px;">
             2000000 / 2000000
+        </div>
+
+    </div>
+
+    <!-- DRAFT UPGRADE PANEL -->
+
+    <div id="draft-modal" class="modal-box">
+
+        <h3>⚒️ DRAFT - NÂNG CẤP ITEM</h3>
+
+        <div id="draft-near-text">
+            Bạn đang ở gần Draft — bấm vào item để xem Lv và % nâng cấp
+        </div>
+
+        <div class="draft-items">
+
+            <div class="draft-item" id="draft-item-common" onclick="selectDraftItem('common')">
+                <div class="draft-icon">📦</div>
+                <div class="draft-name">Common</div>
+                <div class="draft-count">Có: <span id="draft-count-common">0</span></div>
+                <div class="draft-level">Lv.<span id="draft-level-common">1</span></div>
+                <div class="draft-rate"><span id="draft-rate-common">60</span>%</div>
+            </div>
+
+            <div class="draft-item" id="draft-item-rare" onclick="selectDraftItem('rare')">
+                <div class="draft-icon">🔷</div>
+                <div class="draft-name">Rare</div>
+                <div class="draft-count">Có: <span id="draft-count-rare">0</span></div>
+                <div class="draft-level">Lv.<span id="draft-level-rare">1</span></div>
+                <div class="draft-rate"><span id="draft-rate-rare">45</span>%</div>
+            </div>
+
+            <div class="draft-item" id="draft-item-epic" onclick="selectDraftItem('epic')">
+                <div class="draft-icon">💜</div>
+                <div class="draft-name">Epic</div>
+                <div class="draft-count">Có: <span id="draft-count-epic">0</span></div>
+                <div class="draft-level">Lv.<span id="draft-level-epic">1</span></div>
+                <div class="draft-rate"><span id="draft-rate-epic">30</span>%</div>
+            </div>
+
+            <div class="draft-item" id="draft-item-legendary" onclick="selectDraftItem('legendary')">
+                <div class="draft-icon">👑</div>
+                <div class="draft-name">Legendary</div>
+                <div class="draft-count">Có: <span id="draft-count-legendary">0</span></div>
+                <div class="draft-level">Lv.<span id="draft-level-legendary">1</span></div>
+                <div class="draft-rate"><span id="draft-rate-legendary">0.09</span>%</div>
+            </div>
+
+        </div>
+
+        <div id="draft-detail">
+            <div id="draft-detail-title">📦 COMMON</div>
+            <div id="draft-detail-info">
+                Lv.1 → Tỉ lệ thành công: 60%
+            </div>
+            <button id="draft-upgrade-btn" type="button" onclick="upgradeSelectedDraftItem()">
+                ⚒️ NÂNG CẤP ITEM
+            </button>
+            <div id="draft-cooldown"></div>
+        </div>
+
+        <div style="text-align:center;font-size:11px;color:#aaa;margin-top:10px;">
+            Không cần mở túi đồ. Đứng gần Draft là bảng này tự hiện.
         </div>
 
     </div>
@@ -1474,6 +1663,12 @@
                 let isLoginOpen = false;
 
                 let equippedItemType = null;
+
+                let draftSelectedType = 'common';
+
+                let draftUpgradeCooldown = false;
+
+                const FINAL_BOSS_POWER_MULTIPLIER = 10000;
 
                 const swordNames = [
                     "Common",
@@ -4369,6 +4564,168 @@
                     if (lvlHack)
                         lvlHack.innerText =
                             2;
+
+                    updateDraftUI();
+                }
+
+                /* =========================
+                   DRAFT AUTO OPEN + ITEM SELECT
+                ========================= */
+
+                function updateDraftUI() {
+
+                    const types = [
+                        'common',
+                        'rare',
+                        'epic',
+                        'legendary'
+                    ];
+
+                    types.forEach(type => {
+
+                        const countEl =
+                            document.getElementById(
+                                'draft-count-' + type
+                            );
+
+                        const levelEl =
+                            document.getElementById(
+                                'draft-level-' + type
+                            );
+
+                        const rateEl =
+                            document.getElementById(
+                                'draft-rate-' + type
+                            );
+
+                        if (countEl)
+                            countEl.innerText =
+                                inventory[type];
+
+                        if (levelEl)
+                            levelEl.innerText =
+                                itemLevels[type];
+
+                        if (rateEl)
+                            rateEl.innerText =
+                                upgradeRates[type];
+                    });
+
+                    document.querySelectorAll(
+                        '.draft-item'
+                    ).forEach(el => {
+                        el.classList.remove('selected');
+                    });
+
+                    const selected =
+                        document.getElementById(
+                            'draft-item-' +
+                            draftSelectedType
+                        );
+
+                    if (selected)
+                        selected.classList.add('selected');
+
+                    const title =
+                        document.getElementById(
+                            'draft-detail-title'
+                        );
+
+                    const info =
+                        document.getElementById(
+                            'draft-detail-info'
+                        );
+
+                    if (title)
+                        title.innerText =
+                            draftSelectedType.toUpperCase();
+
+                    if (info) {
+
+                        info.innerText =
+                            currentLang === 'vi'
+                            ? `Lv.${itemLevels[draftSelectedType]} → Tỉ lệ nâng cấp: ${upgradeRates[draftSelectedType]}% | Có: ${inventory[draftSelectedType]}`
+                            : `Lv.${itemLevels[draftSelectedType]} → Upgrade chance: ${upgradeRates[draftSelectedType]}% | Owned: ${inventory[draftSelectedType]}`;
+                    }
+
+                    const button =
+                        document.getElementById(
+                            'draft-upgrade-btn'
+                        );
+
+                    if (button) {
+
+                        button.innerText =
+                            currentLang === 'vi'
+                            ? `⚒️ NÂNG ${draftSelectedType.toUpperCase()} LV.${itemLevels[draftSelectedType]}`
+                            : `⚒️ UPGRADE ${draftSelectedType.toUpperCase()} LV.${itemLevels[draftSelectedType]}`;
+                    }
+
+                }
+
+                window.selectDraftItem =
+                    function(type) {
+
+                        draftSelectedType =
+                            type;
+
+                        updateDraftUI();
+
+                    };
+
+                window.upgradeSelectedDraftItem =
+                    function() {
+
+                        if (draftUpgradeCooldown)
+                            return;
+
+                        upgradeItem(
+                            draftSelectedType
+                        );
+
+                    };
+
+                function updateDraftProximity() {
+
+                    const draftModal =
+                        document.getElementById(
+                            'draft-modal'
+                        );
+
+                    if (!draftModal)
+                        return;
+
+                    const distToDraft =
+                        Math.hypot(
+                            playerGroup.position.x -
+                            upgradeNPC.position.x,
+                            playerGroup.position.z -
+                            upgradeNPC.position.z
+                        );
+
+                    const nearDraft =
+                        distToDraft <= 4;
+
+                    if (
+                        nearDraft &&
+                        !isInvOpen &&
+                        !isColorOpen &&
+                        !isLoginOpen &&
+                        !isGameEnded
+                    ) {
+
+                        draftModal.style.display =
+                            'block';
+
+                        updateDraftUI();
+
+                    } else {
+
+                        draftModal.style.display =
+                            'none';
+
+                    }
+
                 }
 
                 /* =========================
@@ -4436,6 +4793,9 @@
                 window.upgradeItem =
                     function(type) {
 
+                        if (draftUpgradeCooldown)
+                            return;
+
                         const distToDraft =
                             Math.hypot(
                                 playerGroup.position.x + 8,
@@ -4467,6 +4827,31 @@
 
                             return;
                         }
+
+                        draftUpgradeCooldown = true;
+
+                        const cooldownText =
+                            document.getElementById(
+                                'draft-cooldown'
+                            );
+
+                        if (cooldownText)
+                            cooldownText.innerText =
+                                currentLang === 'vi'
+                                ? '⏳ Đang nâng cấp...'
+                                : '⏳ Upgrading...';
+
+                        setTimeout(
+                            () => {
+
+                                draftUpgradeCooldown = false;
+
+                                if (cooldownText)
+                                    cooldownText.innerText = '';
+
+                            },
+                            200
+                        );
 
                         /*
                            QUAN TRỌNG:
@@ -4543,6 +4928,7 @@
                         }
 
                         updateInventoryUI();
+                        updateDraftUI();
 
                         saveCurrentAccount();
                     };
@@ -4943,6 +5329,7 @@
                         : 'vi';
 
                     applyLanguageToUI();
+                    updateDraftUI();
 
                     showToast(
                         currentLang === 'vi'
@@ -5865,7 +6252,7 @@
                             gameStage === 5
                         ) {
 
-                            power +=
+                            const oldBossPowerGain =
                                 Math.max(
                                     1,
                                     Math.floor(
@@ -5873,10 +6260,27 @@
                                     )
                                 );
 
+                            const finalBossPowerGain =
+                                oldBossPowerGain *
+                                FINAL_BOSS_POWER_MULTIPLIER;
+
+                            power +=
+                                finalBossPowerGain;
+
                             document.getElementById(
                                 'val-power'
                             ).innerText =
                                 formatNum(power);
+
+                            if (!isAfk) {
+
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? `👑 [BOSS] CUỐI: +${formatNum(finalBossPowerGain)} POWER (x10.000 BOSS CŨ)`
+                                    : `👑 FINAL [BOSS]: +${formatNum(finalBossPowerGain)} POWER (x10,000 OLD BOSS)`
+                                );
+
+                            }
 
                             /*
                                Có bao nhiêu dmg thì hạ gục
@@ -7954,6 +8358,7 @@
                 );
 
                 updateInventoryUI();
+                updateDraftUI();
 
                 refreshPlayerMaxHP();
 
