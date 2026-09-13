@@ -748,6 +748,38 @@
 
         </div>
 
+        <div class="item-row">
+
+            <span>
+                🌟 GoD Sword
+                (<span id="inv-god">0</span>)
+                [Lv.<span id="lvl-god">1</span>]
+            </span>
+
+            <div>
+                <span style="font-size:10px;color:#ffd700;">
+                    x5 DMG
+                </span>
+            </div>
+
+        </div>
+
+        <div class="item-row">
+
+            <span>
+                🌀 Hack Sword
+                (<span id="inv-hack">0</span>)
+                [Lv.<span id="lvl-hack">2</span>]
+            </span>
+
+            <div>
+                <span style="font-size:10px;color:#00ffff;">
+                    x10 DMG
+                </span>
+            </div>
+
+        </div>
+
         <div
             style="
                 background:rgba(255,255,255,0.08);
@@ -783,10 +815,10 @@
                 color:#aaa;
             "
             class="lang-txt"
-            data-vi="Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ | Bấm [G] gộp 2 Legendary Lv.2 thành kiếm GoD"
-            data-en="Press [TAB] to close | Press [V] change language | Press [G] to fuse 2 Legendary Lv.2 into GoD sword"
+            data-vi="Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ | Bấm [G] gộp 2 Legendary Lv.2 thành GoD Lv.1, đủ 3 GoD Lv.1 gộp thành Hack Lv.2"
+            data-en="Press [TAB] to close | Press [V] change language | Press [G] to fuse 2 Legendary Lv.2 into GoD Lv.1, 3 GoD Lv.1 into Hack Lv.2"
         >
-            Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ | Bấm [G] gộp 2 Legendary Lv.2 thành kiếm GoD
+            Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ | Bấm [G] gộp 2 Legendary Lv.2 thành GoD Lv.1, đủ 3 GoD Lv.1 gộp thành Hack Lv.2
         </div>
 
     </div>
@@ -1384,6 +1416,10 @@
 
                 let hasGoDSword = false;
 
+                let godSwordCount = 0;
+
+                let hasHackSword = false;
+
                 let isCosmicSkinOn = true;
 
                 const inventory = {
@@ -1442,7 +1478,9 @@
                     1000
                 ];
 
-                const GOD_SWORD_DMG = 9999;
+                const GOD_SWORD_DMG_MULTIPLIER = 5;
+
+                const HACK_SWORD_DMG_MULTIPLIER = 10;
 
                 let gameStage = 1;
 
@@ -1472,7 +1510,7 @@
 
                 let finalBossKillCount = 0;
 
-                const FINAL_BOSS_KILLS_NEEDED = 9999;
+                const FINAL_BOSS_KILLS_NEEDED = 999;
 
                 let hasBossTitle = false;
 
@@ -1480,7 +1518,7 @@
 
                 /* =========================
                    ĐẠI BOSS TỐI THƯỢNG
-                   (mở khoá sau khi có danh hiệu [GoD],
+                   (mở khoá sau khi có danh hiệu [BOSS],
                    1000t = 1.000.000.000.000.000 HP)
                 ========================= */
 
@@ -1569,8 +1607,14 @@
 
                 function getPlayerMaxHP() {
 
-                    if (hasGoDSword && power >= 1000000000000)
+                    if (
+                        (hasGoDSword || hasHackSword) &&
+                        power >= 1000000000000
+                    )
                         return 1500000000;
+
+                    if (hasHackSword)
+                        return 650000000;
 
                     if (hasGoDSword)
                         return 500000000;
@@ -3224,7 +3268,7 @@
                         'rgba(0,0,0,0.85)';
 
                     ctx.strokeText(
-                        '[GoD]',
+                        '[BOSS]',
                         128,
                         34
                     );
@@ -3233,7 +3277,7 @@
                         '#ffffff';
 
                     ctx.fillText(
-                        '[GoD]',
+                        '[BOSS]',
                         128,
                         34
                     );
@@ -3922,6 +3966,42 @@
                         'rate-legendary'
                     ).innerText =
                         upgradeRates.legendary;
+
+                    const invGod =
+                        document.getElementById(
+                            'inv-god'
+                        );
+
+                    if (invGod)
+                        invGod.innerText =
+                            godSwordCount;
+
+                    const invHack =
+                        document.getElementById(
+                            'inv-hack'
+                        );
+
+                    if (invHack)
+                        invHack.innerText =
+                            hasHackSword ? 1 : 0;
+
+                    const lvlGod =
+                        document.getElementById(
+                            'lvl-god'
+                        );
+
+                    if (lvlGod)
+                        lvlGod.innerText =
+                            1;
+
+                    const lvlHack =
+                        document.getElementById(
+                            'lvl-hack'
+                        );
+
+                    if (lvlHack)
+                        lvlHack.innerText =
+                            2;
                 }
 
                 /* =========================
@@ -4149,13 +4229,13 @@
                     function() {
 
                         if (
-                            hasGoDSword
+                            hasHackSword
                         ) {
 
                             showToast(
                                 currentLang === 'vi'
-                                ? "⚔️ BẠN ĐÃ CÓ KIẾM GoD RỒI!"
-                                : "⚔️ YOU ALREADY HAVE THE GoD SWORD!"
+                                ? "🌀 BẠN ĐÃ CÓ KIẾM HACK LV.2 RỒI!"
+                                : "🌀 YOU ALREADY HAVE THE HACK LV.2 SWORD!"
                             );
 
                             return;
@@ -4180,8 +4260,8 @@
 
                             showToast(
                                 currentLang === 'vi'
-                                ? "❌ CẦN 2 LEGENDARY LV.2 ĐỂ GỘP!"
-                                : "❌ NEED 2 LEGENDARY LV.2 TO FUSE!"
+                                ? "❌ CẦN 2 LEGENDARY LV.2 ĐỂ TẠO 1 GoD LV.1!"
+                                : "❌ NEED 2 LEGENDARY LV.2 TO CREATE 1 GoD LV.1!"
                             );
 
                             return;
@@ -4189,7 +4269,10 @@
 
                         inventory.legendary -= 2;
 
-                        hasGoDSword = true;
+                        godSwordCount += 1;
+
+                        hasGoDSword =
+                            godSwordCount > 0;
 
                         refreshPlayerMaxHP();
 
@@ -4210,7 +4293,7 @@
                         document.getElementById(
                             'val-sword'
                         ).innerText =
-                            `GoD (+${GOD_SWORD_DMG} DMG)`;
+                            `GoD Lv.1 (x${GOD_SWORD_DMG_MULTIPLIER} DMG)`;
 
                         document.getElementById(
                             'val-sword'
@@ -4219,10 +4302,96 @@
 
                         playGoDFusionSound();
 
+                        if (
+                            godSwordCount >= 3
+                        ) {
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? `🌟 NHẬN GoD LV.1! ĐANG CÓ ${godSwordCount}/3 GoD. BẤM [G] ĐỂ GỘP 3 GoD THÀNH HACK LV.2!`
+                                : `🌟 GOT GoD LV.1! YOU HAVE ${godSwordCount}/3 GoD. PRESS [G] TO FUSE 3 GoD INTO HACK LV.2!`
+                            );
+
+                        } else {
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? `🌟 GỘP THÀNH CÔNG! NHẬN 1 KIẾM GoD LV.1 (x5 DMG)! ĐANG CÓ ${godSwordCount}/3!`
+                                : `🌟 FUSION SUCCESS! GOT 1 GoD LV.1 (x5 DMG)! YOU HAVE ${godSwordCount}/3!`
+                            );
+
+                        }
+
+                        updateInventoryUI();
+
+                        saveCurrentAccount();
+                    };
+
+                window.fuseHackSword =
+                    function() {
+
+                        if (
+                            hasHackSword
+                        ) {
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? "🌀 BẠN ĐÃ CÓ KIẾM HACK LV.2!"
+                                : "🌀 YOU ALREADY HAVE THE HACK LV.2 SWORD!"
+                            );
+
+                            return;
+                        }
+
+                        if (
+                            godSwordCount < 3
+                        ) {
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? `❌ CẦN 3 KIẾM GoD LV.1! HIỆN CÓ ${godSwordCount}/3!`
+                                : `❌ NEED 3 GoD LV.1 SWORDS! YOU HAVE ${godSwordCount}/3!`
+                            );
+
+                            return;
+                        }
+
+                        godSwordCount -= 3;
+
+                        hasGoDSword =
+                            godSwordCount > 0;
+
+                        hasHackSword =
+                            true;
+
+                        refreshPlayerMaxHP();
+
+                        swordMat.color.set(
+                            'white'
+                        );
+
+                        swordGroup.scale.set(
+                            1.8,
+                            2.0,
+                            1.8
+                        );
+
+                        document.getElementById(
+                            'val-sword'
+                        ).innerText =
+                            `Hack Lv.2 (x${HACK_SWORD_DMG_MULTIPLIER} DMG)`;
+
+                        document.getElementById(
+                            'val-sword'
+                        ).style.color =
+                            '#00ffff';
+
+                        playGoDFusionSound();
+
                         showToast(
                             currentLang === 'vi'
-                            ? "🌟 GỘP THÀNH CÔNG! KIẾM GoD ĐÃ SẴN SÀNG! (+9999 DMG)"
-                            : "🌟 FUSION SUCCESS! GoD SWORD READY! (+9999 DMG)"
+                            ? "🌀 HỢP 3 GoD LV.1 THÀNH CÔNG! NHẬN KIẾM HACK LV.2 (x10 DMG)!"
+                            : "🌀 3 GoD LV.1 FUSED! YOU GOT THE HACK LV.2 SWORD (x10 DMG)!"
                         );
 
                         updateInventoryUI();
@@ -4255,14 +4424,27 @@
                     document.getElementById(
                         'win-title'
                     ).innerText =
-                        "UPDATE MORE";
+                        "BOSS";
 
                     document.getElementById(
                         'win-desc'
                     ).innerText =
                         currentLang === 'vi'
-                        ? `🌈 BẠN ĐÃ NHẬN DANH HIỆU [GoD] CẦU VỒNG! ✨`
-                        : `🌈 YOU EARNED THE RAINBOW [GoD] TITLE! ✨`;
+                        ? `👑 BẠN ĐÃ HẠ ĐỦ 999 [BOSS] CUỐI VÀ NHẬN DANH HIỆU [BOSS]! ✨`
+                        : `👑 YOU DEFEATED 999 FINAL [BOSS] AND EARNED THE [BOSS] TITLE! ✨`;
+
+                    bossTitleSprite.material.map =
+                        createBossTitleSprite().material.map;
+
+                    bossTitleSprite.material.map.needsUpdate =
+                        true;
+
+                    bossTitleSprite.material.color.set(
+                        0xffffff
+                    );
+
+                    bossTitleSprite.visible =
+                        true;
 
                     saveCurrentAccount();
 
@@ -4283,6 +4465,13 @@
                         ) {
 
                             claimGoDTitle();
+
+                        } else if (
+                            godSwordCount >= 3 &&
+                            !hasHackSword
+                        ) {
+
+                            fuseHackSword();
 
                         } else {
 
@@ -4958,19 +5147,36 @@
 
                         }
 
-                        const baseSwordDmg =
-                            hasGoDSword
-                            ? GOD_SWORD_DMG
-                            : swordDmgs[
-                                swordLevel
-                            ];
-
                         let totalDmg =
                             Math.floor(
                                 (power / 2) +
-                                baseSwordDmg
+                                swordDmgs[
+                                    swordLevel
+                                ]
                             ) *
                             itemBonusMultiplier;
+
+                        if (
+                            hasHackSword
+                        ) {
+
+                            totalDmg =
+                                Math.floor(
+                                    totalDmg *
+                                    HACK_SWORD_DMG_MULTIPLIER
+                                );
+
+                        } else if (
+                            hasGoDSword
+                        ) {
+
+                            totalDmg =
+                                Math.floor(
+                                    totalDmg *
+                                    GOD_SWORD_DMG_MULTIPLIER
+                                );
+
+                        }
 
                         /*
                            AFK chỉ được cộng 50%
@@ -5307,8 +5513,8 @@
 
                                 showToast(
                                     currentLang === 'vi'
-                                    ? `🌈 ĐÃ ĐỦ ${FINAL_BOSS_KILLS_NEEDED}! BẤM [G] ĐỂ NHẬN DANH HIỆU [GoD]!`
-                                    : `🌈 REACHED ${FINAL_BOSS_KILLS_NEEDED}! PRESS [G] TO CLAIM THE [GoD] TITLE!`
+                                    ? `👑 ĐÃ HẠ ĐỦ ${FINAL_BOSS_KILLS_NEEDED} [BOSS] CUỐI! BẤM [G] ĐỂ NHẬN DANH HIỆU [BOSS]!`
+                                    : `👑 DEFEATED ${FINAL_BOSS_KILLS_NEEDED} FINAL [BOSS]! PRESS [G] TO CLAIM THE [BOSS] TITLE!`
                                 );
 
                                 saveCurrentAccount();
@@ -5646,6 +5852,10 @@
 
                         hasGoDSword: hasGoDSword,
 
+                        godSwordCount: godSwordCount,
+
+                        hasHackSword: hasHackSword,
+
                         isCosmicSkinOn: isCosmicSkinOn,
 
                         inventory: {
@@ -5732,7 +5942,18 @@
 
                     gameLoop = data.gameLoop;
 
-                    hasGoDSword = data.hasGoDSword;
+                    hasGoDSword = data.hasGoDSword || false;
+
+                    godSwordCount =
+                        (typeof data.godSwordCount === 'number')
+                        ? data.godSwordCount
+                        : (hasGoDSword ? 1 : 0);
+
+                    hasHackSword =
+                        data.hasHackSword || false;
+
+                    if (hasHackSword)
+                        hasGoDSword = godSwordCount > 0;
 
                     isCosmicSkinOn = data.isCosmicSkinOn;
 
@@ -5842,7 +6063,27 @@
 
                     skinMat.needsUpdate = true;
 
-                    if (hasGoDSword) {
+                    if (hasHackSword) {
+
+                        swordMat.color.set('white');
+
+                        swordGroup.scale.set(
+                            1.8,
+                            2.0,
+                            1.8
+                        );
+
+                        document.getElementById(
+                            'val-sword'
+                        ).innerText =
+                            `Hack Lv.2 (x${HACK_SWORD_DMG_MULTIPLIER} DMG)`;
+
+                        document.getElementById(
+                            'val-sword'
+                        ).style.color =
+                            '#00ffff';
+
+                    } else if (hasGoDSword) {
 
                         swordMat.color.set('white');
 
@@ -5855,7 +6096,7 @@
                         document.getElementById(
                             'val-sword'
                         ).innerText =
-                            `GoD (+${GOD_SWORD_DMG} DMG)`;
+                            `GoD Lv.1 (x${GOD_SWORD_DMG_MULTIPLIER} DMG)`;
 
                         document.getElementById(
                             'val-sword'
@@ -6584,7 +6825,7 @@
                             ) {
 
                                 /*
-                                   Đã có danh hiệu [GoD],
+                                   Đã có danh hiệu [BOSS],
                                    mở khoá nhiệm vụ Đại Boss
                                    Tối Thượng, mời bấm D
                                 */
@@ -6889,7 +7130,7 @@
                     }
 
                     /*
-                       Danh hiệu [GoD] cầu vồng, hoặc
+                       Danh hiệu [BOSS], hoặc
                        [BOSS] đen vũ trụ sau khi hạ
                        Đại Boss Tối Thượng (không cycle màu)
                     */
