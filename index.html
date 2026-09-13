@@ -500,6 +500,16 @@
     </div>
 
     <div
+        id="universe-world-msg"
+        class="lang-txt"
+        data-vi="🌌 THẾ GIỚI VŨ TRỤ ĐÃ MỞ KHOÁ! NHẤN [D] ĐỂ BƯỚC VÀO!"
+        data-en="🌌 UNIVERSE WORLD UNLOCKED! PRESS [D] TO ENTER!"
+        style="border-color:#ff00ff;color:#ffffff;box-shadow:0 0 18px rgba(255,0,255,0.8);"
+    >
+        🌌 THẾ GIỚI VŨ TRỤ ĐÃ MỞ KHOÁ! NHẤN [D] ĐỂ BƯỚC VÀO!
+    </div>
+
+    <div
         id="supreme-boss-msg"
         class="lang-txt"
         data-vi="🌌 NHIỆM VỤ MỚI MỞ KHOÁ: ĐẠI BOSS TỐI THƯỢNG! NHẤN [D]!"
@@ -575,6 +585,14 @@
                 VÒNG CHƠI
             </span>:
             <span id="val-loop">1</span>
+        </div>
+
+        <div class="stat-box" id="world-box" style="border-color:#ff00ff;color:#ffffff;">
+            🌌
+            <span class="lang-txt" data-vi="THẾ GIỚI" data-en="WORLD">
+                THẾ GIỚI
+            </span>:
+            <span id="val-world">1</span>
         </div>
 
         <div class="stat-box" id="account-box" style="border-color:#ffd700;color:#ffd700;">
@@ -1533,6 +1551,33 @@
                     supremeBossMaxHP;
 
                 /* =========================
+                   UNIVERSE WORLD
+                   THẾ GIỚI VŨ TRỤ MỚI
+                   1.000.000q = 1sx = 1 sextillion
+                ========================= */
+
+                let universeWorldUnlocked = false;
+
+                let universeBossActive = false;
+
+                let universeBossDefeated = false;
+
+                const universeBossMaxHP =
+                    1000000000000000000000;
+
+                let universeBossHP =
+                    universeBossMaxHP;
+
+                let universeBossKillCount = 0;
+
+                const UNIVERSE_BOSS_KILLS_NEEDED = 99;
+
+                const UNIVERSE_BOSS_POWER_REWARD =
+                    5000000 * 67000;
+
+                let hasUniverseTitle = false;
+
+                /* =========================
                    FORMAT SỐ: 10000 -> 10k,
                    1000000 -> 1m, 1000000000 -> 1b
                 ========================= */
@@ -1544,6 +1589,16 @@
                     const sign = n < 0 ? '-' : '';
 
                     n = Math.abs(n);
+
+                    if (n >= 1000000000000000000000) {
+
+                        return sign +
+                            (n / 1000000000000000000000)
+                                .toFixed(
+                                    (n % 1000000000000000000000 === 0) ? 0 : 2
+                                ) + 'sx';
+
+                    }
 
                     if (n >= 1000000000000000) {
 
@@ -2264,6 +2319,116 @@
                 );
 
                 /* =========================
+                   UNIVERSE WORLD FLOOR
+                   Nền vũ trụ ngay dưới chân
+                   Chỉ hiện trong World Universe
+                ========================= */
+
+                function createUniverseFloorTexture() {
+
+                    const canvas =
+                        document.createElement('canvas');
+
+                    canvas.width = 1024;
+                    canvas.height = 1024;
+
+                    const ctx =
+                        canvas.getContext('2d');
+
+                    const gradient =
+                        ctx.createRadialGradient(
+                            512,
+                            512,
+                            20,
+                            512,
+                            512,
+                            700
+                        );
+
+                    gradient.addColorStop(0, '#26105c');
+                    gradient.addColorStop(0.35, '#0c1645');
+                    gradient.addColorStop(0.7, '#05051b');
+                    gradient.addColorStop(1, '#000000');
+
+                    ctx.fillStyle = gradient;
+                    ctx.fillRect(0, 0, 1024, 1024);
+
+                    for (let i = 0; i < 900; i++) {
+
+                        const x = Math.random() * 1024;
+                        const y = Math.random() * 1024;
+                        const r = Math.random() * 2.2 + 0.2;
+
+                        ctx.fillStyle =
+                            `rgba(255,255,255,${0.25 + Math.random() * 0.75})`;
+
+                        ctx.beginPath();
+                        ctx.arc(x, y, r, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    for (let i = 0; i < 30; i++) {
+
+                        const x = Math.random() * 1024;
+                        const y = Math.random() * 1024;
+                        const r = Math.random() * 90 + 25;
+
+                        const nebula =
+                            ctx.createRadialGradient(
+                                x,
+                                y,
+                                0,
+                                x,
+                                y,
+                                r
+                            );
+
+                        nebula.addColorStop(0, 'rgba(180,60,255,0.18)');
+                        nebula.addColorStop(1, 'rgba(0,0,0,0)');
+
+                        ctx.fillStyle = nebula;
+                        ctx.beginPath();
+                        ctx.arc(x, y, r, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+
+                    return new THREE.CanvasTexture(canvas);
+                }
+
+                const universeFloorTexture =
+                    createUniverseFloorTexture();
+
+                universeFloorTexture.wrapS =
+                    THREE.RepeatWrapping;
+
+                universeFloorTexture.wrapT =
+                    THREE.RepeatWrapping;
+
+                universeFloorTexture.repeat.set(2, 2);
+
+                const universeFloor =
+                    new THREE.Mesh(
+                        new THREE.PlaneGeometry(36, 36),
+                        new THREE.MeshBasicMaterial({
+                            map: universeFloorTexture,
+                            side: THREE.DoubleSide
+                        })
+                    );
+
+                universeFloor.rotation.x =
+                    -Math.PI / 2;
+
+                universeFloor.position.y =
+                    0.025;
+
+                universeFloor.visible =
+                    false;
+
+                scene.add(
+                    universeFloor
+                );
+
+                /* =========================
                    COSMIC SKIN TEXTURE
                 ========================= */
 
@@ -2781,6 +2946,132 @@
 
                 scene.add(
                     playerGroup
+                );
+
+                /* =========================
+                   UNIVERSE BOSS
+                   Giống nhân vật chính nhưng x10
+                   và có sừng vũ trụ
+                ========================= */
+
+                const universeBossMonster =
+                    playerGroup.clone(true);
+
+                universeBossMonster.position.set(
+                    0,
+                    0,
+                    -7
+                );
+
+                universeBossMonster.scale.set(
+                    10,
+                    10,
+                    10
+                );
+
+                universeBossMonster.visible =
+                    false;
+
+                universeBossMonster.traverse(
+                    child => {
+
+                        if (child.isMesh && child.material) {
+
+                            if (child.material.color) {
+
+                                child.material =
+                                    child.material.clone();
+
+                                child.material.color.setHex(
+                                    0x221144
+                                );
+
+                            }
+
+                        }
+
+                    }
+                );
+
+                const universeHornMat =
+                    new THREE.MeshStandardMaterial({
+                        color: 0xffffff,
+                        emissive: 0x6a00ff,
+                        emissiveIntensity: 1.5,
+                        metalness: 0.7,
+                        roughness: 0.25
+                    });
+
+                const universeHornL =
+                    new THREE.Mesh(
+                        new THREE.ConeGeometry(
+                            0.35,
+                            1.8,
+                            16
+                        ),
+                        universeHornMat
+                    );
+
+                universeHornL.position.set(
+                    -0.42,
+                    2.8,
+                    0
+                );
+
+                universeHornL.rotation.z =
+                    -0.35;
+
+                const universeHornR =
+                    new THREE.Mesh(
+                        new THREE.ConeGeometry(
+                            0.35,
+                            1.8,
+                            16
+                        ),
+                        universeHornMat
+                    );
+
+                universeHornR.position.set(
+                    0.42,
+                    2.8,
+                    0
+                );
+
+                universeHornR.rotation.z =
+                    0.35;
+
+                universeBossMonster.add(
+                    universeHornL,
+                    universeHornR
+                );
+
+                const universeAuraMat =
+                    new THREE.MeshBasicMaterial({
+                        color: 0xaa00ff,
+                        transparent: true,
+                        opacity: 0.16,
+                        side: THREE.BackSide
+                    });
+
+                const universeAura =
+                    new THREE.Mesh(
+                        new THREE.SphereGeometry(
+                            2.8,
+                            24,
+                            24
+                        ),
+                        universeAuraMat
+                    );
+
+                universeAura.position.y =
+                    1.5;
+
+                universeBossMonster.add(
+                    universeAura
+                );
+
+                scene.add(
+                    universeBossMonster
                 );
 
                 /* =========================
@@ -3408,6 +3699,82 @@
                         canvas
                     );
                 }
+
+                function createUniverseTitleSprite() {
+
+                    const canvas =
+                        document.createElement('canvas');
+
+                    canvas.width = 512;
+                    canvas.height = 96;
+
+                    const ctx =
+                        canvas.getContext('2d');
+
+                    ctx.clearRect(0, 0, 512, 96);
+
+                    ctx.font =
+                        'bold 48px Impact, sans-serif';
+
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.lineWidth = 7;
+                    ctx.strokeStyle = 'rgba(255,255,255,0.8)';
+                    ctx.strokeText('[Universe]', 256, 50);
+
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.rect(0, 0, 256, 96);
+                    ctx.clip();
+                    ctx.fillStyle = '#000000';
+                    ctx.fillText('[Universe]', 256, 50);
+                    ctx.restore();
+
+                    const rainbow =
+                        ctx.createLinearGradient(256, 0, 512, 0);
+
+                    rainbow.addColorStop(0, '#ff0000');
+                    rainbow.addColorStop(0.16, '#ff9900');
+                    rainbow.addColorStop(0.33, '#ffff00');
+                    rainbow.addColorStop(0.5, '#00ff00');
+                    rainbow.addColorStop(0.66, '#00ffff');
+                    rainbow.addColorStop(0.83, '#0088ff');
+                    rainbow.addColorStop(1, '#aa00ff');
+
+                    ctx.save();
+                    ctx.beginPath();
+                    ctx.rect(256, 0, 256, 96);
+                    ctx.clip();
+                    ctx.fillStyle = rainbow;
+                    ctx.fillText('[Universe]', 256, 50);
+                    ctx.restore();
+
+                    const tex =
+                        new THREE.CanvasTexture(canvas);
+
+                    const mat =
+                        new THREE.SpriteMaterial({
+                            map: tex,
+                            transparent: true,
+                            depthTest: false
+                        });
+
+                    const sprite =
+                        new THREE.Sprite(mat);
+
+                    sprite.scale.set(3.2, 0.6, 1);
+                    sprite.position.set(0, 3.35, 0);
+                    sprite.visible = false;
+
+                    return sprite;
+                }
+
+                const universeTitleSprite =
+                    createUniverseTitleSprite();
+
+                playerGroup.add(
+                    universeTitleSprite
+                );
 
                 const bossTitleSprite =
                     createBossTitleSprite();
@@ -5036,6 +5403,92 @@
 
                             }
 
+                            else if (
+                                distToGateForBoss < 3.5 &&
+                                gameStage === 4 &&
+                                supremeBossDefeated &&
+                                !universeBossActive &&
+                                !universeBossDefeated
+                            ) {
+
+                                universeWorldUnlocked = true;
+                                universeBossActive = true;
+                                gameStage = 7;
+                                universeBossHP =
+                                    universeBossMaxHP;
+
+                                setBossArenaSkybox(true);
+
+                                universeFloor.visible = true;
+                                platformGroup.visible = true;
+
+                                finalBossMonster.visible = false;
+                                bossMonster.visible = false;
+                                redMonster.visible = false;
+                                octopusMonster.visible = false;
+
+                                universeBossMonster.visible = true;
+                                universeBossMonster.position.set(0, 0, -7);
+                                universeBossMonster.scale.set(10, 10, 10);
+
+                                playerGroup.position.z = 7;
+
+                                if (hasHackSword) {
+
+                                    swordMat.color.set('white');
+
+                                    swordGroup.scale.set(
+                                        2.4,
+                                        2.8,
+                                        2.4
+                                    );
+
+                                    document.getElementById(
+                                        'val-sword'
+                                    ).innerText =
+                                        '🌌 KIẾM VŨ TRỤ (Hack Lv.2)';
+
+                                    document.getElementById(
+                                        'val-sword'
+                                    ).style.color =
+                                        '#ff00ff';
+
+                                }
+
+                                document.getElementById(
+                                    'universe-world-msg'
+                                ).style.display = 'none';
+
+                                document.getElementById(
+                                    'boss-hp-bar'
+                                ).style.display = 'block';
+
+                                document.getElementById(
+                                    'boss-title'
+                                ).innerText =
+                                    currentLang === 'vi'
+                                    ? `🌌 BOSS VŨ TRỤ (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`
+                                    : `🌌 UNIVERSE BOSS (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`;
+
+                                document.getElementById(
+                                    'boss-hp-inner'
+                                ).style.width = '100%';
+
+                                document.getElementById(
+                                    'boss-hp-text'
+                                ).innerText =
+                                    `${formatNum(universeBossHP)} / ${formatNum(universeBossMaxHP)}`;
+
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? `🌌 BOSS VŨ TRỤ XUẤT HIỆN! ${formatNum(universeBossMaxHP)} HP!`
+                                    : `🌌 UNIVERSE BOSS APPEARED! ${formatNum(universeBossMaxHP)} HP!`
+                                );
+
+                                saveCurrentAccount();
+
+                            }
+
                         }
 
                         if (k === 'f') {
@@ -5587,6 +6040,8 @@
 
                                 supremeBossDefeated = true;
 
+                                universeWorldUnlocked = true;
+
                                 setBossArenaSkybox(false);
 
                                 bossTitleSprite.material.map =
@@ -5631,10 +6086,135 @@
                                     'win-desc'
                                 ).innerText =
                                     currentLang === 'vi'
-                                    ? `🌌 BẠN ĐÃ CHINH PHỤC ĐẠI BOSS TỐI THƯỢNG! ✨`
-                                    : `🌌 YOU CONQUERED THE ULTIMATE BOSS! ✨`;
+                                    ? `🌌 BẠN ĐÃ CHINH PHỤC ĐẠI BOSS TỐI THƯỢNG! THẾ GIỚI VŨ TRỤ ĐÃ MỞ KHOÁ! ✨`
+                                    : `🌌 YOU CONQUERED THE ULTIMATE BOSS! THE UNIVERSE WORLD IS NOW UNLOCKED! ✨`;
 
                                 saveCurrentAccount();
+
+                            }
+
+                        } else if (
+                            gameStage === 7
+                        ) {
+
+                            universeBossHP -=
+                                totalDmg;
+
+                            if (
+                                universeBossHP < 0
+                            )
+                                universeBossHP = 0;
+
+                            const universeHpPercent =
+                                Math.max(
+                                    0,
+                                    (universeBossHP /
+                                    universeBossMaxHP) *
+                                    100
+                                );
+
+                            document.getElementById(
+                                'boss-hp-inner'
+                            ).style.width =
+                                universeHpPercent + '%';
+
+                            document.getElementById(
+                                'boss-hp-text'
+                            ).innerText =
+                                `${formatNum(universeBossHP)} / ${formatNum(universeBossMaxHP)}`;
+
+                            if (
+                                universeBossHP <= 0
+                            ) {
+
+                                universeBossKillCount++;
+
+                                power +=
+                                    Math.max(
+                                        1,
+                                        UNIVERSE_BOSS_POWER_REWARD
+                                    );
+
+                                document.getElementById(
+                                    'val-power'
+                                ).innerText =
+                                    formatNum(power);
+
+                                universeBossHP =
+                                    universeBossMaxHP;
+
+                                if (
+                                    universeBossKillCount >=
+                                    UNIVERSE_BOSS_KILLS_NEEDED
+                                ) {
+
+                                    universeBossKillCount =
+                                        UNIVERSE_BOSS_KILLS_NEEDED;
+
+                                    universeBossDefeated = true;
+                                    universeBossActive = false;
+                                    hasUniverseTitle = true;
+
+                                    universeBossMonster.visible = false;
+
+                                    document.getElementById(
+                                        'boss-hp-bar'
+                                    ).style.display = 'none';
+
+                                    document.getElementById(
+                                        'victory-screen'
+                                    ).style.display = 'flex';
+
+                                    document.getElementById(
+                                        'win-title'
+                                    ).innerText =
+                                        'UNIVERSE';
+
+                                    document.getElementById(
+                                        'win-desc'
+                                    ).innerText =
+                                        currentLang === 'vi'
+                                        ? '🌌 BẠN ĐÃ HẠ ĐỦ 99 BOSS VŨ TRỤ VÀ NHẬN DANH HIỆU [Universe]! 🌈'
+                                        : '🌌 YOU DEFEATED 99 UNIVERSE BOSSES AND EARNED THE [Universe] TITLE! 🌈';
+
+                                    universeTitleSprite.visible = true;
+                                    bossTitleSprite.visible = false;
+
+                                    playGoDFusionSound();
+
+                                    showToast(
+                                        currentLang === 'vi'
+                                        ? '🌌✨ ĐỦ 99 BOSS VŨ TRỤ! BẠN ĐÃ NHẬN [Universe]!'
+                                        : '🌌✨ 99 UNIVERSE BOSSES DEFEATED! YOU EARNED [Universe]!'
+                                    );
+
+                                    saveCurrentAccount();
+
+                                } else {
+
+                                    document.getElementById(
+                                        'boss-title'
+                                    ).innerText =
+                                        currentLang === 'vi'
+                                        ? `🌌 BOSS VŨ TRỤ (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`
+                                        : `🌌 UNIVERSE BOSS (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`;
+
+                                    document.getElementById(
+                                        'boss-hp-inner'
+                                    ).style.width = '100%';
+
+                                    document.getElementById(
+                                        'boss-hp-text'
+                                    ).innerText =
+                                        `${formatNum(universeBossHP)} / ${formatNum(universeBossMaxHP)}`;
+
+                                    showToast(
+                                        currentLang === 'vi'
+                                        ? `🌌 HẠ BOSS VŨ TRỤ ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}! +${formatNum(UNIVERSE_BOSS_POWER_REWARD)} POWER!`
+                                        : `🌌 UNIVERSE BOSS ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED} DEFEATED! +${formatNum(UNIVERSE_BOSS_POWER_REWARD)} POWER!`
+                                    );
+
+                                }
 
                             }
 
@@ -5905,6 +6485,18 @@
 
                         supremeBossHP: supremeBossHP,
 
+                        universeWorldUnlocked: universeWorldUnlocked,
+
+                        universeBossActive: universeBossActive,
+
+                        universeBossDefeated: universeBossDefeated,
+
+                        universeBossHP: universeBossHP,
+
+                        universeBossKillCount: universeBossKillCount,
+
+                        hasUniverseTitle: hasUniverseTitle,
+
                         playerHP: playerHP,
 
                         playerMaxHP: playerMaxHP,
@@ -6010,6 +6602,26 @@
                         ? data.supremeBossHP
                         : supremeBossMaxHP;
 
+                    universeWorldUnlocked =
+                        data.universeWorldUnlocked || false;
+
+                    universeBossActive =
+                        data.universeBossActive || false;
+
+                    universeBossDefeated =
+                        data.universeBossDefeated || false;
+
+                    universeBossHP =
+                        (typeof data.universeBossHP === 'number')
+                        ? data.universeBossHP
+                        : universeBossMaxHP;
+
+                    universeBossKillCount =
+                        data.universeBossKillCount || 0;
+
+                    hasUniverseTitle =
+                        data.hasUniverseTitle || false;
+
                     refreshPlayerMaxHP();
 
                     if (
@@ -6063,7 +6675,27 @@
 
                     skinMat.needsUpdate = true;
 
-                    if (hasHackSword) {
+                    if (hasHackSword && (gameStage === 7 || universeWorldUnlocked)) {
+
+                        swordMat.color.set('white');
+
+                        swordGroup.scale.set(
+                            2.4,
+                            2.8,
+                            2.4
+                        );
+
+                        document.getElementById(
+                            'val-sword'
+                        ).innerText =
+                            '🌌 KIẾM VŨ TRỤ (Hack Lv.2)';
+
+                        document.getElementById(
+                            'val-sword'
+                        ).style.color =
+                            '#ff00ff';
+
+                    } else if (hasHackSword) {
 
                         swordMat.color.set('white');
 
@@ -6140,6 +6772,28 @@
                     finalBossMonster.visible =
                         (gameStage === 5 || gameStage === 6);
 
+                    universeBossMonster.visible =
+                        (gameStage === 7 && !universeBossDefeated);
+
+                    universeFloor.visible =
+                        (gameStage === 7);
+
+                    if (gameStage === 7) {
+
+                        universeBossMonster.position.set(
+                            0,
+                            0,
+                            -7
+                        );
+
+                        universeBossMonster.scale.set(
+                            10,
+                            10,
+                            10
+                        );
+
+                    }
+
                     finalBossMonster.scale.set(
                         gameStage === 6 ? 7 : 4.5,
                         gameStage === 6 ? 7 : 4.5,
@@ -6149,11 +6803,36 @@
                     document.getElementById(
                         'boss-hp-bar'
                     ).style.display =
-                        (gameStage === 3 || gameStage === 5 || gameStage === 6)
+                        (gameStage === 3 || gameStage === 5 || gameStage === 6 || (gameStage === 7 && !universeBossDefeated))
                         ? 'block'
                         : 'none';
 
-                    if (gameStage === 6) {
+                    if (gameStage === 7) {
+
+                        document.getElementById(
+                            'boss-title'
+                        ).innerText =
+                            currentLang === 'vi'
+                            ? `🌌 BOSS VŨ TRỤ (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`
+                            : `🌌 UNIVERSE BOSS (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`;
+
+                        const universeHpPercent =
+                            Math.max(
+                                0,
+                                (universeBossHP / universeBossMaxHP) * 100
+                            );
+
+                        document.getElementById(
+                            'boss-hp-inner'
+                        ).style.width =
+                            universeHpPercent + '%';
+
+                        document.getElementById(
+                            'boss-hp-text'
+                        ).innerText =
+                            `${formatNum(universeBossHP)} / ${formatNum(universeBossMaxHP)}`;
+
+                    } else if (gameStage === 6) {
 
                         document.getElementById(
                             'boss-title'
@@ -6231,7 +6910,10 @@
                     }
 
                     bossTitleSprite.visible =
-                        hasBossTitle;
+                        hasBossTitle && !hasUniverseTitle;
+
+                    universeTitleSprite.visible =
+                        hasUniverseTitle;
 
                     if (supremeBossDefeated) {
 
@@ -6248,8 +6930,11 @@
                     }
 
                     setBossArenaSkybox(
-                        gameStage === 5 || gameStage === 6
+                        gameStage === 5 || gameStage === 6 || gameStage === 7
                     );
+
+                    universeFloor.visible =
+                        gameStage === 7;
 
                     document.getElementById(
                         'val-power'
@@ -6265,6 +6950,13 @@
                         'val-loop'
                     ).innerText =
                         gameLoop;
+
+                    document.getElementById(
+                        'val-world'
+                    ).innerText =
+                        gameStage === 7
+                        ? 'Universe'
+                        : '1';
 
                     if (equippedItemType) {
 
@@ -6707,6 +7399,28 @@
                         distToGate < 3.5
                     ) {
 
+                        const universeWorldMsg =
+                            document.getElementById(
+                                'universe-world-msg'
+                            );
+
+                        if (
+                            gameStage === 4 &&
+                            supremeBossDefeated &&
+                            !universeBossActive &&
+                            !universeBossDefeated
+                        ) {
+
+                            universeWorldMsg.style.display =
+                                'block';
+
+                        } else {
+
+                            universeWorldMsg.style.display =
+                                'none';
+
+                        }
+
                         if (
                             gameStage === 1 &&
                             killCount >= 999
@@ -6833,6 +7547,14 @@
                                 supremeBossMsg.style.display =
                                     'block';
 
+                            } else if (
+                                supremeBossDefeated &&
+                                !universeBossDefeated
+                            ) {
+
+                                universeWorldMsg.style.display =
+                                    'block';
+
                             } else {
 
                                 isGameEnded =
@@ -6875,6 +7597,11 @@
                             'none';
 
                         supremeBossMsg.style.display =
+                            'none';
+
+                        document.getElementById(
+                            'universe-world-msg'
+                        ).style.display =
                             'none';
 
                     }
@@ -6977,6 +7704,40 @@
 
                     }
 
+                    if (
+                        universeBossMonster.visible
+                    ) {
+
+                        universeBossMonster.rotation.y +=
+                            0.008;
+
+                        universeBossMonster.position.y =
+                            Math.sin(performance.now() * 0.002) *
+                            0.12;
+
+                        const dxU =
+                            playerGroup.position.x -
+                            universeBossMonster.position.x;
+
+                        const dzU =
+                            playerGroup.position.z -
+                            universeBossMonster.position.z;
+
+                        const distU =
+                            Math.hypot(dxU, dzU);
+
+                        if (distU > 7) {
+
+                            universeBossMonster.position.x +=
+                                (dxU / distU) * 0.018;
+
+                            universeBossMonster.position.z +=
+                                (dzU / distU) * 0.018;
+
+                        }
+
+                    }
+
                     /* =========================
                        BOSS PHẢN ĐÒN NGƯỜI CHƠI
                        (đứng vào 1 trong 4 góc tường
@@ -7019,7 +7780,8 @@
                         (gameStage === 2 ||
                         gameStage === 3 ||
                         gameStage === 5 ||
-                        gameStage === 6) &&
+                        gameStage === 6 ||
+                        gameStage === 7) &&
                         (nowTime - lastBossAttackTime > 1500)
                     ) {
 
