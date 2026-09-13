@@ -444,132 +444,6 @@
             box-sizing: border-box;
         }
 
-        #draft-modal {
-            width: 620px;
-            max-width: 94vw;
-            border-color: #00ffcc;
-            box-shadow: 0 0 30px rgba(0,255,204,0.45);
-        }
-
-        #draft-modal h3 {
-            color: #00ffcc;
-            font-size: 24px;
-            margin-bottom: 6px;
-        }
-
-        #draft-near-text {
-            text-align: center;
-            color: #ffd700;
-            font-size: 12px;
-            margin-bottom: 14px;
-        }
-
-        .draft-items {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-        }
-
-        .draft-item {
-            border: 2px solid #555;
-            border-radius: 12px;
-            background: linear-gradient(160deg, rgba(35,35,50,0.96), rgba(12,12,20,0.96));
-            padding: 10px 6px;
-            min-height: 118px;
-            cursor: pointer;
-            text-align: center;
-            transition: transform 0.12s ease, border-color 0.12s ease, box-shadow 0.12s ease;
-        }
-
-        .draft-item:hover {
-            transform: translateY(-2px);
-            border-color: #00ffcc;
-            box-shadow: 0 0 14px rgba(0,255,204,0.35);
-        }
-
-        .draft-item.selected {
-            border-color: #ffd700;
-            box-shadow: 0 0 18px rgba(255,215,0,0.5);
-        }
-
-        .draft-icon {
-            font-size: 32px;
-            margin-bottom: 3px;
-        }
-
-        .draft-name {
-            color: #fff;
-            font-weight: 900;
-            font-size: 14px;
-        }
-
-        .draft-count {
-            color: #aaa;
-            font-size: 11px;
-            margin-top: 3px;
-        }
-
-        .draft-level {
-            color: #00ffcc;
-            font-weight: 900;
-            font-size: 15px;
-            margin-top: 5px;
-        }
-
-        .draft-rate {
-            color: #ffd700;
-            font-weight: 900;
-            font-size: 13px;
-            margin-top: 2px;
-        }
-
-        #draft-detail {
-            margin-top: 14px;
-            background: rgba(255,255,255,0.06);
-            border: 1px solid rgba(0,255,204,0.45);
-            border-radius: 10px;
-            padding: 12px;
-            text-align: center;
-        }
-
-        #draft-detail-title {
-            color: #ffd700;
-            font-size: 18px;
-            font-weight: 900;
-        }
-
-        #draft-detail-info {
-            color: #fff;
-            margin-top: 5px;
-            font-size: 13px;
-        }
-
-        #draft-upgrade-btn {
-            background: linear-gradient(135deg, #00aa66, #00dd88);
-            color: #06120e;
-            border: 2px solid #00ffcc;
-            font-size: 17px;
-            padding: 11px 16px;
-            margin-top: 10px;
-        }
-
-        #draft-upgrade-btn:hover {
-            background: linear-gradient(135deg, #00dd88, #44ffbb);
-        }
-
-        #draft-cooldown {
-            min-height: 16px;
-            color: #ffcc00;
-            font-size: 11px;
-            margin-top: 6px;
-        }
-
-        @media(max-width:700px) {
-            .draft-items {
-                grid-template-columns: repeat(2, 1fr);
-            }
-
-
         @media(max-width:700px) {
             #boss-hp-bar {
                 width: 90vw;
@@ -626,20 +500,10 @@
     </div>
 
     <div
-        id="universe-world-msg"
-        class="lang-txt"
-        data-vi="🌌 THẾ GIỚI VŨ TRỤ ĐÃ MỞ KHOÁ! NHẤN [U] ĐỂ BƯỚC VÀO!"
-        data-en="🌌 UNIVERSE WORLD UNLOCKED! PRESS [U] TO ENTER!"
-        style="border-color:#ff00ff;color:#ffffff;box-shadow:0 0 18px rgba(255,0,255,0.8);"
-    >
-        🌌 THẾ GIỚI VŨ TRỤ ĐÃ MỞ KHOÁ! NHẤN [D] ĐỂ BƯỚC VÀO!
-    </div>
-
-    <div
         id="supreme-boss-msg"
         class="lang-txt"
-        data-vi="🌌 NHIỆM VỤ MỚI MỞ KHOÁ: ĐẠI BOSS TỐI THƯỢNG! NHẤN [O]!"
-        data-en="🌌 NEW QUEST UNLOCKED: THE ULTIMATE BOSS! PRESS [O]!"
+        data-vi="🌌 NHIỆM VỤ MỚI MỞ KHOÁ: ĐẠI BOSS TỐI THƯỢNG! NHẤN [D]!"
+        data-en="🌌 NEW QUEST UNLOCKED: THE ULTIMATE BOSS! PRESS [D]!"
         style="border-color:#00ffff;color:#00ffff;box-shadow:0 0 15px rgba(0,255,255,0.7);"
     >
         🌌 NHIỆM VỤ MỚI MỞ KHOÁ: ĐẠI BOSS TỐI THƯỢNG! NHẤN [D]!
@@ -713,14 +577,6 @@
             <span id="val-loop">1</span>
         </div>
 
-        <div class="stat-box" id="world-box" style="border-color:#ff00ff;color:#ffffff;">
-            🌌
-            <span class="lang-txt" data-vi="THẾ GIỚI" data-en="WORLD">
-                THẾ GIỚI
-            </span>:
-            <span id="val-world">1</span>
-        </div>
-
         <div class="stat-box" id="account-box" style="border-color:#ffd700;color:#ffd700;">
             🔑
             <span class="lang-txt" data-vi="TK" data-en="ACC">
@@ -746,69 +602,6 @@
 
         <div id="boss-hp-text" style="font-size:11px;margin-top:2px;">
             2000000 / 2000000
-        </div>
-
-    </div>
-
-    <!-- DRAFT UPGRADE PANEL -->
-
-    <div id="draft-modal" class="modal-box">
-
-        <h3>⚒️ DRAFT - NÂNG CẤP ITEM</h3>
-
-        <div id="draft-near-text">
-            Bạn đang ở gần Draft — bấm vào item để xem Lv và % nâng cấp
-        </div>
-
-        <div class="draft-items">
-
-            <div class="draft-item" id="draft-item-common" onclick="selectDraftItem('common')">
-                <div class="draft-icon">📦</div>
-                <div class="draft-name">Common</div>
-                <div class="draft-count">Có: <span id="draft-count-common">0</span></div>
-                <div class="draft-level">Lv.<span id="draft-level-common">1</span></div>
-                <div class="draft-rate"><span id="draft-rate-common">60</span>%</div>
-            </div>
-
-            <div class="draft-item" id="draft-item-rare" onclick="selectDraftItem('rare')">
-                <div class="draft-icon">🔷</div>
-                <div class="draft-name">Rare</div>
-                <div class="draft-count">Có: <span id="draft-count-rare">0</span></div>
-                <div class="draft-level">Lv.<span id="draft-level-rare">1</span></div>
-                <div class="draft-rate"><span id="draft-rate-rare">45</span>%</div>
-            </div>
-
-            <div class="draft-item" id="draft-item-epic" onclick="selectDraftItem('epic')">
-                <div class="draft-icon">💜</div>
-                <div class="draft-name">Epic</div>
-                <div class="draft-count">Có: <span id="draft-count-epic">0</span></div>
-                <div class="draft-level">Lv.<span id="draft-level-epic">1</span></div>
-                <div class="draft-rate"><span id="draft-rate-epic">30</span>%</div>
-            </div>
-
-            <div class="draft-item" id="draft-item-legendary" onclick="selectDraftItem('legendary')">
-                <div class="draft-icon">👑</div>
-                <div class="draft-name">Legendary</div>
-                <div class="draft-count">Có: <span id="draft-count-legendary">0</span></div>
-                <div class="draft-level">Lv.<span id="draft-level-legendary">1</span></div>
-                <div class="draft-rate"><span id="draft-rate-legendary">0.09</span>%</div>
-            </div>
-
-        </div>
-
-        <div id="draft-detail">
-            <div id="draft-detail-title">📦 COMMON</div>
-            <div id="draft-detail-info">
-                Lv.1 → Tỉ lệ thành công: 60%
-            </div>
-            <button id="draft-upgrade-btn" type="button" onclick="upgradeSelectedDraftItem()">
-                ⚒️ NÂNG CẤP ITEM
-            </button>
-            <div id="draft-cooldown"></div>
-        </div>
-
-        <div style="text-align:center;font-size:11px;color:#aaa;margin-top:10px;">
-            Không cần mở túi đồ. Đứng gần Draft là bảng này tự hiện.
         </div>
 
     </div>
@@ -955,38 +748,6 @@
 
         </div>
 
-        <div class="item-row">
-
-            <span>
-                🌟 GoD Sword
-                (<span id="inv-god">0</span>)
-                [Lv.<span id="lvl-god">1</span>]
-            </span>
-
-            <div>
-                <span style="font-size:10px;color:#ffd700;">
-                    x5 DMG
-                </span>
-            </div>
-
-        </div>
-
-        <div class="item-row">
-
-            <span>
-                🌀 Hack Sword
-                (<span id="inv-hack">0</span>)
-                [Lv.<span id="lvl-hack">2</span>]
-            </span>
-
-            <div>
-                <span style="font-size:10px;color:#00ffff;">
-                    x10 DMG
-                </span>
-            </div>
-
-        </div>
-
         <div
             style="
                 background:rgba(255,255,255,0.08);
@@ -1022,10 +783,10 @@
                 color:#aaa;
             "
             class="lang-txt"
-            data-vi="Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ | Bấm [G] gộp 2 Legendary Lv.2 thành GoD Lv.1, đủ 3 GoD Lv.1 gộp thành Hack Lv.2"
-            data-en="Press [TAB] to close | Press [V] change language | Press [G] to fuse 2 Legendary Lv.2 into GoD Lv.1, 3 GoD Lv.1 into Hack Lv.2"
+            data-vi="Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ | Bấm [G] gộp 2 Legendary Lv.2 thành kiếm GoD"
+            data-en="Press [TAB] to close | Press [V] change language | Press [G] to fuse 2 Legendary Lv.2 into GoD sword"
         >
-            Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ | Bấm [G] gộp 2 Legendary Lv.2 thành GoD Lv.1, đủ 3 GoD Lv.1 gộp thành Hack Lv.2
+            Bấm [TAB] để đóng | Bấm [V] đổi ngôn ngữ | Bấm [G] gộp 2 Legendary Lv.2 thành kiếm GoD
         </div>
 
     </div>
@@ -1623,10 +1384,6 @@
 
                 let hasGoDSword = false;
 
-                let godSwordCount = 0;
-
-                let hasHackSword = false;
-
                 let isCosmicSkinOn = true;
 
                 const inventory = {
@@ -1664,12 +1421,6 @@
 
                 let equippedItemType = null;
 
-                let draftSelectedType = 'common';
-
-                let draftUpgradeCooldown = false;
-
-                const FINAL_BOSS_POWER_MULTIPLIER = 1;
-
                 const swordNames = [
                     "Common",
                     "Rare",
@@ -1691,9 +1442,7 @@
                     1000
                 ];
 
-                const GOD_SWORD_DMG_MULTIPLIER = 5;
-
-                const HACK_SWORD_DMG_MULTIPLIER = 10;
+                const GOD_SWORD_DMG = 9999;
 
                 let gameStage = 1;
 
@@ -1706,66 +1455,6 @@
                 let bossHP = 2000000;
 
                 let isGameEnded = false;
-
-                /* =========================
-                   ANTI POWER / DAMAGE SPIKE
-                   Không cho power hoặc damage tăng
-                   power tăng 1000% so với giây trước hoặc damage tăng gấp 2 lần giây trước.
-                ========================= */
-
-                let spikeSecond = Math.floor(Date.now() / 1000);
-                let secondStartPower = power;
-                let previousSecondPowerGain = 0;
-                let currentSecondPowerGain = 0;
-                let damageSecond = Math.floor(Date.now() / 1000);
-                let previousSecondDamage = 0;
-                let twoSecondsAgoDamage = 0;
-                let currentSecondDamage = 0;
-
-                function updateSpikeSecond() {
-                    const nowSecond = Math.floor(Date.now() / 1000);
-                    if (nowSecond === spikeSecond) return;
-                    previousSecondPowerGain = currentSecondPowerGain;
-                    currentSecondPowerGain = 0;
-                    secondStartPower = power;
-                    spikeSecond = nowSecond;
-                }
-
-                function addSafePower(amount) {
-                    if (!Number.isFinite(amount) || amount < 0) amount = 0;
-                    updateSpikeSecond();
-                    const safeAmount = Math.floor(amount);
-                    if (previousSecondPowerGain > 0 && safeAmount >= previousSecondPowerGain * 10) {
-                        power = secondStartPower;
-                        currentSecondPowerGain = 0;
-                        showPriorityToast(currentLang === 'vi'
-                            ? '🚨 POWER TĂNG 1000% SO VỚI GIÂY TRƯỚC! POWER ĐÃ RESET VỀ MỐC GIÂY TRƯỚC.'
-                            : '🚨 POWER INCREASED BY 1000% VS LAST SECOND! POWER RESET TO LAST SECOND.');
-                        return 0;
-                    }
-                    power += safeAmount;
-                    currentSecondPowerGain += safeAmount;
-                    return safeAmount;
-                }
-
-                function getSafeDamage(rawDamage) {
-                    const nowSecond = Math.floor(Date.now() / 1000);
-                    if (nowSecond !== damageSecond) {
-                        twoSecondsAgoDamage = previousSecondDamage;
-                        previousSecondDamage = currentSecondDamage;
-                        currentSecondDamage = 0;
-                        damageSecond = nowSecond;
-                    }
-                    let dmg = Math.max(0, Math.floor(rawDamage));
-                    if (previousSecondDamage > 0 && dmg >= previousSecondDamage * 2) {
-                        dmg = twoSecondsAgoDamage > 0 ? twoSecondsAgoDamage : previousSecondDamage;
-                        showPriorityToast(currentLang === 'vi'
-                            ? '🚨 DAMAGE TĂNG GẤP 2 SO VỚI GIÂY TRƯỚC! DAMAGE ĐÃ RESET VỀ MỨC 2 GIÂY TRƯỚC.'
-                            : '🚨 DAMAGE DOUBLED VS LAST SECOND! DAMAGE RESET TO THE LEVEL FROM 2 SECONDS AGO.');
-                    }
-                    currentSecondDamage = Math.max(currentSecondDamage, dmg);
-                    return dmg;
-                }
 
                 /* =========================
                    FINAL BOSS STATE
@@ -1783,7 +1472,7 @@
 
                 let finalBossKillCount = 0;
 
-                const FINAL_BOSS_KILLS_NEEDED = 1;
+                const FINAL_BOSS_KILLS_NEEDED = 9999;
 
                 let hasBossTitle = false;
 
@@ -1791,7 +1480,7 @@
 
                 /* =========================
                    ĐẠI BOSS TỐI THƯỢNG
-                   (mở khoá sau khi có danh hiệu [BOSS],
+                   (mở khoá sau khi có danh hiệu [GoD],
                    1000t = 1.000.000.000.000.000 HP)
                 ========================= */
 
@@ -1806,33 +1495,6 @@
                     supremeBossMaxHP;
 
                 /* =========================
-                   UNIVERSE WORLD
-                   THẾ GIỚI VŨ TRỤ MỚI
-                   1.000.000q = 1sx = 1 sextillion
-                ========================= */
-
-                let universeWorldUnlocked = false;
-
-                let universeBossActive = false;
-
-                let universeBossDefeated = false;
-
-                const universeBossMaxHP =
-                    1000000000000000000000;
-
-                let universeBossHP =
-                    universeBossMaxHP;
-
-                let universeBossKillCount = 0;
-
-                const UNIVERSE_BOSS_KILLS_NEEDED = 99;
-
-                const UNIVERSE_BOSS_POWER_REWARD =
-                    5000000 * 67000;
-
-                let hasUniverseTitle = false;
-
-                /* =========================
                    FORMAT SỐ: 10000 -> 10k,
                    1000000 -> 1m, 1000000000 -> 1b
                 ========================= */
@@ -1844,16 +1506,6 @@
                     const sign = n < 0 ? '-' : '';
 
                     n = Math.abs(n);
-
-                    if (n >= 1000000000000000000000) {
-
-                        return sign +
-                            (n / 1000000000000000000000)
-                                .toFixed(
-                                    (n % 1000000000000000000000 === 0) ? 0 : 2
-                                ) + 'sx';
-
-                    }
 
                     if (n >= 1000000000000000) {
 
@@ -1917,14 +1569,8 @@
 
                 function getPlayerMaxHP() {
 
-                    if (
-                        (hasGoDSword || hasHackSword) &&
-                        power >= 1000000000000
-                    )
+                    if (hasGoDSword && power >= 1000000000000)
                         return 1500000000;
-
-                    if (hasHackSword)
-                        return 650000000;
 
                     if (hasGoDSword)
                         return 500000000;
@@ -2574,116 +2220,6 @@
                 );
 
                 /* =========================
-                   UNIVERSE WORLD FLOOR
-                   Nền vũ trụ ngay dưới chân
-                   Chỉ hiện trong World Universe
-                ========================= */
-
-                function createUniverseFloorTexture() {
-
-                    const canvas =
-                        document.createElement('canvas');
-
-                    canvas.width = 1024;
-                    canvas.height = 1024;
-
-                    const ctx =
-                        canvas.getContext('2d');
-
-                    const gradient =
-                        ctx.createRadialGradient(
-                            512,
-                            512,
-                            20,
-                            512,
-                            512,
-                            700
-                        );
-
-                    gradient.addColorStop(0, '#26105c');
-                    gradient.addColorStop(0.35, '#0c1645');
-                    gradient.addColorStop(0.7, '#05051b');
-                    gradient.addColorStop(1, '#000000');
-
-                    ctx.fillStyle = gradient;
-                    ctx.fillRect(0, 0, 1024, 1024);
-
-                    for (let i = 0; i < 900; i++) {
-
-                        const x = Math.random() * 1024;
-                        const y = Math.random() * 1024;
-                        const r = Math.random() * 2.2 + 0.2;
-
-                        ctx.fillStyle =
-                            `rgba(255,255,255,${0.25 + Math.random() * 0.75})`;
-
-                        ctx.beginPath();
-                        ctx.arc(x, y, r, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-
-                    for (let i = 0; i < 30; i++) {
-
-                        const x = Math.random() * 1024;
-                        const y = Math.random() * 1024;
-                        const r = Math.random() * 90 + 25;
-
-                        const nebula =
-                            ctx.createRadialGradient(
-                                x,
-                                y,
-                                0,
-                                x,
-                                y,
-                                r
-                            );
-
-                        nebula.addColorStop(0, 'rgba(180,60,255,0.18)');
-                        nebula.addColorStop(1, 'rgba(0,0,0,0)');
-
-                        ctx.fillStyle = nebula;
-                        ctx.beginPath();
-                        ctx.arc(x, y, r, 0, Math.PI * 2);
-                        ctx.fill();
-                    }
-
-                    return new THREE.CanvasTexture(canvas);
-                }
-
-                const universeFloorTexture =
-                    createUniverseFloorTexture();
-
-                universeFloorTexture.wrapS =
-                    THREE.RepeatWrapping;
-
-                universeFloorTexture.wrapT =
-                    THREE.RepeatWrapping;
-
-                universeFloorTexture.repeat.set(2, 2);
-
-                const universeFloor =
-                    new THREE.Mesh(
-                        new THREE.PlaneGeometry(36, 36),
-                        new THREE.MeshBasicMaterial({
-                            map: universeFloorTexture,
-                            side: THREE.DoubleSide
-                        })
-                    );
-
-                universeFloor.rotation.x =
-                    -Math.PI / 2;
-
-                universeFloor.position.y =
-                    0.025;
-
-                universeFloor.visible =
-                    false;
-
-                scene.add(
-                    universeFloor
-                );
-
-                /* =========================
                    COSMIC SKIN TEXTURE
                 ========================= */
 
@@ -3204,132 +2740,6 @@
                 );
 
                 /* =========================
-                   UNIVERSE BOSS
-                   Giống nhân vật chính nhưng x10
-                   và có sừng vũ trụ
-                ========================= */
-
-                const universeBossMonster =
-                    playerGroup.clone(true);
-
-                universeBossMonster.position.set(
-                    0,
-                    0,
-                    -7
-                );
-
-                universeBossMonster.scale.set(
-                    10,
-                    10,
-                    10
-                );
-
-                universeBossMonster.visible =
-                    false;
-
-                universeBossMonster.traverse(
-                    child => {
-
-                        if (child.isMesh && child.material) {
-
-                            if (child.material.color) {
-
-                                child.material =
-                                    child.material.clone();
-
-                                child.material.color.setHex(
-                                    0x221144
-                                );
-
-                            }
-
-                        }
-
-                    }
-                );
-
-                const universeHornMat =
-                    new THREE.MeshStandardMaterial({
-                        color: 0xffffff,
-                        emissive: 0x6a00ff,
-                        emissiveIntensity: 1.5,
-                        metalness: 0.7,
-                        roughness: 0.25
-                    });
-
-                const universeHornL =
-                    new THREE.Mesh(
-                        new THREE.ConeGeometry(
-                            0.35,
-                            1.8,
-                            16
-                        ),
-                        universeHornMat
-                    );
-
-                universeHornL.position.set(
-                    -0.42,
-                    2.8,
-                    0
-                );
-
-                universeHornL.rotation.z =
-                    -0.35;
-
-                const universeHornR =
-                    new THREE.Mesh(
-                        new THREE.ConeGeometry(
-                            0.35,
-                            1.8,
-                            16
-                        ),
-                        universeHornMat
-                    );
-
-                universeHornR.position.set(
-                    0.42,
-                    2.8,
-                    0
-                );
-
-                universeHornR.rotation.z =
-                    0.35;
-
-                universeBossMonster.add(
-                    universeHornL,
-                    universeHornR
-                );
-
-                const universeAuraMat =
-                    new THREE.MeshBasicMaterial({
-                        color: 0xaa00ff,
-                        transparent: true,
-                        opacity: 0.16,
-                        side: THREE.BackSide
-                    });
-
-                const universeAura =
-                    new THREE.Mesh(
-                        new THREE.SphereGeometry(
-                            2.8,
-                            24,
-                            24
-                        ),
-                        universeAuraMat
-                    );
-
-                universeAura.position.y =
-                    1.5;
-
-                universeBossMonster.add(
-                    universeAura
-                );
-
-                scene.add(
-                    universeBossMonster
-                );
-
-                /* =========================
                    RED MONSTER
                 ========================= */
 
@@ -3620,7 +3030,7 @@
 
                 /* =========================
                    FINAL BOSS (con quái đỏ khổng lồ)
-                   1.000.000.000 HP - mở khoá sau vòng 2
+                   1.000.000.000 HP - mở khoá bằng phím D
                    sau khi hoàn thành vòng 2
                 ========================= */
 
@@ -3814,7 +3224,7 @@
                         'rgba(0,0,0,0.85)';
 
                     ctx.strokeText(
-                        '[BOSS]',
+                        '[GoD]',
                         128,
                         34
                     );
@@ -3823,7 +3233,7 @@
                         '#ffffff';
 
                     ctx.fillText(
-                        '[BOSS]',
+                        '[GoD]',
                         128,
                         34
                     );
@@ -3954,82 +3364,6 @@
                         canvas
                     );
                 }
-
-                function createUniverseTitleSprite() {
-
-                    const canvas =
-                        document.createElement('canvas');
-
-                    canvas.width = 512;
-                    canvas.height = 96;
-
-                    const ctx =
-                        canvas.getContext('2d');
-
-                    ctx.clearRect(0, 0, 512, 96);
-
-                    ctx.font =
-                        'bold 48px Impact, sans-serif';
-
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.lineWidth = 7;
-                    ctx.strokeStyle = 'rgba(255,255,255,0.8)';
-                    ctx.strokeText('[Universe]', 256, 50);
-
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.rect(0, 0, 256, 96);
-                    ctx.clip();
-                    ctx.fillStyle = '#000000';
-                    ctx.fillText('[Universe]', 256, 50);
-                    ctx.restore();
-
-                    const rainbow =
-                        ctx.createLinearGradient(256, 0, 512, 0);
-
-                    rainbow.addColorStop(0, '#ff0000');
-                    rainbow.addColorStop(0.16, '#ff9900');
-                    rainbow.addColorStop(0.33, '#ffff00');
-                    rainbow.addColorStop(0.5, '#00ff00');
-                    rainbow.addColorStop(0.66, '#00ffff');
-                    rainbow.addColorStop(0.83, '#0088ff');
-                    rainbow.addColorStop(1, '#aa00ff');
-
-                    ctx.save();
-                    ctx.beginPath();
-                    ctx.rect(256, 0, 256, 96);
-                    ctx.clip();
-                    ctx.fillStyle = rainbow;
-                    ctx.fillText('[Universe]', 256, 50);
-                    ctx.restore();
-
-                    const tex =
-                        new THREE.CanvasTexture(canvas);
-
-                    const mat =
-                        new THREE.SpriteMaterial({
-                            map: tex,
-                            transparent: true,
-                            depthTest: false
-                        });
-
-                    const sprite =
-                        new THREE.Sprite(mat);
-
-                    sprite.scale.set(3.2, 0.6, 1);
-                    sprite.position.set(0, 3.35, 0);
-                    sprite.visible = false;
-
-                    return sprite;
-                }
-
-                const universeTitleSprite =
-                    createUniverseTitleSprite();
-
-                playerGroup.add(
-                    universeTitleSprite
-                );
 
                 const bossTitleSprite =
                     createBossTitleSprite();
@@ -4588,204 +3922,6 @@
                         'rate-legendary'
                     ).innerText =
                         upgradeRates.legendary;
-
-                    const invGod =
-                        document.getElementById(
-                            'inv-god'
-                        );
-
-                    if (invGod)
-                        invGod.innerText =
-                            godSwordCount;
-
-                    const invHack =
-                        document.getElementById(
-                            'inv-hack'
-                        );
-
-                    if (invHack)
-                        invHack.innerText =
-                            hasHackSword ? 1 : 0;
-
-                    const lvlGod =
-                        document.getElementById(
-                            'lvl-god'
-                        );
-
-                    if (lvlGod)
-                        lvlGod.innerText =
-                            1;
-
-                    const lvlHack =
-                        document.getElementById(
-                            'lvl-hack'
-                        );
-
-                    if (lvlHack)
-                        lvlHack.innerText =
-                            2;
-
-                    updateDraftUI();
-                }
-
-                /* =========================
-                   DRAFT AUTO OPEN + ITEM SELECT
-                ========================= */
-
-                function updateDraftUI() {
-
-                    const types = [
-                        'common',
-                        'rare',
-                        'epic',
-                        'legendary'
-                    ];
-
-                    types.forEach(type => {
-
-                        const countEl =
-                            document.getElementById(
-                                'draft-count-' + type
-                            );
-
-                        const levelEl =
-                            document.getElementById(
-                                'draft-level-' + type
-                            );
-
-                        const rateEl =
-                            document.getElementById(
-                                'draft-rate-' + type
-                            );
-
-                        if (countEl)
-                            countEl.innerText =
-                                inventory[type];
-
-                        if (levelEl)
-                            levelEl.innerText =
-                                itemLevels[type];
-
-                        if (rateEl)
-                            rateEl.innerText =
-                                upgradeRates[type];
-                    });
-
-                    document.querySelectorAll(
-                        '.draft-item'
-                    ).forEach(el => {
-                        el.classList.remove('selected');
-                    });
-
-                    const selected =
-                        document.getElementById(
-                            'draft-item-' +
-                            draftSelectedType
-                        );
-
-                    if (selected)
-                        selected.classList.add('selected');
-
-                    const title =
-                        document.getElementById(
-                            'draft-detail-title'
-                        );
-
-                    const info =
-                        document.getElementById(
-                            'draft-detail-info'
-                        );
-
-                    if (title)
-                        title.innerText =
-                            draftSelectedType.toUpperCase();
-
-                    if (info) {
-
-                        info.innerText =
-                            currentLang === 'vi'
-                            ? `Lv.${itemLevels[draftSelectedType]} → Tỉ lệ nâng cấp: ${upgradeRates[draftSelectedType]}% | Có: ${inventory[draftSelectedType]}`
-                            : `Lv.${itemLevels[draftSelectedType]} → Upgrade chance: ${upgradeRates[draftSelectedType]}% | Owned: ${inventory[draftSelectedType]}`;
-                    }
-
-                    const button =
-                        document.getElementById(
-                            'draft-upgrade-btn'
-                        );
-
-                    if (button) {
-
-                        button.innerText =
-                            currentLang === 'vi'
-                            ? `⚒️ NÂNG ${draftSelectedType.toUpperCase()} LV.${itemLevels[draftSelectedType]}`
-                            : `⚒️ UPGRADE ${draftSelectedType.toUpperCase()} LV.${itemLevels[draftSelectedType]}`;
-                    }
-
-                }
-
-                window.selectDraftItem =
-                    function(type) {
-
-                        draftSelectedType =
-                            type;
-
-                        updateDraftUI();
-
-                    };
-
-                window.upgradeSelectedDraftItem =
-                    function() {
-
-                        if (draftUpgradeCooldown)
-                            return;
-
-                        upgradeItem(
-                            draftSelectedType
-                        );
-
-                    };
-
-                function updateDraftProximity() {
-
-                    const draftModal =
-                        document.getElementById(
-                            'draft-modal'
-                        );
-
-                    if (!draftModal)
-                        return;
-
-                    const distToDraft =
-                        Math.hypot(
-                            playerGroup.position.x -
-                            upgradeNPC.position.x,
-                            playerGroup.position.z -
-                            upgradeNPC.position.z
-                        );
-
-                    const nearDraft =
-                        distToDraft <= 4;
-
-                    if (
-                        nearDraft &&
-                        !isInvOpen &&
-                        !isColorOpen &&
-                        !isLoginOpen &&
-                        !isGameEnded
-                    ) {
-
-                        draftModal.style.display =
-                            'block';
-
-                        updateDraftUI();
-
-                    } else {
-
-                        draftModal.style.display =
-                            'none';
-
-                    }
-
                 }
 
                 /* =========================
@@ -4853,9 +3989,6 @@
                 window.upgradeItem =
                     function(type) {
 
-                        if (draftUpgradeCooldown)
-                            return;
-
                         const distToDraft =
                             Math.hypot(
                                 playerGroup.position.x + 8,
@@ -4887,31 +4020,6 @@
 
                             return;
                         }
-
-                        draftUpgradeCooldown = true;
-
-                        const cooldownText =
-                            document.getElementById(
-                                'draft-cooldown'
-                            );
-
-                        if (cooldownText)
-                            cooldownText.innerText =
-                                currentLang === 'vi'
-                                ? '⏳ Đang nâng cấp...'
-                                : '⏳ Upgrading...';
-
-                        setTimeout(
-                            () => {
-
-                                draftUpgradeCooldown = false;
-
-                                if (cooldownText)
-                                    cooldownText.innerText = '';
-
-                            },
-                            200
-                        );
 
                         /*
                            QUAN TRỌNG:
@@ -4988,7 +4096,6 @@
                         }
 
                         updateInventoryUI();
-                        updateDraftUI();
 
                         saveCurrentAccount();
                     };
@@ -5042,13 +4149,13 @@
                     function() {
 
                         if (
-                            hasHackSword
+                            hasGoDSword
                         ) {
 
                             showToast(
                                 currentLang === 'vi'
-                                ? "🌀 BẠN ĐÃ CÓ KIẾM HACK LV.2 RỒI!"
-                                : "🌀 YOU ALREADY HAVE THE HACK LV.2 SWORD!"
+                                ? "⚔️ BẠN ĐÃ CÓ KIẾM GoD RỒI!"
+                                : "⚔️ YOU ALREADY HAVE THE GoD SWORD!"
                             );
 
                             return;
@@ -5073,8 +4180,8 @@
 
                             showToast(
                                 currentLang === 'vi'
-                                ? "❌ CẦN 2 LEGENDARY LV.2 ĐỂ TẠO 1 GoD LV.1!"
-                                : "❌ NEED 2 LEGENDARY LV.2 TO CREATE 1 GoD LV.1!"
+                                ? "❌ CẦN 2 LEGENDARY LV.2 ĐỂ GỘP!"
+                                : "❌ NEED 2 LEGENDARY LV.2 TO FUSE!"
                             );
 
                             return;
@@ -5082,10 +4189,7 @@
 
                         inventory.legendary -= 2;
 
-                        godSwordCount += 1;
-
-                        hasGoDSword =
-                            godSwordCount > 0;
+                        hasGoDSword = true;
 
                         refreshPlayerMaxHP();
 
@@ -5106,7 +4210,7 @@
                         document.getElementById(
                             'val-sword'
                         ).innerText =
-                            `GoD Lv.1 (x${GOD_SWORD_DMG_MULTIPLIER} DMG)`;
+                            `GoD (+${GOD_SWORD_DMG} DMG)`;
 
                         document.getElementById(
                             'val-sword'
@@ -5115,96 +4219,10 @@
 
                         playGoDFusionSound();
 
-                        if (
-                            godSwordCount >= 3
-                        ) {
-
-                            showToast(
-                                currentLang === 'vi'
-                                ? `🌟 NHẬN GoD LV.1! ĐANG CÓ ${godSwordCount}/3 GoD. BẤM [G] ĐỂ GỘP 3 GoD THÀNH HACK LV.2!`
-                                : `🌟 GOT GoD LV.1! YOU HAVE ${godSwordCount}/3 GoD. PRESS [G] TO FUSE 3 GoD INTO HACK LV.2!`
-                            );
-
-                        } else {
-
-                            showToast(
-                                currentLang === 'vi'
-                                ? `🌟 GỘP THÀNH CÔNG! NHẬN 1 KIẾM GoD LV.1 (x5 DMG)! ĐANG CÓ ${godSwordCount}/3!`
-                                : `🌟 FUSION SUCCESS! GOT 1 GoD LV.1 (x5 DMG)! YOU HAVE ${godSwordCount}/3!`
-                            );
-
-                        }
-
-                        updateInventoryUI();
-
-                        saveCurrentAccount();
-                    };
-
-                window.fuseHackSword =
-                    function() {
-
-                        if (
-                            hasHackSword
-                        ) {
-
-                            showToast(
-                                currentLang === 'vi'
-                                ? "🌀 BẠN ĐÃ CÓ KIẾM HACK LV.2!"
-                                : "🌀 YOU ALREADY HAVE THE HACK LV.2 SWORD!"
-                            );
-
-                            return;
-                        }
-
-                        if (
-                            godSwordCount < 3
-                        ) {
-
-                            showToast(
-                                currentLang === 'vi'
-                                ? `❌ CẦN 3 KIẾM GoD LV.1! HIỆN CÓ ${godSwordCount}/3!`
-                                : `❌ NEED 3 GoD LV.1 SWORDS! YOU HAVE ${godSwordCount}/3!`
-                            );
-
-                            return;
-                        }
-
-                        godSwordCount -= 3;
-
-                        hasGoDSword =
-                            godSwordCount > 0;
-
-                        hasHackSword =
-                            true;
-
-                        refreshPlayerMaxHP();
-
-                        swordMat.color.set(
-                            'white'
-                        );
-
-                        swordGroup.scale.set(
-                            1.8,
-                            2.0,
-                            1.8
-                        );
-
-                        document.getElementById(
-                            'val-sword'
-                        ).innerText =
-                            `Hack Lv.2 (x${HACK_SWORD_DMG_MULTIPLIER} DMG)`;
-
-                        document.getElementById(
-                            'val-sword'
-                        ).style.color =
-                            '#00ffff';
-
-                        playGoDFusionSound();
-
                         showToast(
                             currentLang === 'vi'
-                            ? "🌀 HỢP 3 GoD LV.1 THÀNH CÔNG! NHẬN KIẾM HACK LV.2 (x10 DMG)!"
-                            : "🌀 3 GoD LV.1 FUSED! YOU GOT THE HACK LV.2 SWORD (x10 DMG)!"
+                            ? "🌟 GỘP THÀNH CÔNG! KIẾM GoD ĐÃ SẴN SÀNG! (+9999 DMG)"
+                            : "🌟 FUSION SUCCESS! GoD SWORD READY! (+9999 DMG)"
                         );
 
                         updateInventoryUI();
@@ -5237,27 +4255,14 @@
                     document.getElementById(
                         'win-title'
                     ).innerText =
-                        "BOSS";
+                        "UPDATE MORE";
 
                     document.getElementById(
                         'win-desc'
                     ).innerText =
                         currentLang === 'vi'
-                        ? `👑 BẠN ĐÃ HẠ ĐỦ 999 [BOSS] CUỐI VÀ NHẬN DANH HIỆU [BOSS]! ✨`
-                        : `👑 YOU DEFEATED 999 FINAL [BOSS] AND EARNED THE [BOSS] TITLE! ✨`;
-
-                    bossTitleSprite.material.map =
-                        createBossTitleSprite().material.map;
-
-                    bossTitleSprite.material.map.needsUpdate =
-                        true;
-
-                    bossTitleSprite.material.color.set(
-                        0xffffff
-                    );
-
-                    bossTitleSprite.visible =
-                        true;
+                        ? `🌈 BẠN ĐÃ NHẬN DANH HIỆU [GoD] CẦU VỒNG! ✨`
+                        : `🌈 YOU EARNED THE RAINBOW [GoD] TITLE! ✨`;
 
                     saveCurrentAccount();
 
@@ -5278,13 +4283,6 @@
                         ) {
 
                             claimGoDTitle();
-
-                        } else if (
-                            godSwordCount >= 3 &&
-                            !hasHackSword
-                        ) {
-
-                            fuseHackSword();
 
                         } else {
 
@@ -5389,7 +4387,6 @@
                         : 'vi';
 
                     applyLanguageToUI();
-                    updateDraftUI();
 
                     showToast(
                         currentLang === 'vi'
@@ -5698,42 +4695,15 @@
 
                         if (k === 'o') {
 
-                            const distToGateForO =
-                                Math.hypot(
-                                    playerGroup.position.x,
-                                    playerGroup.position.z + 15.5
-                                );
+                            isColorOpen =
+                                !isColorOpen;
 
-                            if (
-                                distToGateForO < 3.5 &&
-                                gameStage === 4 &&
-                                (hasBossTitle || readyForGoDTitle) &&
-                                !supremeBossActive &&
-                                !supremeBossDefeated
-                            ) {
-                                supremeBossActive = true;
-                                gameStage = 6;
-                                setBossArenaSkybox(true);
-                                supremeBossHP = supremeBossMaxHP;
-                                finalBossMonster.visible = true;
-                                finalBossMonster.scale.set(7, 7, 7);
-                                finalBossMonster.position.set(0, 0, -6);
-                                playerGroup.position.z = 6;
-                                document.getElementById('boss-hp-bar').style.display = 'block';
-                                document.getElementById('boss-title').innerText =
-                                    currentLang === 'vi'
-                                    ? `🌌 ĐẠI BOSS 1Q (${formatNum(supremeBossMaxHP)} HP)`
-                                    : `🌌 1Q ULTIMATE BOSS (${formatNum(supremeBossMaxHP)} HP)`;
-                                showToast(
-                                    currentLang === 'vi'
-                                    ? '🌌 BOSS 1Q XUẤT HIỆN! BẠN ĐÃ BẤM O ĐỂ VÀO.'
-                                    : '🌌 1Q BOSS APPEARED! PRESS O TO ENTER.'
-                                );
-                            } else {
-                                isColorOpen = !isColorOpen;
-                                document.getElementById('color-modal').style.display =
-                                    isColorOpen ? 'block' : 'none';
-                            }
+                            document.getElementById(
+                                'color-modal'
+                            ).style.display =
+                                isColorOpen
+                                ? 'block'
+                                : 'none';
 
                         }
 
@@ -5752,46 +4722,6 @@
                         if (k === 'j') {
 
                             toggleLogin();
-
-                        }
-
-                        if (k === 'u') {
-
-                            if (
-                                supremeBossDefeated &&
-                                !universeBossActive &&
-                                !universeBossDefeated
-                            ) {
-                                universeWorldUnlocked = true;
-                                universeBossActive = true;
-                                gameStage = 7;
-                                universeBossHP = universeBossMaxHP;
-                                setBossArenaSkybox(true);
-                                universeFloor.visible = true;
-                                platformGroup.visible = true;
-                                finalBossMonster.visible = false;
-                                bossMonster.visible = false;
-                                redMonster.visible = false;
-                                octopusMonster.visible = false;
-                                universeBossMonster.visible = true;
-                                universeBossMonster.position.set(0, 0, -7);
-                                universeBossMonster.scale.set(10, 10, 10);
-                                playerGroup.position.z = 7;
-                                document.getElementById('universe-world-msg').style.display = 'none';
-                                document.getElementById('boss-hp-bar').style.display = 'block';
-                                document.getElementById('boss-title').innerText =
-                                    currentLang === 'vi'
-                                    ? `🌌 BOSS CUỐI 1SX (${formatNum(universeBossMaxHP)} HP)`
-                                    : `🌌 FINAL 1SX BOSS (${formatNum(universeBossMaxHP)} HP)`;
-                                document.getElementById('boss-hp-inner').style.width = '100%';
-                                document.getElementById('boss-hp-text').innerText =
-                                    `${formatNum(universeBossHP)} / ${formatNum(universeBossMaxHP)}`;
-                                showToast(
-                                    currentLang === 'vi'
-                                    ? '🌌 BOSS CUỐI 1SX XUẤT HIỆN! NHẤN U ĐỂ VÀO.'
-                                    : '🌌 FINAL 1SX BOSS APPEARED! PRESS U TO ENTER.'
-                                );
-                            }
 
                         }
 
@@ -5917,92 +4847,6 @@
 
                             }
 
-                            else if (
-                                distToGateForBoss < 3.5 &&
-                                gameStage === 4 &&
-                                supremeBossDefeated &&
-                                !universeBossActive &&
-                                !universeBossDefeated
-                            ) {
-
-                                universeWorldUnlocked = true;
-                                universeBossActive = true;
-                                gameStage = 7;
-                                universeBossHP =
-                                    universeBossMaxHP;
-
-                                setBossArenaSkybox(true);
-
-                                universeFloor.visible = true;
-                                platformGroup.visible = true;
-
-                                finalBossMonster.visible = false;
-                                bossMonster.visible = false;
-                                redMonster.visible = false;
-                                octopusMonster.visible = false;
-
-                                universeBossMonster.visible = true;
-                                universeBossMonster.position.set(0, 0, -7);
-                                universeBossMonster.scale.set(10, 10, 10);
-
-                                playerGroup.position.z = 7;
-
-                                if (hasHackSword) {
-
-                                    swordMat.color.set('white');
-
-                                    swordGroup.scale.set(
-                                        2.4,
-                                        2.8,
-                                        2.4
-                                    );
-
-                                    document.getElementById(
-                                        'val-sword'
-                                    ).innerText =
-                                        '🌌 KIẾM VŨ TRỤ (Hack Lv.2)';
-
-                                    document.getElementById(
-                                        'val-sword'
-                                    ).style.color =
-                                        '#ff00ff';
-
-                                }
-
-                                document.getElementById(
-                                    'universe-world-msg'
-                                ).style.display = 'none';
-
-                                document.getElementById(
-                                    'boss-hp-bar'
-                                ).style.display = 'block';
-
-                                document.getElementById(
-                                    'boss-title'
-                                ).innerText =
-                                    currentLang === 'vi'
-                                    ? `🌌 BOSS VŨ TRỤ (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`
-                                    : `🌌 UNIVERSE BOSS (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`;
-
-                                document.getElementById(
-                                    'boss-hp-inner'
-                                ).style.width = '100%';
-
-                                document.getElementById(
-                                    'boss-hp-text'
-                                ).innerText =
-                                    `${formatNum(universeBossHP)} / ${formatNum(universeBossMaxHP)}`;
-
-                                showToast(
-                                    currentLang === 'vi'
-                                    ? `🌌 BOSS VŨ TRỤ XUẤT HIỆN! ${formatNum(universeBossMaxHP)} HP!`
-                                    : `🌌 UNIVERSE BOSS APPEARED! ${formatNum(universeBossMaxHP)} HP!`
-                                );
-
-                                saveCurrentAccount();
-
-                            }
-
                         }
 
                         if (k === 'f') {
@@ -6114,36 +4958,19 @@
 
                         }
 
+                        const baseSwordDmg =
+                            hasGoDSword
+                            ? GOD_SWORD_DMG
+                            : swordDmgs[
+                                swordLevel
+                            ];
+
                         let totalDmg =
                             Math.floor(
                                 (power / 2) +
-                                swordDmgs[
-                                    swordLevel
-                                ]
+                                baseSwordDmg
                             ) *
                             itemBonusMultiplier;
-
-                        if (
-                            hasHackSword
-                        ) {
-
-                            totalDmg =
-                                Math.floor(
-                                    totalDmg *
-                                    HACK_SWORD_DMG_MULTIPLIER
-                                );
-
-                        } else if (
-                            hasGoDSword
-                        ) {
-
-                            totalDmg =
-                                Math.floor(
-                                    totalDmg *
-                                    GOD_SWORD_DMG_MULTIPLIER
-                                );
-
-                        }
 
                         /*
                            AFK chỉ được cộng 50%
@@ -6158,8 +4985,6 @@
                                 );
 
                         }
-
-                        totalDmg = getSafeDamage(totalDmg);
 
                         if (!isAfk) {
 
@@ -6187,10 +5012,9 @@
                             killCount +=
                                 monstersKilledInOneHit;
 
-                            addSafePower(
+                            power +=
                                 monstersKilledInOneHit *
-                                2
-                            );
+                                2;
 
                             checkUpgradeSword();
 
@@ -6316,14 +5140,13 @@
                             bossHP -=
                                 totalDmg;
 
-                            addSafePower(
+                            power +=
                                 Math.max(
                                     1,
                                     Math.floor(
                                         totalDmg / 500
                                     )
-                                )
-                            );
+                                );
 
                             document.getElementById(
                                 'val-power'
@@ -6383,7 +5206,7 @@
                             gameStage === 5
                         ) {
 
-                            const oldBossPowerGain =
+                            power +=
                                 Math.max(
                                     1,
                                     Math.floor(
@@ -6391,28 +5214,10 @@
                                     )
                                 );
 
-                            const finalBossPowerGain =
-                                oldBossPowerGain *
-                                FINAL_BOSS_POWER_MULTIPLIER;
-
-                            addSafePower(
-                                finalBossPowerGain
-                            );
-
                             document.getElementById(
                                 'val-power'
                             ).innerText =
                                 formatNum(power);
-
-                            if (!isAfk) {
-
-                                showToast(
-                                    currentLang === 'vi'
-                                    ? `👑 [BOSS] CUỐI: +${formatNum(finalBossPowerGain)} POWER (không nhân x10.000)`
-                                    : `👑 FINAL [BOSS]: +${formatNum(finalBossPowerGain)} POWER (no x10,000 multiplier)`
-                                );
-
-                            }
 
                             /*
                                Có bao nhiêu dmg thì hạ gục
@@ -6498,13 +5303,12 @@
 
                                 setBossArenaSkybox(false);
 
-                                readyForGoDTitle = false;
-                                hasBossTitle = true;
+                                readyForGoDTitle = true;
 
                                 showToast(
                                     currentLang === 'vi'
-                                    ? '👑 ĐÃ HẠ BOSS 1B! BOSS 1Q ĐÃ MỞ. ĐẾN CỔNG VÀ BẤM [O].'
-                                    : '👑 1B BOSS DEFEATED! 1Q BOSS UNLOCKED. GO TO THE GATE AND PRESS [O].'
+                                    ? `🌈 ĐÃ ĐỦ ${FINAL_BOSS_KILLS_NEEDED}! BẤM [G] ĐỂ NHẬN DANH HIỆU [GoD]!`
+                                    : `🌈 REACHED ${FINAL_BOSS_KILLS_NEEDED}! PRESS [G] TO CLAIM THE [GoD] TITLE!`
                                 );
 
                                 saveCurrentAccount();
@@ -6533,14 +5337,13 @@
                             supremeBossHP -=
                                 totalDmg;
 
-                            addSafePower(
+                            power +=
                                 Math.max(
                                     1,
                                     Math.floor(
                                         totalDmg / 500
                                     )
-                                )
-                            );
+                                );
 
                             document.getElementById(
                                 'val-power'
@@ -6577,8 +5380,6 @@
                                 supremeBossActive = false;
 
                                 supremeBossDefeated = true;
-
-                                universeWorldUnlocked = true;
 
                                 setBossArenaSkybox(false);
 
@@ -6624,136 +5425,10 @@
                                     'win-desc'
                                 ).innerText =
                                     currentLang === 'vi'
-                                    ? `🌌 BẠN ĐÃ CHINH PHỤC ĐẠI BOSS TỐI THƯỢNG! THẾ GIỚI VŨ TRỤ ĐÃ MỞ KHOÁ! ✨`
-                                    : `🌌 YOU CONQUERED THE ULTIMATE BOSS! THE UNIVERSE WORLD IS NOW UNLOCKED! ✨`;
+                                    ? `🌌 BẠN ĐÃ CHINH PHỤC ĐẠI BOSS TỐI THƯỢNG! ✨`
+                                    : `🌌 YOU CONQUERED THE ULTIMATE BOSS! ✨`;
 
                                 saveCurrentAccount();
-
-                            }
-
-                        } else if (
-                            gameStage === 7
-                        ) {
-
-                            universeBossHP -=
-                                totalDmg;
-
-                            if (
-                                universeBossHP < 0
-                            )
-                                universeBossHP = 0;
-
-                            const universeHpPercent =
-                                Math.max(
-                                    0,
-                                    (universeBossHP /
-                                    universeBossMaxHP) *
-                                    100
-                                );
-
-                            document.getElementById(
-                                'boss-hp-inner'
-                            ).style.width =
-                                universeHpPercent + '%';
-
-                            document.getElementById(
-                                'boss-hp-text'
-                            ).innerText =
-                                `${formatNum(universeBossHP)} / ${formatNum(universeBossMaxHP)}`;
-
-                            if (
-                                universeBossHP <= 0
-                            ) {
-
-                                universeBossKillCount++;
-
-                                addSafePower(
-                                    Math.max(
-                                        1,
-                                        Math.floor(totalDmg / 500)
-                                    )
-                                );
-
-                                document.getElementById(
-                                    'val-power'
-                                ).innerText =
-                                    formatNum(power);
-
-                                universeBossHP =
-                                    universeBossMaxHP;
-
-                                if (
-                                    universeBossKillCount >=
-                                    UNIVERSE_BOSS_KILLS_NEEDED
-                                ) {
-
-                                    universeBossKillCount =
-                                        UNIVERSE_BOSS_KILLS_NEEDED;
-
-                                    universeBossDefeated = true;
-                                    universeBossActive = false;
-                                    hasUniverseTitle = true;
-
-                                    universeBossMonster.visible = false;
-
-                                    document.getElementById(
-                                        'boss-hp-bar'
-                                    ).style.display = 'none';
-
-                                    document.getElementById(
-                                        'victory-screen'
-                                    ).style.display = 'flex';
-
-                                    document.getElementById(
-                                        'win-title'
-                                    ).innerText =
-                                        'UNIVERSE';
-
-                                    document.getElementById(
-                                        'win-desc'
-                                    ).innerText =
-                                        currentLang === 'vi'
-                                        ? '🌌 BẠN ĐÃ HẠ ĐỦ 99 BOSS VŨ TRỤ VÀ NHẬN DANH HIỆU [Universe]! 🌈'
-                                        : '🌌 YOU DEFEATED 99 UNIVERSE BOSSES AND EARNED THE [Universe] TITLE! 🌈';
-
-                                    universeTitleSprite.visible = true;
-                                    bossTitleSprite.visible = false;
-
-                                    playGoDFusionSound();
-
-                                    showToast(
-                                        currentLang === 'vi'
-                                        ? '🌌✨ ĐỦ 99 BOSS VŨ TRỤ! BẠN ĐÃ NHẬN [Universe]!'
-                                        : '🌌✨ 99 UNIVERSE BOSSES DEFEATED! YOU EARNED [Universe]!'
-                                    );
-
-                                    saveCurrentAccount();
-
-                                } else {
-
-                                    document.getElementById(
-                                        'boss-title'
-                                    ).innerText =
-                                        currentLang === 'vi'
-                                        ? `🌌 BOSS VŨ TRỤ (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`
-                                        : `🌌 UNIVERSE BOSS (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`;
-
-                                    document.getElementById(
-                                        'boss-hp-inner'
-                                    ).style.width = '100%';
-
-                                    document.getElementById(
-                                        'boss-hp-text'
-                                    ).innerText =
-                                        `${formatNum(universeBossHP)} / ${formatNum(universeBossMaxHP)}`;
-
-                                    showToast(
-                                        currentLang === 'vi'
-                                        ? `🌌 HẠ BOSS VŨ TRỤ ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}! +${formatNum(UNIVERSE_BOSS_POWER_REWARD)} POWER!`
-                                        : `🌌 UNIVERSE BOSS ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED} DEFEATED! +${formatNum(UNIVERSE_BOSS_POWER_REWARD)} POWER!`
-                                    );
-
-                                }
 
                             }
 
@@ -6863,43 +5538,8 @@
                 ========================= */
 
                 let toastTimer = null;
-                let priorityToastUntil = 0;
-
-                function showPriorityToast(text) {
-
-                    const toast =
-                        document.getElementById(
-                            'toast'
-                        );
-
-                    toast.innerText =
-                        text;
-
-                    toast.style.display =
-                        'block';
-
-                    priorityToastUntil =
-                        Date.now() + 2600;
-
-                    clearTimeout(
-                        toastTimer
-                    );
-
-                    toastTimer =
-                        setTimeout(
-                            () => {
-                                toast.style.display =
-                                    'none';
-                                priorityToastUntil = 0;
-                            },
-                            2600
-                        );
-                }
 
                 function showToast(text) {
-
-                    if (Date.now() < priorityToastUntil)
-                        return;
 
                     const toast =
                         document.getElementById(
@@ -7006,10 +5646,6 @@
 
                         hasGoDSword: hasGoDSword,
 
-                        godSwordCount: godSwordCount,
-
-                        hasHackSword: hasHackSword,
-
                         isCosmicSkinOn: isCosmicSkinOn,
 
                         inventory: {
@@ -7059,18 +5695,6 @@
 
                         supremeBossHP: supremeBossHP,
 
-                        universeWorldUnlocked: universeWorldUnlocked,
-
-                        universeBossActive: universeBossActive,
-
-                        universeBossDefeated: universeBossDefeated,
-
-                        universeBossHP: universeBossHP,
-
-                        universeBossKillCount: universeBossKillCount,
-
-                        hasUniverseTitle: hasUniverseTitle,
-
                         playerHP: playerHP,
 
                         playerMaxHP: playerMaxHP,
@@ -7108,18 +5732,7 @@
 
                     gameLoop = data.gameLoop;
 
-                    hasGoDSword = data.hasGoDSword || false;
-
-                    godSwordCount =
-                        (typeof data.godSwordCount === 'number')
-                        ? data.godSwordCount
-                        : (hasGoDSword ? 1 : 0);
-
-                    hasHackSword =
-                        data.hasHackSword || false;
-
-                    if (hasHackSword)
-                        hasGoDSword = godSwordCount > 0;
+                    hasGoDSword = data.hasGoDSword;
 
                     isCosmicSkinOn = data.isCosmicSkinOn;
 
@@ -7176,26 +5789,6 @@
                         ? data.supremeBossHP
                         : supremeBossMaxHP;
 
-                    universeWorldUnlocked =
-                        data.universeWorldUnlocked || false;
-
-                    universeBossActive =
-                        data.universeBossActive || false;
-
-                    universeBossDefeated =
-                        data.universeBossDefeated || false;
-
-                    universeBossHP =
-                        (typeof data.universeBossHP === 'number')
-                        ? data.universeBossHP
-                        : universeBossMaxHP;
-
-                    universeBossKillCount =
-                        data.universeBossKillCount || 0;
-
-                    hasUniverseTitle =
-                        data.hasUniverseTitle || false;
-
                     refreshPlayerMaxHP();
 
                     if (
@@ -7249,47 +5842,7 @@
 
                     skinMat.needsUpdate = true;
 
-                    if (hasHackSword && (gameStage === 7 || universeWorldUnlocked)) {
-
-                        swordMat.color.set('white');
-
-                        swordGroup.scale.set(
-                            2.4,
-                            2.8,
-                            2.4
-                        );
-
-                        document.getElementById(
-                            'val-sword'
-                        ).innerText =
-                            '🌌 KIẾM VŨ TRỤ (Hack Lv.2)';
-
-                        document.getElementById(
-                            'val-sword'
-                        ).style.color =
-                            '#ff00ff';
-
-                    } else if (hasHackSword) {
-
-                        swordMat.color.set('white');
-
-                        swordGroup.scale.set(
-                            1.8,
-                            2.0,
-                            1.8
-                        );
-
-                        document.getElementById(
-                            'val-sword'
-                        ).innerText =
-                            `Hack Lv.2 (x${HACK_SWORD_DMG_MULTIPLIER} DMG)`;
-
-                        document.getElementById(
-                            'val-sword'
-                        ).style.color =
-                            '#00ffff';
-
-                    } else if (hasGoDSword) {
+                    if (hasGoDSword) {
 
                         swordMat.color.set('white');
 
@@ -7302,7 +5855,7 @@
                         document.getElementById(
                             'val-sword'
                         ).innerText =
-                            `GoD Lv.1 (x${GOD_SWORD_DMG_MULTIPLIER} DMG)`;
+                            `GoD (+${GOD_SWORD_DMG} DMG)`;
 
                         document.getElementById(
                             'val-sword'
@@ -7346,28 +5899,6 @@
                     finalBossMonster.visible =
                         (gameStage === 5 || gameStage === 6);
 
-                    universeBossMonster.visible =
-                        (gameStage === 7 && !universeBossDefeated);
-
-                    universeFloor.visible =
-                        (gameStage === 7);
-
-                    if (gameStage === 7) {
-
-                        universeBossMonster.position.set(
-                            0,
-                            0,
-                            -7
-                        );
-
-                        universeBossMonster.scale.set(
-                            10,
-                            10,
-                            10
-                        );
-
-                    }
-
                     finalBossMonster.scale.set(
                         gameStage === 6 ? 7 : 4.5,
                         gameStage === 6 ? 7 : 4.5,
@@ -7377,36 +5908,11 @@
                     document.getElementById(
                         'boss-hp-bar'
                     ).style.display =
-                        (gameStage === 3 || gameStage === 5 || gameStage === 6 || (gameStage === 7 && !universeBossDefeated))
+                        (gameStage === 3 || gameStage === 5 || gameStage === 6)
                         ? 'block'
                         : 'none';
 
-                    if (gameStage === 7) {
-
-                        document.getElementById(
-                            'boss-title'
-                        ).innerText =
-                            currentLang === 'vi'
-                            ? `🌌 BOSS VŨ TRỤ (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`
-                            : `🌌 UNIVERSE BOSS (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`;
-
-                        const universeHpPercent =
-                            Math.max(
-                                0,
-                                (universeBossHP / universeBossMaxHP) * 100
-                            );
-
-                        document.getElementById(
-                            'boss-hp-inner'
-                        ).style.width =
-                            universeHpPercent + '%';
-
-                        document.getElementById(
-                            'boss-hp-text'
-                        ).innerText =
-                            `${formatNum(universeBossHP)} / ${formatNum(universeBossMaxHP)}`;
-
-                    } else if (gameStage === 6) {
+                    if (gameStage === 6) {
 
                         document.getElementById(
                             'boss-title'
@@ -7484,10 +5990,7 @@
                     }
 
                     bossTitleSprite.visible =
-                        hasBossTitle && !hasUniverseTitle;
-
-                    universeTitleSprite.visible =
-                        hasUniverseTitle;
+                        hasBossTitle;
 
                     if (supremeBossDefeated) {
 
@@ -7504,11 +6007,8 @@
                     }
 
                     setBossArenaSkybox(
-                        gameStage === 5 || gameStage === 6 || gameStage === 7
+                        gameStage === 5 || gameStage === 6
                     );
-
-                    universeFloor.visible =
-                        gameStage === 7;
 
                     document.getElementById(
                         'val-power'
@@ -7524,13 +6024,6 @@
                         'val-loop'
                     ).innerText =
                         gameLoop;
-
-                    document.getElementById(
-                        'val-world'
-                    ).innerText =
-                        gameStage === 7
-                        ? 'Universe'
-                        : '1';
 
                     if (equippedItemType) {
 
@@ -7913,14 +6406,6 @@
                         );
 
                     /* =========================
-                       DRAFT PROXIMITY
-                       Tự mở bảng khi người chơi
-                       đứng gần NPC Draft
-                    ========================= */
-
-                    updateDraftProximity();
-
-                    /* =========================
                        NPC ANIMATION
                     ========================= */
 
@@ -7981,28 +6466,6 @@
                         distToGate < 3.5
                     ) {
 
-                        const universeWorldMsg =
-                            document.getElementById(
-                                'universe-world-msg'
-                            );
-
-                        if (
-                            gameStage === 4 &&
-                            supremeBossDefeated &&
-                            !universeBossActive &&
-                            !universeBossDefeated
-                        ) {
-
-                            universeWorldMsg.style.display =
-                                'block';
-
-                        } else {
-
-                            universeWorldMsg.style.display =
-                                'none';
-
-                        }
-
                         if (
                             gameStage === 1 &&
                             killCount >= 999
@@ -8035,9 +6498,7 @@
 
                                 gameLoop = 2;
 
-                                addSafePower(
-                                    Math.max(1, Math.floor(power * 0.5))
-                                );
+                                power *= 3;
 
                                 luckMultiplier *=
                                     3;
@@ -8123,20 +6584,12 @@
                             ) {
 
                                 /*
-                                   Đã có danh hiệu [BOSS],
+                                   Đã có danh hiệu [GoD],
                                    mở khoá nhiệm vụ Đại Boss
                                    Tối Thượng, mời bấm D
                                 */
 
                                 supremeBossMsg.style.display =
-                                    'block';
-
-                            } else if (
-                                supremeBossDefeated &&
-                                !universeBossDefeated
-                            ) {
-
-                                universeWorldMsg.style.display =
                                     'block';
 
                             } else {
@@ -8181,11 +6634,6 @@
                             'none';
 
                         supremeBossMsg.style.display =
-                            'none';
-
-                        document.getElementById(
-                            'universe-world-msg'
-                        ).style.display =
                             'none';
 
                     }
@@ -8288,40 +6736,6 @@
 
                     }
 
-                    if (
-                        universeBossMonster.visible
-                    ) {
-
-                        universeBossMonster.rotation.y +=
-                            0.008;
-
-                        universeBossMonster.position.y =
-                            Math.sin(performance.now() * 0.002) *
-                            0.12;
-
-                        const dxU =
-                            playerGroup.position.x -
-                            universeBossMonster.position.x;
-
-                        const dzU =
-                            playerGroup.position.z -
-                            universeBossMonster.position.z;
-
-                        const distU =
-                            Math.hypot(dxU, dzU);
-
-                        if (distU > 7) {
-
-                            universeBossMonster.position.x +=
-                                (dxU / distU) * 0.018;
-
-                            universeBossMonster.position.z +=
-                                (dzU / distU) * 0.018;
-
-                        }
-
-                    }
-
                     /* =========================
                        BOSS PHẢN ĐÒN NGƯỜI CHƠI
                        (đứng vào 1 trong 4 góc tường
@@ -8364,8 +6778,7 @@
                         (gameStage === 2 ||
                         gameStage === 3 ||
                         gameStage === 5 ||
-                        gameStage === 6 ||
-                        gameStage === 7) &&
+                        gameStage === 6) &&
                         (nowTime - lastBossAttackTime > 1500)
                     ) {
 
@@ -8476,7 +6889,7 @@
                     }
 
                     /*
-                       Danh hiệu [BOSS], hoặc
+                       Danh hiệu [GoD] cầu vồng, hoặc
                        [BOSS] đen vũ trụ sau khi hạ
                        Đại Boss Tối Thượng (không cycle màu)
                     */
@@ -8538,7 +6951,6 @@
                 );
 
                 updateInventoryUI();
-                updateDraftUI();
 
                 refreshPlayerMaxHP();
 
