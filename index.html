@@ -1710,7 +1710,7 @@
                 /* =========================
                    ANTI POWER / DAMAGE SPIKE
                    Không cho power hoặc damage tăng
-                   bất thường gấp 2 lần giây trước.
+                   power tăng 1000% so với giây trước hoặc damage tăng gấp 2 lần giây trước.
                 ========================= */
 
                 let spikeSecond = Math.floor(Date.now() / 1000);
@@ -1735,12 +1735,12 @@
                     if (!Number.isFinite(amount) || amount < 0) amount = 0;
                     updateSpikeSecond();
                     const safeAmount = Math.floor(amount);
-                    if (previousSecondPowerGain > 0 && safeAmount >= previousSecondPowerGain * 2) {
+                    if (previousSecondPowerGain > 0 && safeAmount >= previousSecondPowerGain * 10) {
                         power = secondStartPower;
                         currentSecondPowerGain = 0;
-                        showToast(currentLang === 'vi'
-                            ? '🛡️ PHÁT HIỆN POWER TĂNG BẤT THƯỜNG! POWER ĐÃ RESET VỀ GIÂY TRƯỚC.'
-                            : '🛡️ ABNORMAL POWER SPIKE DETECTED! POWER RESET TO LAST SECOND.');
+                        showPriorityToast(currentLang === 'vi'
+                            ? '🚨 POWER TĂNG 1000% SO VỚI GIÂY TRƯỚC! POWER ĐÃ RESET VỀ MỐC GIÂY TRƯỚC.'
+                            : '🚨 POWER INCREASED BY 1000% VS LAST SECOND! POWER RESET TO LAST SECOND.');
                         return 0;
                     }
                     power += safeAmount;
@@ -1759,9 +1759,9 @@
                     let dmg = Math.max(0, Math.floor(rawDamage));
                     if (previousSecondDamage > 0 && dmg >= previousSecondDamage * 2) {
                         dmg = twoSecondsAgoDamage > 0 ? twoSecondsAgoDamage : previousSecondDamage;
-                        showToast(currentLang === 'vi'
-                            ? '🛡️ PHÁT HIỆN DAMAGE TĂNG GẤP 2! DAMAGE ĐÃ RESET VỀ MỨC 2 GIÂY TRƯỚC.'
-                            : '🛡️ DAMAGE DOUBLED! DAMAGE RESET TO THE LEVEL FROM 2 SECONDS AGO.');
+                        showPriorityToast(currentLang === 'vi'
+                            ? '🚨 DAMAGE TĂNG GẤP 2 SO VỚI GIÂY TRƯỚC! DAMAGE ĐÃ RESET VỀ MỨC 2 GIÂY TRƯỚC.'
+                            : '🚨 DAMAGE DOUBLED VS LAST SECOND! DAMAGE RESET TO THE LEVEL FROM 2 SECONDS AGO.');
                     }
                     currentSecondDamage = Math.max(currentSecondDamage, dmg);
                     return dmg;
@@ -6863,8 +6863,43 @@
                 ========================= */
 
                 let toastTimer = null;
+                let priorityToastUntil = 0;
+
+                function showPriorityToast(text) {
+
+                    const toast =
+                        document.getElementById(
+                            'toast'
+                        );
+
+                    toast.innerText =
+                        text;
+
+                    toast.style.display =
+                        'block';
+
+                    priorityToastUntil =
+                        Date.now() + 2600;
+
+                    clearTimeout(
+                        toastTimer
+                    );
+
+                    toastTimer =
+                        setTimeout(
+                            () => {
+                                toast.style.display =
+                                    'none';
+                                priorityToastUntil = 0;
+                            },
+                            2600
+                        );
+                }
 
                 function showToast(text) {
+
+                    if (Date.now() < priorityToastUntil)
+                        return;
 
                     const toast =
                         document.getElementById(
