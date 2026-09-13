@@ -628,8 +628,8 @@
     <div
         id="universe-world-msg"
         class="lang-txt"
-        data-vi="🌌 THẾ GIỚI VŨ TRỤ ĐÃ MỞ KHOÁ! NHẤN [D] ĐỂ BƯỚC VÀO!"
-        data-en="🌌 UNIVERSE WORLD UNLOCKED! PRESS [D] TO ENTER!"
+        data-vi="🌌 THẾ GIỚI VŨ TRỤ ĐÃ MỞ KHOÁ! NHẤN [U] ĐỂ BƯỚC VÀO!"
+        data-en="🌌 UNIVERSE WORLD UNLOCKED! PRESS [U] TO ENTER!"
         style="border-color:#ff00ff;color:#ffffff;box-shadow:0 0 18px rgba(255,0,255,0.8);"
     >
         🌌 THẾ GIỚI VŨ TRỤ ĐÃ MỞ KHOÁ! NHẤN [D] ĐỂ BƯỚC VÀO!
@@ -638,8 +638,8 @@
     <div
         id="supreme-boss-msg"
         class="lang-txt"
-        data-vi="🌌 NHIỆM VỤ MỚI MỞ KHOÁ: ĐẠI BOSS TỐI THƯỢNG! NHẤN [D]!"
-        data-en="🌌 NEW QUEST UNLOCKED: THE ULTIMATE BOSS! PRESS [D]!"
+        data-vi="🌌 NHIỆM VỤ MỚI MỞ KHOÁ: ĐẠI BOSS TỐI THƯỢNG! NHẤN [O]!"
+        data-en="🌌 NEW QUEST UNLOCKED: THE ULTIMATE BOSS! PRESS [O]!"
         style="border-color:#00ffff;color:#00ffff;box-shadow:0 0 15px rgba(0,255,255,0.7);"
     >
         🌌 NHIỆM VỤ MỚI MỞ KHOÁ: ĐẠI BOSS TỐI THƯỢNG! NHẤN [D]!
@@ -1668,7 +1668,7 @@
 
                 let draftUpgradeCooldown = false;
 
-                const FINAL_BOSS_POWER_MULTIPLIER = 10000;
+                const FINAL_BOSS_POWER_MULTIPLIER = 1;
 
                 const swordNames = [
                     "Common",
@@ -1708,6 +1708,66 @@
                 let isGameEnded = false;
 
                 /* =========================
+                   ANTI POWER / DAMAGE SPIKE
+                   Không cho power hoặc damage tăng
+                   bất thường gấp 2 lần giây trước.
+                ========================= */
+
+                let spikeSecond = Math.floor(Date.now() / 1000);
+                let secondStartPower = power;
+                let previousSecondPowerGain = 0;
+                let currentSecondPowerGain = 0;
+                let damageSecond = Math.floor(Date.now() / 1000);
+                let previousSecondDamage = 0;
+                let twoSecondsAgoDamage = 0;
+                let currentSecondDamage = 0;
+
+                function updateSpikeSecond() {
+                    const nowSecond = Math.floor(Date.now() / 1000);
+                    if (nowSecond === spikeSecond) return;
+                    previousSecondPowerGain = currentSecondPowerGain;
+                    currentSecondPowerGain = 0;
+                    secondStartPower = power;
+                    spikeSecond = nowSecond;
+                }
+
+                function addSafePower(amount) {
+                    if (!Number.isFinite(amount) || amount < 0) amount = 0;
+                    updateSpikeSecond();
+                    const safeAmount = Math.floor(amount);
+                    if (previousSecondPowerGain > 0 && safeAmount >= previousSecondPowerGain * 2) {
+                        power = secondStartPower;
+                        currentSecondPowerGain = 0;
+                        showToast(currentLang === 'vi'
+                            ? '🛡️ PHÁT HIỆN POWER TĂNG BẤT THƯỜNG! POWER ĐÃ RESET VỀ GIÂY TRƯỚC.'
+                            : '🛡️ ABNORMAL POWER SPIKE DETECTED! POWER RESET TO LAST SECOND.');
+                        return 0;
+                    }
+                    power += safeAmount;
+                    currentSecondPowerGain += safeAmount;
+                    return safeAmount;
+                }
+
+                function getSafeDamage(rawDamage) {
+                    const nowSecond = Math.floor(Date.now() / 1000);
+                    if (nowSecond !== damageSecond) {
+                        twoSecondsAgoDamage = previousSecondDamage;
+                        previousSecondDamage = currentSecondDamage;
+                        currentSecondDamage = 0;
+                        damageSecond = nowSecond;
+                    }
+                    let dmg = Math.max(0, Math.floor(rawDamage));
+                    if (previousSecondDamage > 0 && dmg >= previousSecondDamage * 2) {
+                        dmg = twoSecondsAgoDamage > 0 ? twoSecondsAgoDamage : previousSecondDamage;
+                        showToast(currentLang === 'vi'
+                            ? '🛡️ PHÁT HIỆN DAMAGE TĂNG GẤP 2! DAMAGE ĐÃ RESET VỀ MỨC 2 GIÂY TRƯỚC.'
+                            : '🛡️ DAMAGE DOUBLED! DAMAGE RESET TO THE LEVEL FROM 2 SECONDS AGO.');
+                    }
+                    currentSecondDamage = Math.max(currentSecondDamage, dmg);
+                    return dmg;
+                }
+
+                /* =========================
                    FINAL BOSS STATE
                    (thử thách phụ sau vòng 2,
                    mở bằng phím D tại cổng)
@@ -1723,7 +1783,7 @@
 
                 let finalBossKillCount = 0;
 
-                const FINAL_BOSS_KILLS_NEEDED = 999;
+                const FINAL_BOSS_KILLS_NEEDED = 1;
 
                 let hasBossTitle = false;
 
@@ -3560,7 +3620,7 @@
 
                 /* =========================
                    FINAL BOSS (con quái đỏ khổng lồ)
-                   1.000.000.000 HP - mở khoá bằng phím D
+                   1.000.000.000 HP - mở khoá sau vòng 2
                    sau khi hoàn thành vòng 2
                 ========================= */
 
@@ -5638,15 +5698,42 @@
 
                         if (k === 'o') {
 
-                            isColorOpen =
-                                !isColorOpen;
+                            const distToGateForO =
+                                Math.hypot(
+                                    playerGroup.position.x,
+                                    playerGroup.position.z + 15.5
+                                );
 
-                            document.getElementById(
-                                'color-modal'
-                            ).style.display =
-                                isColorOpen
-                                ? 'block'
-                                : 'none';
+                            if (
+                                distToGateForO < 3.5 &&
+                                gameStage === 4 &&
+                                (hasBossTitle || readyForGoDTitle) &&
+                                !supremeBossActive &&
+                                !supremeBossDefeated
+                            ) {
+                                supremeBossActive = true;
+                                gameStage = 6;
+                                setBossArenaSkybox(true);
+                                supremeBossHP = supremeBossMaxHP;
+                                finalBossMonster.visible = true;
+                                finalBossMonster.scale.set(7, 7, 7);
+                                finalBossMonster.position.set(0, 0, -6);
+                                playerGroup.position.z = 6;
+                                document.getElementById('boss-hp-bar').style.display = 'block';
+                                document.getElementById('boss-title').innerText =
+                                    currentLang === 'vi'
+                                    ? `🌌 ĐẠI BOSS 1Q (${formatNum(supremeBossMaxHP)} HP)`
+                                    : `🌌 1Q ULTIMATE BOSS (${formatNum(supremeBossMaxHP)} HP)`;
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? '🌌 BOSS 1Q XUẤT HIỆN! BẠN ĐÃ BẤM O ĐỂ VÀO.'
+                                    : '🌌 1Q BOSS APPEARED! PRESS O TO ENTER.'
+                                );
+                            } else {
+                                isColorOpen = !isColorOpen;
+                                document.getElementById('color-modal').style.display =
+                                    isColorOpen ? 'block' : 'none';
+                            }
 
                         }
 
@@ -5665,6 +5752,46 @@
                         if (k === 'j') {
 
                             toggleLogin();
+
+                        }
+
+                        if (k === 'u') {
+
+                            if (
+                                supremeBossDefeated &&
+                                !universeBossActive &&
+                                !universeBossDefeated
+                            ) {
+                                universeWorldUnlocked = true;
+                                universeBossActive = true;
+                                gameStage = 7;
+                                universeBossHP = universeBossMaxHP;
+                                setBossArenaSkybox(true);
+                                universeFloor.visible = true;
+                                platformGroup.visible = true;
+                                finalBossMonster.visible = false;
+                                bossMonster.visible = false;
+                                redMonster.visible = false;
+                                octopusMonster.visible = false;
+                                universeBossMonster.visible = true;
+                                universeBossMonster.position.set(0, 0, -7);
+                                universeBossMonster.scale.set(10, 10, 10);
+                                playerGroup.position.z = 7;
+                                document.getElementById('universe-world-msg').style.display = 'none';
+                                document.getElementById('boss-hp-bar').style.display = 'block';
+                                document.getElementById('boss-title').innerText =
+                                    currentLang === 'vi'
+                                    ? `🌌 BOSS CUỐI 1SX (${formatNum(universeBossMaxHP)} HP)`
+                                    : `🌌 FINAL 1SX BOSS (${formatNum(universeBossMaxHP)} HP)`;
+                                document.getElementById('boss-hp-inner').style.width = '100%';
+                                document.getElementById('boss-hp-text').innerText =
+                                    `${formatNum(universeBossHP)} / ${formatNum(universeBossMaxHP)}`;
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? '🌌 BOSS CUỐI 1SX XUẤT HIỆN! NHẤN U ĐỂ VÀO.'
+                                    : '🌌 FINAL 1SX BOSS APPEARED! PRESS U TO ENTER.'
+                                );
+                            }
 
                         }
 
@@ -6032,6 +6159,8 @@
 
                         }
 
+                        totalDmg = getSafeDamage(totalDmg);
+
                         if (!isAfk) {
 
                             showDmgPopup(
@@ -6058,9 +6187,10 @@
                             killCount +=
                                 monstersKilledInOneHit;
 
-                            power +=
+                            addSafePower(
                                 monstersKilledInOneHit *
-                                2;
+                                2
+                            );
 
                             checkUpgradeSword();
 
@@ -6186,13 +6316,14 @@
                             bossHP -=
                                 totalDmg;
 
-                            power +=
+                            addSafePower(
                                 Math.max(
                                     1,
                                     Math.floor(
                                         totalDmg / 500
                                     )
-                                );
+                                )
+                            );
 
                             document.getElementById(
                                 'val-power'
@@ -6264,8 +6395,9 @@
                                 oldBossPowerGain *
                                 FINAL_BOSS_POWER_MULTIPLIER;
 
-                            power +=
-                                finalBossPowerGain;
+                            addSafePower(
+                                finalBossPowerGain
+                            );
 
                             document.getElementById(
                                 'val-power'
@@ -6276,8 +6408,8 @@
 
                                 showToast(
                                     currentLang === 'vi'
-                                    ? `👑 [BOSS] CUỐI: +${formatNum(finalBossPowerGain)} POWER (x10.000 BOSS CŨ)`
-                                    : `👑 FINAL [BOSS]: +${formatNum(finalBossPowerGain)} POWER (x10,000 OLD BOSS)`
+                                    ? `👑 [BOSS] CUỐI: +${formatNum(finalBossPowerGain)} POWER (không nhân x10.000)`
+                                    : `👑 FINAL [BOSS]: +${formatNum(finalBossPowerGain)} POWER (no x10,000 multiplier)`
                                 );
 
                             }
@@ -6366,12 +6498,13 @@
 
                                 setBossArenaSkybox(false);
 
-                                readyForGoDTitle = true;
+                                readyForGoDTitle = false;
+                                hasBossTitle = true;
 
                                 showToast(
                                     currentLang === 'vi'
-                                    ? `👑 ĐÃ HẠ ĐỦ ${FINAL_BOSS_KILLS_NEEDED} [BOSS] CUỐI! BẤM [G] ĐỂ NHẬN DANH HIỆU [BOSS]!`
-                                    : `👑 DEFEATED ${FINAL_BOSS_KILLS_NEEDED} FINAL [BOSS]! PRESS [G] TO CLAIM THE [BOSS] TITLE!`
+                                    ? '👑 ĐÃ HẠ BOSS 1B! BOSS 1Q ĐÃ MỞ. ĐẾN CỔNG VÀ BẤM [O].'
+                                    : '👑 1B BOSS DEFEATED! 1Q BOSS UNLOCKED. GO TO THE GATE AND PRESS [O].'
                                 );
 
                                 saveCurrentAccount();
@@ -6400,13 +6533,14 @@
                             supremeBossHP -=
                                 totalDmg;
 
-                            power +=
+                            addSafePower(
                                 Math.max(
                                     1,
                                     Math.floor(
                                         totalDmg / 500
                                     )
-                                );
+                                )
+                            );
 
                             document.getElementById(
                                 'val-power'
@@ -6533,11 +6667,12 @@
 
                                 universeBossKillCount++;
 
-                                power +=
+                                addSafePower(
                                     Math.max(
                                         1,
-                                        UNIVERSE_BOSS_POWER_REWARD
-                                    );
+                                        Math.floor(totalDmg / 500)
+                                    )
+                                );
 
                                 document.getElementById(
                                     'val-power'
@@ -7865,7 +8000,9 @@
 
                                 gameLoop = 2;
 
-                                power *= 3;
+                                addSafePower(
+                                    Math.max(1, Math.floor(power * 0.5))
+                                );
 
                                 luckMultiplier *=
                                     3;
