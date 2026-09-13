@@ -102,6 +102,25 @@
             box-shadow: 0 0 15px rgba(255,215,0,0.5);
         }
 
+        #dmg-popup {
+            position: absolute;
+            top: 42%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 26px;
+            font-weight: 900;
+            color: #ffcc00;
+            text-shadow: 0 0 8px rgba(255,204,0,0.9), 2px 2px 0 rgba(0,0,0,0.6);
+            display: none;
+            z-index: 150;
+            pointer-events: none;
+        }
+
+        @keyframes dmgPopupFloat {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -110%) scale(1.15); }
+        }
+
         #gate-msg {
             position: absolute;
             bottom: 80px;
@@ -454,12 +473,14 @@
     <div id="error-no">
         <h1>NO</h1>
         <p>
-            <b>LỖI KHÔNG TẢI ĐƯỢC ĐỒ HỌA 3D!</b><br>
-            Trình duyệt đang tắt WebGL hoặc thư viện Three.js không tải được.
+            <b>3D GRAPHICS FAILED TO LOAD!</b><br>
+            Your browser has WebGL disabled or the Three.js library failed to load.
         </p>
     </div>
 
     <div id="toast"></div>
+
+    <div id="dmg-popup"></div>
 
     <div
         id="gate-msg"
@@ -1359,7 +1380,7 @@
 
                 let gameLoop = 1;
 
-                let currentLang = 'vi';
+                let currentLang = 'en';
 
                 let hasGoDSword = false;
 
@@ -1548,6 +1569,9 @@
 
                 function getPlayerMaxHP() {
 
+                    if (hasGoDSword && power >= 1000000000000)
+                        return 1500000000;
+
                     if (hasGoDSword)
                         return 500000000;
 
@@ -1617,6 +1641,9 @@
                     performance.now();
 
                 let lastAfkAttackTime =
+                    performance.now();
+
+                let lastDamageTakenTime =
                     performance.now();
 
                 const scene =
@@ -2314,6 +2341,177 @@
 
                 const cosmicTexture =
                     createCosmicTexture();
+
+                /* =========================
+                   GALAXY / NEBULA SKYBOX
+                   (nền cho khu vực đánh BOSS cuối
+                   & Đại Boss Tối Thượng)
+                ========================= */
+
+                function createGalaxyNebulaSkybox() {
+
+                    const canvas =
+                        document.createElement('canvas');
+
+                    canvas.width = 512;
+                    canvas.height = 512;
+
+                    const ctx =
+                        canvas.getContext('2d');
+
+                    ctx.fillStyle = '#03000a';
+
+                    ctx.fillRect(0, 0, 512, 512);
+
+                    const coreGrad =
+                        ctx.createRadialGradient(
+                            220, 250, 10,
+                            220, 250, 260
+                        );
+
+                    coreGrad.addColorStop(0, '#fff6d8');
+                    coreGrad.addColorStop(0.12, '#d8c9ff');
+                    coreGrad.addColorStop(0.3, '#7a5fd0');
+                    coreGrad.addColorStop(0.55, '#2a1a55');
+                    coreGrad.addColorStop(0.8, '#0a0620');
+                    coreGrad.addColorStop(1, 'rgba(3,0,10,0)');
+
+                    ctx.fillStyle = coreGrad;
+
+                    ctx.beginPath();
+
+                    ctx.arc(220, 250, 260, 0, Math.PI * 2);
+
+                    ctx.fill();
+
+                    for (
+                        let arm = 0;
+                        arm < 3;
+                        arm++
+                    ) {
+
+                        for (
+                            let i = 0;
+                            i < 60;
+                            i++
+                        ) {
+
+                            const t =
+                                i / 60;
+
+                            const angle =
+                                t * Math.PI * 4 +
+                                arm * 2.1;
+
+                            const rad =
+                                20 + t * 220;
+
+                            const px =
+                                220 + Math.cos(angle) * rad;
+
+                            const py =
+                                250 + Math.sin(angle) * rad * 0.55;
+
+                            ctx.fillStyle =
+                                `rgba(200,180,255,${0.15 * (1 - t)})`;
+
+                            ctx.beginPath();
+
+                            ctx.arc(
+                                px,
+                                py,
+                                2 + Math.random() * 3,
+                                0,
+                                Math.PI * 2
+                            );
+
+                            ctx.fill();
+
+                        }
+
+                    }
+
+                    const nebulaBlobs = [
+                        { x: 400, y: 150, r: 150, c: 'rgba(255,90,60,0.35)' },
+                        { x: 430, y: 220, r: 110, c: 'rgba(255,160,60,0.28)' },
+                        { x: 380, y: 300, r: 130, c: 'rgba(200,40,120,0.25)' },
+                        { x: 90, y: 380, r: 100, c: 'rgba(60,120,255,0.22)' },
+                        { x: 60, y: 100, r: 90, c: 'rgba(160,60,255,0.2)' }
+                    ];
+
+                    nebulaBlobs.forEach(b => {
+
+                        const g =
+                            ctx.createRadialGradient(
+                                b.x, b.y, 4,
+                                b.x, b.y, b.r
+                            );
+
+                        g.addColorStop(0, b.c);
+
+                        g.addColorStop(1, 'rgba(0,0,0,0)');
+
+                        ctx.fillStyle = g;
+
+                        ctx.beginPath();
+
+                        ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+
+                        ctx.fill();
+
+                    });
+
+                    for (
+                        let i = 0;
+                        i < 400;
+                        i++
+                    ) {
+
+                        const sx =
+                            Math.random() * 512;
+
+                        const sy =
+                            Math.random() * 512;
+
+                        const size =
+                            Math.random() * 1.5 + 0.2;
+
+                        const bright =
+                            0.3 + Math.random() * 0.7;
+
+                        ctx.fillStyle =
+                            `rgba(255,255,255,${bright})`;
+
+                        ctx.beginPath();
+
+                        ctx.arc(sx, sy, size, 0, Math.PI * 2);
+
+                        ctx.fill();
+
+                    }
+
+                    const texture =
+                        new THREE.CanvasTexture(
+                            canvas
+                        );
+
+                    return texture;
+                }
+
+                const galaxySkybox =
+                    createGalaxyNebulaSkybox();
+
+                const normalSkyColor =
+                    new THREE.Color(0x06030d);
+
+                function setBossArenaSkybox(active) {
+
+                    scene.background =
+                        active
+                        ? galaxySkybox
+                        : normalSkyColor;
+
+                }
 
                 /* =========================
                    PLAYER
@@ -3072,6 +3270,99 @@
                     sprite.visible = false;
 
                     return sprite;
+                }
+
+                /*
+                   Chữ [BOSS] màu đen vũ trụ
+                   (chữ tô đen + nhiều chấm trắng
+                   như bầu trời sao), thay thế
+                   chữ [GoD] sau khi hạ Đại Boss
+                   Tối Thượng
+                */
+
+                function createCosmicBossLabelTexture() {
+
+                    const canvas =
+                        document.createElement('canvas');
+
+                    canvas.width = 256;
+                    canvas.height = 64;
+
+                    const ctx =
+                        canvas.getContext('2d');
+
+                    ctx.clearRect(0, 0, 256, 64);
+
+                    ctx.font =
+                        'bold 42px Impact, sans-serif';
+
+                    ctx.textAlign = 'center';
+
+                    ctx.textBaseline = 'middle';
+
+                    ctx.lineWidth = 6;
+
+                    ctx.strokeStyle =
+                        'rgba(255,255,255,0.35)';
+
+                    ctx.strokeText(
+                        '[BOSS]',
+                        128,
+                        34
+                    );
+
+                    ctx.fillStyle =
+                        '#000000';
+
+                    ctx.fillText(
+                        '[BOSS]',
+                        128,
+                        34
+                    );
+
+                    /*
+                       Chấm trắng chỉ hiện trên vùng
+                       chữ vừa vẽ (source-atop)
+                    */
+
+                    ctx.globalCompositeOperation =
+                        'source-atop';
+
+                    for (
+                        let i = 0;
+                        i < 140;
+                        i++
+                    ) {
+
+                        const sx =
+                            Math.random() * 256;
+
+                        const sy =
+                            10 + Math.random() * 44;
+
+                        const size =
+                            Math.random() * 1.3 + 0.15;
+
+                        const bright =
+                            0.4 + Math.random() * 0.6;
+
+                        ctx.fillStyle =
+                            `rgba(255,255,255,${bright})`;
+
+                        ctx.beginPath();
+
+                        ctx.arc(sx, sy, size, 0, Math.PI * 2);
+
+                        ctx.fill();
+
+                    }
+
+                    ctx.globalCompositeOperation =
+                        'source-over';
+
+                    return new THREE.CanvasTexture(
+                        canvas
+                    );
                 }
 
                 const bossTitleSprite =
@@ -4065,12 +4356,7 @@
                    LANGUAGE
                 ========================= */
 
-                function toggleLanguage() {
-
-                    currentLang =
-                        currentLang === 'vi'
-                        ? 'en'
-                        : 'vi';
+                function applyLanguageToUI() {
 
                     document.getElementById(
                         'lang-indicator'
@@ -4090,6 +4376,17 @@
                             );
 
                     });
+
+                }
+
+                function toggleLanguage() {
+
+                    currentLang =
+                        currentLang === 'vi'
+                        ? 'en'
+                        : 'vi';
+
+                    applyLanguageToUI();
 
                     showToast(
                         currentLang === 'vi'
@@ -4448,6 +4745,8 @@
 
                                 gameStage = 5;
 
+                                setBossArenaSkybox(true);
+
                                 finalBossHP =
                                     finalBossMaxHP;
 
@@ -4499,6 +4798,8 @@
                                 supremeBossActive = true;
 
                                 gameStage = 6;
+
+                                setBossArenaSkybox(true);
 
                                 supremeBossHP =
                                     supremeBossMaxHP;
@@ -4682,6 +4983,14 @@
                                 Math.floor(
                                     totalDmg * 0.5
                                 );
+
+                        }
+
+                        if (!isAfk) {
+
+                            showDmgPopup(
+                                totalDmg
+                            );
 
                         }
 
@@ -4992,6 +5301,8 @@
 
                                 gameStage = 4;
 
+                                setBossArenaSkybox(false);
+
                                 readyForGoDTitle = true;
 
                                 showToast(
@@ -5069,6 +5380,18 @@
                                 supremeBossActive = false;
 
                                 supremeBossDefeated = true;
+
+                                setBossArenaSkybox(false);
+
+                                bossTitleSprite.material.map =
+                                    createCosmicBossLabelTexture();
+
+                                bossTitleSprite.material.map.needsUpdate =
+                                    true;
+
+                                bossTitleSprite.material.color.set(
+                                    0xffffff
+                                );
 
                                 finalBossMonster.visible =
                                     false;
@@ -5243,6 +5566,54 @@
                             },
                             2200
                         );
+
+                }
+
+                /* =========================
+                   DAMAGE POPUP
+                   (hiện số dmg gây ra mỗi đòn)
+                ========================= */
+
+                let dmgPopupTimer = null;
+
+                function showDmgPopup(dmg) {
+
+                    const el =
+                        document.getElementById(
+                            'dmg-popup'
+                        );
+
+                    if (!el) return;
+
+                    el.innerText =
+                        '-' + formatNum(dmg);
+
+                    el.style.display =
+                        'block';
+
+                    el.style.animation =
+                        'none';
+
+                    void el.offsetWidth;
+
+                    el.style.animation =
+                        'dmgPopupFloat 0.7s ease-out forwards';
+
+                    clearTimeout(
+                        dmgPopupTimer
+                    );
+
+                    dmgPopupTimer =
+                        setTimeout(
+                            () => {
+
+                                el.style.display =
+                                    'none';
+
+                            },
+                            700
+                        );
+
                 }
 
                 /* =========================
@@ -5620,6 +5991,24 @@
 
                     bossTitleSprite.visible =
                         hasBossTitle;
+
+                    if (supremeBossDefeated) {
+
+                        bossTitleSprite.material.map =
+                            createCosmicBossLabelTexture();
+
+                        bossTitleSprite.material.map.needsUpdate =
+                            true;
+
+                        bossTitleSprite.material.color.set(
+                            0xffffff
+                        );
+
+                    }
+
+                    setBossArenaSkybox(
+                        gameStage === 5 || gameStage === 6
+                    );
 
                     document.getElementById(
                         'val-power'
@@ -6356,6 +6745,34 @@
                     const nowTime =
                         performance.now();
 
+                    /*
+                       Kiểm tra lại máu tối đa mỗi khung hình
+                       (power tăng có thể mở khoá mốc 1.5b HP
+                       khi có kiếm GoD + đủ 1t power)
+                    */
+
+                    const recalculatedMaxHP =
+                        getPlayerMaxHP();
+
+                    if (
+                        recalculatedMaxHP !== playerMaxHP
+                    ) {
+
+                        const unlockedHigherTier =
+                            recalculatedMaxHP > playerMaxHP;
+
+                        playerMaxHP =
+                            recalculatedMaxHP;
+
+                        playerHP =
+                            unlockedHigherTier
+                            ? playerMaxHP
+                            : Math.min(playerHP, playerMaxHP);
+
+                        updatePlayerHPUI();
+
+                    }
+
                     if (
                         !isGameEnded &&
                         (gameStage === 2 ||
@@ -6379,15 +6796,20 @@
                             if (gameStage === 2)
                                 bossDmg = 10000000;
 
+                            else if (gameStage === 5)
+                                bossDmg = 100000000;
+
                             else if (
                                 gameStage === 3 ||
-                                gameStage === 5 ||
                                 gameStage === 6
                             )
                                 bossDmg = 50000000;
 
                             playerHP -=
                                 bossDmg;
+
+                            lastDamageTakenTime =
+                                nowTime;
 
                             if (playerHP <= 0) {
 
@@ -6417,6 +6839,23 @@
                             updatePlayerHPUI();
 
                         }
+
+                    }
+
+                    /*
+                       Hồi máu đầy sau 5 giây
+                       không bị đánh trúng
+                    */
+
+                    if (
+                        playerHP < playerMaxHP &&
+                        (nowTime - lastDamageTakenTime > 5000)
+                    ) {
+
+                        playerHP =
+                            playerMaxHP;
+
+                        updatePlayerHPUI();
 
                     }
 
@@ -6450,11 +6889,17 @@
                     }
 
                     /*
-                       Danh hiệu [BOSS] cầu vồng
-                       trên đầu nhân vật
+                       Danh hiệu [GoD] cầu vồng, hoặc
+                       [BOSS] đen vũ trụ sau khi hạ
+                       Đại Boss Tối Thượng (không cycle màu)
                     */
 
-                    if (hasBossTitle) {
+                    if (supremeBossDefeated) {
+
+                        bossTitleSprite.visible =
+                            true;
+
+                    } else if (hasBossTitle) {
 
                         bossTitleSprite.visible =
                             true;
@@ -6508,6 +6953,8 @@
                 updateInventoryUI();
 
                 refreshPlayerMaxHP();
+
+                applyLanguageToUI();
 
             } catch(err) {
 
