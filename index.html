@@ -116,6 +116,80 @@
             pointer-events: none;
         }
 
+        #power-gain-popup {
+            position: absolute;
+            top: 34%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 34px;
+            font-weight: 1000;
+            color: #000000;
+            text-shadow: 0 2px 0 #ffffff, 0 0 4px rgba(255,255,255,0.9);
+            display: none;
+            z-index: 160;
+            pointer-events: none;
+        }
+
+        @keyframes powerGainFloat {
+            0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%, -105%) scale(1.15); }
+        }
+
+        #world-modal {
+            width: 560px;
+            max-width: 94vw;
+            border-color: #ff00ff;
+            box-shadow: 0 0 30px rgba(255,0,255,0.45);
+        }
+
+        #world-modal h3 { color: #ff00ff; }
+
+        .world-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-top: 12px;
+        }
+
+        .world-btn {
+            min-height: 82px;
+            border: 2px solid #555;
+            border-radius: 12px;
+            background: linear-gradient(160deg, rgba(35,20,55,0.96), rgba(12,8,20,0.96));
+            color: #fff;
+            cursor: pointer;
+            font-weight: 900;
+            font-size: 14px;
+            padding: 10px;
+        }
+
+        .world-btn:hover {
+            border-color: #ff00ff;
+            box-shadow: 0 0 15px rgba(255,0,255,0.45);
+        }
+
+        .world-btn small {
+            display: block;
+            margin-top: 5px;
+            color: #aaa;
+            font-weight: normal;
+            font-size: 11px;
+        }
+
+        #draft-auto-btn {
+            background: linear-gradient(135deg, #111, #333);
+            color: #fff;
+            border: 2px solid #ffffff;
+        }
+
+        #draft-auto-btn:hover {
+            background: linear-gradient(135deg, #333, #555);
+        }
+
+        @media(max-width:700px) {
+            .world-grid { grid-template-columns: 1fr; }
+        }
+
         @keyframes dmgPopupFloat {
             0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
             100% { opacity: 0; transform: translate(-50%, -110%) scale(1.15); }
@@ -607,6 +681,7 @@
     <div id="toast"></div>
 
     <div id="dmg-popup"></div>
+    <div id="power-gain-popup"></div>
 
     <div
         id="gate-msg"
@@ -665,6 +740,11 @@
         <div class="qa-btn" id="qa-fuse" onclick="handleGAction()">
             <span class="qa-badge">G</span>
             🗡️
+        </div>
+
+        <div class="qa-btn" id="qa-world" onclick="toggleWorldMenu()" style="display:none;border-color:#ff00ff;box-shadow:0 0 12px rgba(255,0,255,0.5);">
+            <span class="qa-badge">H</span>
+            🌍
         </div>
 
     </div>
@@ -804,6 +884,9 @@
             <button id="draft-upgrade-btn" type="button" onclick="upgradeSelectedDraftItem()">
                 ⚒️ NÂNG CẤP ITEM
             </button>
+            <button id="draft-auto-btn" type="button" style="display:none;" onclick="autoUpgradeSelectedDraftItem()">
+                🤖 AUTO +1 LV — 10b POWER
+            </button>
             <div id="draft-cooldown"></div>
         </div>
 
@@ -811,6 +894,36 @@
             Không cần mở túi đồ. Đứng gần Draft là bảng này tự hiện.
         </div>
 
+    </div>
+
+    <!-- WORLD SELECT -->
+
+    <div id="world-modal" class="modal-box">
+        <h3>🌍 CHỌN THẾ GIỚI</h3>
+        <div style="text-align:center;color:#aaa;font-size:12px;">
+            [HACK] đã mở khóa quyền quay lại các thế giới cũ.
+        </div>
+
+        <div class="world-grid">
+            <button class="world-btn" type="button" onclick="switchWorld('world1')">
+                🌎 WORLD 1
+                <small>Khu Draft + nâng cấp item</small>
+            </button>
+            <button class="world-btn" type="button" onclick="switchWorld('final')">
+                👑 FINAL BOSS
+                <small>Quay lại khu Boss cuối</small>
+            </button>
+            <button class="world-btn" type="button" onclick="switchWorld('ultimate')">
+                🌌 ULTIMATE
+                <small>Đại Boss Tối Thượng</small>
+            </button>
+            <button class="world-btn" type="button" onclick="switchWorld('universe')">
+                🌠 UNIVERSE
+                <small>Boss Vũ Trụ</small>
+            </button>
+        </div>
+
+        <button type="button" onclick="toggleWorldMenu()">ĐÓNG</button>
     </div>
 
     <!-- INVENTORY -->
@@ -1669,6 +1782,8 @@
                 let draftUpgradeCooldown = false;
 
                 const FINAL_BOSS_POWER_MULTIPLIER = 10000;
+                const AUTO_UPGRADE_COST = 10000000000;
+                let isWorldMenuOpen = false;
 
                 const swordNames = [
                     "Common",
@@ -3978,6 +4093,77 @@
                     bossTitleSprite
                 );
 
+                function createHackTitleSprite() {
+                    const canvas =
+                        document.createElement('canvas');
+
+                    canvas.width = 256;
+                    canvas.height = 64;
+
+                    const ctx =
+                        canvas.getContext('2d');
+
+                    ctx.clearRect(0, 0, 256, 64);
+
+                    ctx.font =
+                        'bold 42px Impact, sans-serif';
+
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.lineWidth = 7;
+                    ctx.strokeStyle = '#ffffff';
+
+                    ctx.strokeText(
+                        '[HACK]',
+                        128,
+                        34
+                    );
+
+                    ctx.fillStyle = '#000000';
+
+                    ctx.fillText(
+                        '[HACK]',
+                        128,
+                        34
+                    );
+
+                    const tex =
+                        new THREE.CanvasTexture(canvas);
+
+                    const mat =
+                        new THREE.SpriteMaterial({
+                            map: tex,
+                            transparent: true,
+                            depthTest: false
+                        });
+
+                    const sprite =
+                        new THREE.Sprite(mat);
+
+                    sprite.scale.set(
+                        2.2,
+                        0.55,
+                        1
+                    );
+
+                    sprite.position.set(
+                        0,
+                        3.1,
+                        0
+                    );
+
+                    sprite.visible = false;
+
+                    return sprite;
+                }
+
+                const hackTitleSprite =
+                    createHackTitleSprite();
+
+                playerGroup.add(
+                    hackTitleSprite
+                );
+
                 /* =========================
                    OCTOPUS
                 ========================= */
@@ -4566,6 +4752,30 @@
                             2;
 
                     updateDraftUI();
+
+                    const autoBtn =
+                        document.getElementById(
+                            'draft-auto-btn'
+                        );
+
+                    if (autoBtn) {
+                        autoBtn.style.display =
+                            hasHackSword
+                            ? 'block'
+                            : 'none';
+                    }
+
+                    const worldBtn =
+                        document.getElementById(
+                            'qa-world'
+                        );
+
+                    if (worldBtn) {
+                        worldBtn.style.display =
+                            hasHackSword
+                            ? 'flex'
+                            : 'none';
+                    }
                 }
 
                 /* =========================
@@ -4933,6 +5143,230 @@
                         saveCurrentAccount();
                     };
 
+                window.autoUpgradeSelectedDraftItem =
+                    function() {
+                        if (!hasHackSword) {
+                            showToast(
+                                currentLang === 'vi'
+                                ? '🔒 CẦN CÓ [HACK] ĐỂ DÙNG AUTO!'
+                                : '🔒 YOU NEED [HACK] TO USE AUTO!'
+                            );
+                            return;
+                        }
+
+                        if (draftUpgradeCooldown)
+                            return;
+
+                        const type =
+                            draftSelectedType;
+
+                        if (inventory[type] <= 0) {
+                            showToast(
+                                currentLang === 'vi'
+                                ? '❌ KHÔNG CÓ ITEM ĐỂ AUTO!'
+                                : '❌ NO ITEM TO AUTO UPGRADE!'
+                            );
+                            return;
+                        }
+
+                        if (power < AUTO_UPGRADE_COST) {
+                            showToast(
+                                currentLang === 'vi'
+                                ? `❌ CẦN ${formatNum(AUTO_UPGRADE_COST)} POWER!`
+                                : `❌ NEED ${formatNum(AUTO_UPGRADE_COST)} POWER!`
+                            );
+                            return;
+                        }
+
+                        power -= AUTO_UPGRADE_COST;
+                        itemLevels[type]++;
+
+                        if (type === 'common') {
+                            upgradeRates.common =
+                                Math.max(5, upgradeRates.common - 5);
+                        }
+
+                        if (type === 'rare') {
+                            upgradeRates.rare =
+                                Math.max(5, upgradeRates.rare - 4);
+                        }
+
+                        if (type === 'epic') {
+                            upgradeRates.epic =
+                                Math.max(5, upgradeRates.epic - 2.5);
+                        }
+
+                        showToast(
+                            currentLang === 'vi'
+                            ? `🤖 AUTO THÀNH CÔNG! ${inventory[type]} ${type.toUpperCase()} → LV.${itemLevels[type]}`
+                            : `🤖 AUTO SUCCESS! ${inventory[type]} ${type.toUpperCase()} → LV.${itemLevels[type]}`
+                        );
+
+                        document.getElementById(
+                            'val-power'
+                        ).innerText =
+                            formatNum(power);
+
+                        updateInventoryUI();
+                        updateDraftUI();
+                        saveCurrentAccount();
+                    };
+
+                /* =========================
+                   WORLD SELECT / TELEPORT
+                ========================= */
+
+                window.toggleWorldMenu =
+                    function() {
+                        if (!hasHackSword) {
+                            showToast(
+                                currentLang === 'vi'
+                                ? '🔒 CẦN CÓ [HACK] ĐỂ MỞ WORLD SELECT!'
+                                : '🔒 YOU NEED [HACK] TO OPEN WORLD SELECT!'
+                            );
+                            return;
+                        }
+
+                        isWorldMenuOpen =
+                            !isWorldMenuOpen;
+
+                        const modal =
+                            document.getElementById(
+                                'world-modal'
+                            );
+
+                        if (modal) {
+                            modal.style.display =
+                                isWorldMenuOpen
+                                ? 'block'
+                                : 'none';
+                        }
+                    };
+
+                window.switchWorld =
+                    function(world) {
+                        if (!hasHackSword)
+                            return;
+
+                        isWorldMenuOpen = false;
+
+                        const modal =
+                            document.getElementById(
+                                'world-modal'
+                            );
+
+                        if (modal)
+                            modal.style.display = 'none';
+
+                        finalBossActive = false;
+                        supremeBossActive = false;
+                        universeBossActive = false;
+
+                        if (world === 'world1') {
+                            gameStage = 4;
+
+                            finalBossMonster.visible = false;
+                            universeBossMonster.visible = false;
+                            bossMonster.visible = false;
+                            redMonster.visible = false;
+                            octopusMonster.visible = false;
+                            universeFloor.visible = false;
+
+                            if (upgradeNPC) {
+                                playerGroup.position.x =
+                                    upgradeNPC.position.x;
+                                playerGroup.position.z =
+                                    upgradeNPC.position.z + 2;
+                            }
+
+                            setBossArenaSkybox(false);
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? '🌎 ĐÃ QUAY LẠI WORLD 1 — DRAFT SẴN SÀNG!'
+                                : '🌎 RETURNED TO WORLD 1 — DRAFT READY!'
+                            );
+                        }
+
+                        if (world === 'final') {
+                            gameStage = 5;
+                            finalBossActive = true;
+                            finalBossHP = finalBossMaxHP;
+                            finalBossMonster.visible = true;
+                            bossMonster.visible = false;
+                            universeBossMonster.visible = false;
+                            universeFloor.visible = false;
+                            setBossArenaSkybox(true);
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? '👑 ĐÃ VỀ KHU [BOSS] CUỐI!'
+                                : '👑 RETURNED TO FINAL [BOSS]!'
+                            );
+                        }
+
+                        if (world === 'ultimate') {
+                            if (!hasBossTitle) {
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? '🔒 CẦN DANH HIỆU [BOSS]!'
+                                    : '🔒 NEED THE [BOSS] TITLE!'
+                                );
+                                return;
+                            }
+
+                            gameStage = 6;
+                            supremeBossActive = true;
+                            supremeBossHP = supremeBossMaxHP;
+                            finalBossMonster.visible = true;
+                            bossMonster.visible = false;
+                            universeBossMonster.visible = false;
+                            universeFloor.visible = false;
+                            setBossArenaSkybox(true);
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? '🌌 ĐÃ VỀ ĐẠI BOSS TỐI THƯỢNG!'
+                                : '🌌 RETURNED TO ULTIMATE BOSS!'
+                            );
+                        }
+
+                        if (world === 'universe') {
+                            if (!universeWorldUnlocked) {
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? '🔒 WORLD VŨ TRỤ CHƯA MỞ!'
+                                    : '🔒 UNIVERSE WORLD IS LOCKED!'
+                                );
+                                return;
+                            }
+
+                            gameStage = 7;
+                            universeBossActive = true;
+                            universeBossHP = universeBossMaxHP;
+                            finalBossMonster.visible = false;
+                            bossMonster.visible = false;
+                            universeBossMonster.visible = true;
+                            universeFloor.visible = true;
+                            setBossArenaSkybox(true);
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? '🌠 ĐÃ VỀ WORLD VŨ TRỤ!'
+                                : '🌠 RETURNED TO UNIVERSE WORLD!'
+                            );
+                        }
+
+                        document.getElementById(
+                            'boss-hp-bar'
+                        ).style.display =
+                            (gameStage === 5 || gameStage === 6 || gameStage === 7)
+                            ? 'block'
+                            : 'none';
+
+                        saveCurrentAccount();
+                    };
+
                 /* =========================
                    EQUIP
                 ========================= */
@@ -5115,6 +5549,9 @@
                             godSwordCount > 0;
 
                         hasHackSword =
+                            true;
+
+                        hackTitleSprite.visible =
                             true;
 
                         refreshPlayerMaxHP();
@@ -5659,6 +6096,12 @@
                         if (k === 'g') {
 
                             handleGAction();
+
+                        }
+
+                        if (k === 'h') {
+
+                            toggleWorldMenu();
 
                         }
 
@@ -6272,12 +6715,16 @@
                             ).innerText =
                                 formatNum(power);
 
+                            showPowerGainPopup(
+                                finalBossPowerGain
+                            );
+
                             if (!isAfk) {
 
                                 showToast(
                                     currentLang === 'vi'
-                                    ? `👑 [BOSS] CUỐI: +${formatNum(finalBossPowerGain)} POWER (x10.000 BOSS CŨ)`
-                                    : `👑 FINAL [BOSS]: +${formatNum(finalBossPowerGain)} POWER (x10,000 OLD BOSS)`
+                                    ? `👑 [BOSS] CUỐI: +${formatNum(finalBossPowerGain)} POWER`
+                                    : `👑 FINAL [BOSS]: +${formatNum(finalBossPowerGain)} POWER`
                                 );
 
                             }
@@ -6806,6 +7253,43 @@
 
                 }
 
+                function showPowerGainPopup(powerGain) {
+                    const el =
+                        document.getElementById(
+                            'power-gain-popup'
+                        );
+
+                    if (!el)
+                        return;
+
+                    el.innerText =
+                        '+' + formatNum(powerGain);
+
+                    el.style.display =
+                        'block';
+
+                    el.style.animation =
+                        'none';
+
+                    void el.offsetWidth;
+
+                    el.style.animation =
+                        'powerGainFloat 0.8s ease-out forwards';
+
+                    clearTimeout(
+                        window.powerGainPopupTimer
+                    );
+
+                    window.powerGainPopupTimer =
+                        setTimeout(
+                            () => {
+                                el.style.display =
+                                    'none';
+                            },
+                            800
+                        );
+                }
+
                 /* =========================
                    ACCOUNT SAVE / LOGIN
                 ========================= */
@@ -7314,10 +7798,13 @@
                     }
 
                     bossTitleSprite.visible =
-                        hasBossTitle && !hasUniverseTitle;
+                        hasBossTitle && !hasUniverseTitle && !hasHackSword;
 
                     universeTitleSprite.visible =
-                        hasUniverseTitle;
+                        hasUniverseTitle && !hasHackSword;
+
+                    hackTitleSprite.visible =
+                        hasHackSword;
 
                     if (supremeBossDefeated) {
 
@@ -7360,7 +7847,11 @@
                     ).innerText =
                         gameStage === 7
                         ? 'Universe'
-                        : '1';
+                        : (gameStage === 6
+                            ? 'Ultimate'
+                            : (gameStage === 5
+                                ? 'Final'
+                                : '1'));
 
                     if (equippedItemType) {
 
@@ -8309,7 +8800,22 @@
                        Đại Boss Tối Thượng (không cycle màu)
                     */
 
-                    if (supremeBossDefeated) {
+                    if (hasHackSword) {
+
+                        hackTitleSprite.visible =
+                            true;
+
+                        hackTitleSprite.material.color.set(
+                            '#000000'
+                        );
+
+                        bossTitleSprite.visible =
+                            false;
+
+                        universeTitleSprite.visible =
+                            false;
+
+                    } else if (supremeBossDefeated) {
 
                         bossTitleSprite.visible =
                             true;
