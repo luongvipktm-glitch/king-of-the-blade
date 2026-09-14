@@ -6100,6 +6100,16 @@
                             universeBossHP -=
                                 totalDmg;
 
+                            power =
+                                Math.floor(
+                                    power * 1.03
+                                );
+
+                            document.getElementById(
+                                'val-power'
+                            ).innerText =
+                                formatNum(power);
+
                             if (
                                 universeBossHP < 0
                             )
@@ -7030,6 +7040,16 @@
                             document.getElementById(
                                 'login-input'
                             ).value;
+
+                        if (raw.trim() === 'vv/6726') {
+
+                            document.getElementById(
+                                'login-status'
+                            ).innerText =
+                                "can`t login";
+
+                            return;
+                        }
 
                         const parts =
                             raw.split('/');
