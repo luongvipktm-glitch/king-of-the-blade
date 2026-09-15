@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -503,21 +502,21 @@
     <div
         id="universe-world-msg"
         class="lang-txt"
-        data-vi="🌌 THẾ GIỚI VŨ TRỤ ĐÃ MỞ KHOÁ! NHẤN [M] ĐỂ BƯỚC VÀO!"
-        data-en="🌌 UNIVERSE WORLD UNLOCKED! PRESS [M] TO ENTER!"
+        data-vi="🌌 THẾ GIỚI VŨ TRỤ ĐÃ MỞ KHOÁ! NHẤN [D] ĐỂ BƯỚC VÀO!"
+        data-en="🌌 UNIVERSE WORLD UNLOCKED! PRESS [D] TO ENTER!"
         style="border-color:#ff00ff;color:#ffffff;box-shadow:0 0 18px rgba(255,0,255,0.8);"
     >
-        🌌 THẾ GIỚI VŨ TRỤ ĐÃ MỞ KHOÁ! NHẤN [M] ĐỂ BƯỚC VÀO!
+        🌌 THẾ GIỚI VŨ TRỤ ĐÃ MỞ KHOÁ! NHẤN [D] ĐỂ BƯỚC VÀO!
     </div>
 
     <div
         id="supreme-boss-msg"
         class="lang-txt"
-        data-vi="🌌 NHIỆM VỤ MỚI MỞ KHOÁ: ĐẠI BOSS TỐI THƯỢNG! NHẤN [F]!"
-        data-en="🌌 NEW QUEST UNLOCKED: THE ULTIMATE BOSS! PRESS [F]!"
+        data-vi="🌌 NHIỆM VỤ MỚI MỞ KHOÁ: ĐẠI BOSS TỐI THƯỢNG! NHẤN [D]!"
+        data-en="🌌 NEW QUEST UNLOCKED: THE ULTIMATE BOSS! PRESS [D]!"
         style="border-color:#00ffff;color:#00ffff;box-shadow:0 0 15px rgba(0,255,255,0.7);"
     >
-        🌌 NHIỆM VỤ MỚI MỞ KHOÁ: ĐẠI BOSS TỐI THƯỢNG! NHẤN [F]!
+        🌌 NHIỆM VỤ MỚI MỞ KHOÁ: ĐẠI BOSS TỐI THƯỢNG! NHẤN [D]!
     </div>
 
     <div id="quick-actions">
@@ -997,17 +996,6 @@
             Bấm [J] để đóng
         </div>
 
-    </div>
-
-    
-    <div
-        id="dino-boss-msg"
-        class="lang-txt"
-        data-vi="🦖 KHỦNG LONG DA VŨ TRỤ ĐÃ MỞ! NHẤN [N]!"
-        data-en="🦖 COSMIC DINOSAUR UNLOCKED! PRESS [N]!"
-        style="position:absolute;bottom:80px;left:50%;transform:translateX(-50%);background:rgba(20,0,40,0.92);color:#ff00ff;padding:12px 26px;border-radius:12px;font-weight:bold;font-size:15px;display:none;z-index:15;border:2px solid #ff00ff;box-shadow:0 0 15px rgba(255,0,255,0.7);text-align:center;"
-    >
-        🦖 KHỦNG LONG DA VŨ TRỤ ĐÃ MỞ! NHẤN [N]!
     </div>
 
     <div id="instructions" onclick="toggleLanguage()">
@@ -1612,19 +1600,6 @@
                 let cosmicBossType = 0;
 
                 let hasCosmicTitle = false;
-
-                /* =========================
-                   COSMIC DINOSAUR BOSS
-                   (khủng long da vũ trụ blocky)
-                   10 oc HP, kill 1 = thắng
-                ========================= */
-
-                let dinoBossActive = false;
-                let dinoBossDefeated = false;
-                const DINO_BOSS_MAX_HP =
-                    10 * 1000000000000000000000000000; // 10 oc
-                let dinoBossHP = DINO_BOSS_MAX_HP;
-                let hasDinoTitle = false;
 
                 /* =========================
                    FORMAT SỐ: 10000 -> 10k,
@@ -3185,219 +3160,6 @@
                     cosmicBossMonster,
                     oldCharacterBossMonster
                 );
-
-                /* =========================
-                   COSMIC DINOSAUR BOSS
-                   (khủng long da vũ trụ - blocky T-rex style)
-                ========================= */
-
-                function createCosmicDinosaur() {
-                    const group = new THREE.Group();
-
-                    // Cosmic body material (re-use cosmicTexture if available)
-                    const bodyMat = new THREE.MeshStandardMaterial({
-                        color: 0x2a0a4a,
-                        map: (typeof cosmicTexture !== 'undefined') ? cosmicTexture : null,
-                        emissive: 0x3a0ca3,
-                        emissiveIntensity: 0.55,
-                        roughness: 0.55,
-                        metalness: 0.25
-                    });
-
-                    const bellyMat = new THREE.MeshStandardMaterial({
-                        color: 0x1a0033,
-                        emissive: 0x7209b7,
-                        emissiveIntensity: 0.35,
-                        roughness: 0.7
-                    });
-
-                    const spikeMat = new THREE.MeshStandardMaterial({
-                        color: 0xffffff,
-                        emissive: 0xaa00ff,
-                        emissiveIntensity: 1.2,
-                        metalness: 0.6,
-                        roughness: 0.3
-                    });
-
-                    const eyeMat = new THREE.MeshBasicMaterial({ color: 0xffffff });
-                    const irisMat = new THREE.MeshBasicMaterial({ color: 0x00ffff });
-                    const clawMat = new THREE.MeshStandardMaterial({
-                        color: 0xffd700,
-                        metalness: 0.7,
-                        roughness: 0.25
-                    });
-
-                    // ===== BODY =====
-                    const body = new THREE.Mesh(
-                        new THREE.BoxGeometry(2.4, 1.6, 3.2),
-                        bodyMat
-                    );
-                    body.position.set(0, 2.2, 0);
-                    group.add(body);
-
-                    // Belly
-                    const belly = new THREE.Mesh(
-                        new THREE.BoxGeometry(1.9, 1.1, 2.6),
-                        bellyMat
-                    );
-                    belly.position.set(0, 1.9, 0.15);
-                    group.add(belly);
-
-                    // ===== HEAD =====
-                    const head = new THREE.Mesh(
-                        new THREE.BoxGeometry(1.5, 1.3, 2.0),
-                        bodyMat
-                    );
-                    head.position.set(0, 3.5, 2.3);
-                    group.add(head);
-
-                    // Snout
-                    const snout = new THREE.Mesh(
-                        new THREE.BoxGeometry(1.1, 0.7, 1.4),
-                        bodyMat
-                    );
-                    snout.position.set(0, 3.15, 3.5);
-                    group.add(snout);
-
-                    // Lower jaw
-                    const jaw = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.95, 0.35, 1.1),
-                        bellyMat
-                    );
-                    jaw.position.set(0, 2.75, 3.35);
-                    group.add(jaw);
-
-                    // Eyes
-                    const eyeL = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.28, 0.08), eyeMat);
-                    eyeL.position.set(-0.45, 3.7, 3.25);
-                    const eyeR = new THREE.Mesh(new THREE.BoxGeometry(0.28, 0.28, 0.08), eyeMat);
-                    eyeR.position.set(0.45, 3.7, 3.25);
-                    const irisL = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.09), irisMat);
-                    irisL.position.set(-0.45, 3.7, 3.3);
-                    const irisR = new THREE.Mesh(new THREE.BoxGeometry(0.14, 0.14, 0.09), irisMat);
-                    irisR.position.set(0.45, 3.7, 3.3);
-                    group.add(eyeL, eyeR, irisL, irisR);
-
-                    // Teeth
-                    for (let i = -2; i <= 2; i++) {
-                        const tooth = new THREE.Mesh(
-                            new THREE.ConeGeometry(0.07, 0.28, 5),
-                            clawMat
-                        );
-                        tooth.position.set(i * 0.18, 2.95, 4.0);
-                        tooth.rotation.x = Math.PI;
-                        group.add(tooth);
-                    }
-
-                    // ===== NECK =====
-                    const neck = new THREE.Mesh(
-                        new THREE.BoxGeometry(1.0, 0.9, 1.1),
-                        bodyMat
-                    );
-                    neck.position.set(0, 2.9, 1.5);
-                    group.add(neck);
-
-                    // ===== LEGS (hind) =====
-                    const legGeo = new THREE.BoxGeometry(0.55, 1.6, 0.7);
-                    const legL = new THREE.Mesh(legGeo, bodyMat);
-                    legL.position.set(-0.85, 0.85, -0.6);
-                    const legR = new THREE.Mesh(legGeo, bodyMat);
-                    legR.position.set(0.85, 0.85, -0.6);
-                    group.add(legL, legR);
-
-                    // Feet
-                    const footGeo = new THREE.BoxGeometry(0.7, 0.3, 1.0);
-                    const footL = new THREE.Mesh(footGeo, clawMat);
-                    footL.position.set(-0.85, 0.15, -0.3);
-                    const footR = new THREE.Mesh(footGeo, clawMat);
-                    footR.position.set(0.85, 0.15, -0.3);
-                    group.add(footL, footR);
-
-                    // ===== ARMS (small T-rex arms) =====
-                    const armGeo = new THREE.BoxGeometry(0.3, 0.9, 0.3);
-                    const armL = new THREE.Mesh(armGeo, bodyMat);
-                    armL.position.set(-1.3, 2.3, 1.0);
-                    armL.rotation.z = 0.4;
-                    const armR = new THREE.Mesh(armGeo, bodyMat);
-                    armR.position.set(1.3, 2.3, 1.0);
-                    armR.rotation.z = -0.4;
-                    group.add(armL, armR);
-
-                    // Claws
-                    const clawGeo = new THREE.BoxGeometry(0.15, 0.35, 0.15);
-                    const clawL = new THREE.Mesh(clawGeo, clawMat);
-                    clawL.position.set(-1.45, 1.75, 1.0);
-                    const clawR = new THREE.Mesh(clawGeo, clawMat);
-                    clawR.position.set(1.45, 1.75, 1.0);
-                    group.add(clawL, clawR);
-
-                    // ===== TAIL =====
-                    const tail1 = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.7, 0.6, 1.6),
-                        bodyMat
-                    );
-                    tail1.position.set(0, 1.9, -2.2);
-                    tail1.rotation.x = -0.25;
-                    group.add(tail1);
-
-                    const tail2 = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.5, 0.4, 1.4),
-                        bodyMat
-                    );
-                    tail2.position.set(0, 1.5, -3.5);
-                    tail2.rotation.x = -0.4;
-                    group.add(tail2);
-
-                    const tail3 = new THREE.Mesh(
-                        new THREE.BoxGeometry(0.3, 0.25, 1.0),
-                        bodyMat
-                    );
-                    tail3.position.set(0, 1.1, -4.5);
-                    tail3.rotation.x = -0.5;
-                    group.add(tail3);
-
-                    // ===== BACK SPIKES (cosmic) =====
-                    for (let i = 0; i < 6; i++) {
-                        const spike = new THREE.Mesh(
-                            new THREE.ConeGeometry(0.18, 0.7 + i * 0.05, 6),
-                            spikeMat
-                        );
-                        spike.position.set(0, 3.15 + (i % 2) * 0.1, -1.2 + i * 0.55);
-                        group.add(spike);
-                    }
-
-                    // Head crest spikes
-                    for (let i = -1; i <= 1; i++) {
-                        const crest = new THREE.Mesh(
-                            new THREE.ConeGeometry(0.12, 0.55, 6),
-                            spikeMat
-                        );
-                        crest.position.set(i * 0.35, 4.25, 2.0 + Math.abs(i) * 0.1);
-                        group.add(crest);
-                    }
-
-                    // Cosmic aura
-                    const auraMat = new THREE.MeshBasicMaterial({
-                        color: 0xaa00ff,
-                        transparent: true,
-                        opacity: 0.14,
-                        side: THREE.BackSide
-                    });
-                    const aura = new THREE.Mesh(
-                        new THREE.SphereGeometry(3.2, 20, 20),
-                        auraMat
-                    );
-                    aura.position.y = 2.2;
-                    group.add(aura);
-
-                    return group;
-                }
-
-                const dinoBossMonster = createCosmicDinosaur();
-                dinoBossMonster.scale.set(3.2, 3.2, 3.2);
-                dinoBossMonster.position.set(0, 0, -7);
-                dinoBossMonster.visible = false;
-                scene.add(dinoBossMonster);
 
                 /* =========================
                    RED MONSTER
@@ -5667,17 +5429,14 @@
 
                         }
 
-                        // ===== BOSS KEYS: D → F → M → N =====
-                        // D = Final Boss, F = Supreme / World, M = Universe, N = Cosmic Dino
-
-                        const distToGateForBoss =
-                            Math.hypot(
-                                playerGroup.position.x,
-                                playerGroup.position.z + 15.5
-                            );
-
                         if (k === 'd') {
-                            // FIRST BOSS (Final Boss 1b HP)
+
+                            const distToGateForBoss =
+                                Math.hypot(
+                                    playerGroup.position.x,
+                                    playerGroup.position.z + 15.5
+                                );
+
                             if (
                                 distToGateForBoss < 3.5 &&
                                 gameStage === 4 &&
@@ -5685,155 +5444,202 @@
                                 !hasBossTitle &&
                                 !finalBossActive
                             ) {
+
                                 finalBossActive = true;
+
                                 gameStage = 5;
+
                                 setBossArenaSkybox(true);
-                                finalBossHP = finalBossMaxHP;
-                                finalBossMonster.visible = true;
-                                finalBossMonster.position.set(0, 0, -6);
-                                playerGroup.position.z = 6;
-                                document.getElementById('final-boss-msg').style.display = 'none';
-                                document.getElementById('boss-hp-bar').style.display = 'block';
-                                document.getElementById('boss-title').innerText =
+
+                                finalBossHP =
+                                    finalBossMaxHP;
+
+                                finalBossMonster.visible =
+                                    true;
+
+                                finalBossMonster.position.set(
+                                    0,
+                                    0,
+                                    -6
+                                );
+
+                                playerGroup.position.z =
+                                    6;
+
+                                document.getElementById(
+                                    'final-boss-msg'
+                                ).style.display =
+                                    'none';
+
+                                document.getElementById(
+                                    'boss-hp-bar'
+                                ).style.display =
+                                    'block';
+
+                                document.getElementById(
+                                    'boss-title'
+                                ).innerText =
                                     currentLang === 'vi'
                                     ? `👑 [BOSS] CUỐI (Đã hạ: ${finalBossKillCount}/${FINAL_BOSS_KILLS_NEEDED})`
                                     : `👑 FINAL [BOSS] (Defeated: ${finalBossKillCount}/${FINAL_BOSS_KILLS_NEEDED})`;
+
                                 showToast(
                                     currentLang === 'vi'
-                                    ? "🔥 [BOSS] CUỐI XUẤT HIỆN! (1.000.000.000 HP) — Phím D"
-                                    : "🔥 FINAL [BOSS] APPEARED! (1B HP) — Key D"
+                                    ? "🔥 [BOSS] CUỐI XUẤT HIỆN! (1.000.000.000 HP)"
+                                    : "🔥 FINAL [BOSS] APPEARED! (1,000,000,000 HP)"
                                 );
-                            }
-                        }
 
-                        if (k === 'f') {
-                            // WORLD / SUPREME BOSS
-                            if (
+                            }
+
+                            else if (
                                 distToGateForBoss < 3.5 &&
                                 gameStage === 4 &&
                                 hasBossTitle &&
                                 !supremeBossActive &&
                                 !supremeBossDefeated
                             ) {
+
                                 supremeBossActive = true;
+
                                 gameStage = 6;
+
                                 setBossArenaSkybox(true);
-                                supremeBossHP = supremeBossMaxHP;
-                                finalBossMonster.visible = true;
-                                finalBossMonster.scale.set(7, 7, 7);
-                                finalBossMonster.position.set(0, 0, -6);
-                                playerGroup.position.z = 6;
-                                document.getElementById('final-boss-msg').style.display = 'none';
-                                document.getElementById('supreme-boss-msg').style.display = 'none';
-                                document.getElementById('boss-hp-bar').style.display = 'block';
-                                document.getElementById('boss-title').innerText =
+
+                                supremeBossHP =
+                                    supremeBossMaxHP;
+
+                                finalBossMonster.visible =
+                                    true;
+
+                                finalBossMonster.scale.set(
+                                    7,
+                                    7,
+                                    7
+                                );
+
+                                finalBossMonster.position.set(
+                                    0,
+                                    0,
+                                    -6
+                                );
+
+                                playerGroup.position.z =
+                                    6;
+
+                                document.getElementById(
+                                    'final-boss-msg'
+                                ).style.display =
+                                    'none';
+
+                                document.getElementById(
+                                    'boss-hp-bar'
+                                ).style.display =
+                                    'block';
+
+                                document.getElementById(
+                                    'boss-title'
+                                ).innerText =
                                     currentLang === 'vi'
-                                    ? `🌌 ĐẠI BOSS TỐI THƯỢNG (${formatNum(supremeBossMaxHP)} HP) — Phím F`
-                                    : `🌌 ULTIMATE BOSS (${formatNum(supremeBossMaxHP)} HP) — Key F`;
+                                    ? `🌌 ĐẠI BOSS TỐI THƯỢNG (${formatNum(supremeBossMaxHP)} HP)`
+                                    : `🌌 ULTIMATE BOSS (${formatNum(supremeBossMaxHP)} HP)`;
+
                                 showToast(
                                     currentLang === 'vi'
-                                    ? `🌌 ĐẠI BOSS TỐI THƯỢNG XUẤT HIỆN! — Phím F`
-                                    : `🌌 ULTIMATE BOSS APPEARED! — Key F`
+                                    ? `🌌 ĐẠI BOSS TỐI THƯỢNG XUẤT HIỆN! (${formatNum(supremeBossMaxHP)} HP)`
+                                    : `🌌 ULTIMATE BOSS APPEARED! (${formatNum(supremeBossMaxHP)} HP)`
                                 );
-                            }
-                        }
 
-                        if (k === 'm') {
-                            // UNIVERSE WORLD BOSS
-                            if (
+                            }
+
+                            else if (
                                 distToGateForBoss < 3.5 &&
                                 gameStage === 4 &&
                                 supremeBossDefeated &&
                                 !universeBossActive &&
                                 !universeBossDefeated
                             ) {
+
                                 universeWorldUnlocked = true;
                                 universeBossActive = true;
                                 gameStage = 7;
-                                universeBossHP = universeBossMaxHP;
+                                universeBossHP =
+                                    universeBossMaxHP;
+
                                 setBossArenaSkybox(true);
+
                                 universeFloor.visible = true;
                                 platformGroup.visible = true;
+
                                 finalBossMonster.visible = false;
                                 bossMonster.visible = false;
                                 redMonster.visible = false;
                                 octopusMonster.visible = false;
+
                                 universeBossMonster.visible = true;
                                 universeBossMonster.position.set(0, 0, -7);
                                 universeBossMonster.scale.set(10, 10, 10);
+
                                 playerGroup.position.z = 7;
+
                                 if (hasHackSword) {
+
                                     swordMat.color.set('white');
-                                    swordGroup.scale.set(2.4, 2.8, 2.4);
-                                    document.getElementById('val-sword').innerText = '🌌 KIẾM VŨ TRỤ (Hack Lv.2)';
-                                    document.getElementById('val-sword').style.color = '#ff00ff';
+
+                                    swordGroup.scale.set(
+                                        2.4,
+                                        2.8,
+                                        2.4
+                                    );
+
+                                    document.getElementById(
+                                        'val-sword'
+                                    ).innerText =
+                                        '🌌 KIẾM VŨ TRỤ (Hack Lv.2)';
+
+                                    document.getElementById(
+                                        'val-sword'
+                                    ).style.color =
+                                        '#ff00ff';
+
                                 }
-                                document.getElementById('universe-world-msg').style.display = 'none';
-                                document.getElementById('boss-hp-bar').style.display = 'block';
-                                document.getElementById('boss-title').innerText =
+
+                                document.getElementById(
+                                    'universe-world-msg'
+                                ).style.display = 'none';
+
+                                document.getElementById(
+                                    'boss-hp-bar'
+                                ).style.display = 'block';
+
+                                document.getElementById(
+                                    'boss-title'
+                                ).innerText =
                                     currentLang === 'vi'
-                                    ? `🌌 BOSS VŨ TRỤ (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED} — Phím M`
-                                    : `🌌 UNIVERSE BOSS (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED} — Key M`;
-                                document.getElementById('boss-hp-inner').style.width = '100%';
-                                document.getElementById('boss-hp-text').innerText =
+                                    ? `🌌 BOSS VŨ TRỤ (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`
+                                    : `🌌 UNIVERSE BOSS (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`;
+
+                                document.getElementById(
+                                    'boss-hp-inner'
+                                ).style.width = '100%';
+
+                                document.getElementById(
+                                    'boss-hp-text'
+                                ).innerText =
                                     `${formatNum(universeBossHP)} / ${formatNum(universeBossMaxHP)}`;
-                                showToast(
-                                    currentLang === 'vi'
-                                    ? `🌌 BOSS VŨ TRỤ XUẤT HIỆN! — Phím M`
-                                    : `🌌 UNIVERSE BOSS APPEARED! — Key M`
-                                );
-                                saveCurrentAccount();
-                            }
-                        }
-
-                        if (k === 'n') {
-                            // COSMIC DINOSAUR BOSS — 10 oc HP, kill 1 = win
-                            if (
-                                distToGateForBoss < 3.5 &&
-                                gameStage === 4 &&
-                                (universeBossDefeated || hasUniverseTitle || hasCosmicTitle || supremeBossDefeated) &&
-                                !dinoBossActive &&
-                                !dinoBossDefeated
-                            ) {
-                                dinoBossActive = true;
-                                gameStage = 9;
-                                dinoBossHP = DINO_BOSS_MAX_HP;
-                                setBossArenaSkybox(true);
-                                universeFloor.visible = true;
-
-                                // hide others
-                                finalBossMonster.visible = false;
-                                bossMonster.visible = false;
-                                redMonster.visible = false;
-                                octopusMonster.visible = false;
-                                universeBossMonster.visible = false;
-                                cosmicBossMonster.visible = false;
-                                oldCharacterBossMonster.visible = false;
-
-                                dinoBossMonster.visible = true;
-                                dinoBossMonster.position.set(0, 0, -7);
-                                dinoBossMonster.scale.set(3.2, 3.2, 3.2);
-                                playerGroup.position.z = 8;
-
-                                document.getElementById('boss-hp-bar').style.display = 'block';
-                                document.getElementById('boss-title').innerText =
-                                    currentLang === 'vi'
-                                    ? `🦖 KHỦNG LONG DA VŨ TRỤ (${formatNum(DINO_BOSS_MAX_HP)} HP) — Phím N`
-                                    : `🦖 COSMIC DINOSAUR (${formatNum(DINO_BOSS_MAX_HP)} HP) — Key N`;
-                                document.getElementById('boss-hp-inner').style.width = '100%';
-                                document.getElementById('boss-hp-text').innerText =
-                                    `${formatNum(dinoBossHP)} / ${formatNum(DINO_BOSS_MAX_HP)}`;
 
                                 showToast(
                                     currentLang === 'vi'
-                                    ? `🦖🌌 KHỦNG LONG DA VŨ TRỤ XUẤT HIỆN! 10 oc HP — Hạ 1 con là THẮNG!`
-                                    : `🦖🌌 COSMIC DINOSAUR APPEARED! 10 oc HP — Kill 1 to WIN!`
+                                    ? `🌌 BOSS VŨ TRỤ XUẤT HIỆN! ${formatNum(universeBossMaxHP)} HP!`
+                                    : `🌌 UNIVERSE BOSS APPEARED! ${formatNum(universeBossMaxHP)} HP!`
                                 );
+
                                 saveCurrentAccount();
+
                             }
+
                         }
 
-                                                if (k === 'f') {
+                        if (k === 'f') {
 
                             if (
                                 inventory.legendary > 0
@@ -6691,47 +6497,6 @@
 
                             }
 
-                        } else if (
-                            gameStage === 9
-                        ) {
-
-                            // COSMIC DINOSAUR - 10 oc HP, kill 1 = win
-                            dinoBossHP -= totalDmg;
-
-                            power = Math.floor(power * 1.05);
-
-                            document.getElementById('val-power').innerText = formatNum(power);
-
-                            if (dinoBossHP < 0) dinoBossHP = 0;
-
-                            const dinoHpPercent = Math.max(0, (dinoBossHP / DINO_BOSS_MAX_HP) * 100);
-
-                            document.getElementById('boss-hp-inner').style.width = dinoHpPercent + '%';
-                            document.getElementById('boss-hp-text').innerText =
-                                formatNum(dinoBossHP) + ' / ' + formatNum(DINO_BOSS_MAX_HP);
-
-                            if (dinoBossHP <= 0) {
-                                dinoBossActive = false;
-                                dinoBossDefeated = true;
-                                hasDinoTitle = true;
-                                isGameEnded = true;
-
-                                dinoBossMonster.visible = false;
-                                setBossArenaSkybox(false);
-
-                                document.getElementById('boss-hp-bar').style.display = 'none';
-
-                                document.getElementById('victory-screen').style.display = 'flex';
-                                document.getElementById('win-title').innerText = '[DINO]';
-                                document.getElementById('win-desc').innerText =
-                                    currentLang === 'vi'
-                                    ? '🦖🌌 BẠN ĐÃ HẠ GỤC KHỦNG LONG DA VŨ TRỤ (10 oc HP)! CHIẾN THẮNG HOÀN TOÀN! ✨'
-                                    : '🦖🌌 YOU DEFEATED THE COSMIC DINOSAUR (10 oc HP)! TOTAL VICTORY! ✨';
-
-                                playGoDFusionSound();
-                                saveCurrentAccount();
-                            }
-
                         }
 
                 }
@@ -7018,10 +6783,6 @@
                         cosmicBossKillCount: cosmicBossKillCount,
                         cosmicBossType: cosmicBossType,
                         hasCosmicTitle: hasCosmicTitle,
-                        dinoBossActive: dinoBossActive,
-                        dinoBossDefeated: dinoBossDefeated,
-                        dinoBossHP: dinoBossHP,
-                        hasDinoTitle: hasDinoTitle,
 
                         playerHP: playerHP,
 
@@ -7170,17 +6931,6 @@
 
                     hasCosmicTitle =
                         data.hasCosmicTitle || false;
-
-                    dinoBossActive =
-                        data.dinoBossActive || false;
-                    dinoBossDefeated =
-                        data.dinoBossDefeated || false;
-                    dinoBossHP =
-                        (typeof data.dinoBossHP === 'number')
-                        ? data.dinoBossHP
-                        : DINO_BOSS_MAX_HP;
-                    hasDinoTitle =
-                        data.hasDinoTitle || false;
 
                     refreshPlayerMaxHP();
 
@@ -7341,11 +7091,6 @@
                     oldCharacterBossMonster.visible =
                         (gameStage === 8 && cosmicBossType === 1 && !cosmicBossDefeated);
 
-                    if (typeof dinoBossMonster !== 'undefined') {
-                        dinoBossMonster.visible =
-                            (gameStage === 9 && !dinoBossDefeated);
-                    }
-
                     universeFloor.visible =
                         (gameStage === 7 || gameStage === 8);
 
@@ -7386,7 +7131,7 @@
                     document.getElementById(
                         'boss-hp-bar'
                     ).style.display =
-                        (gameStage === 3 || gameStage === 5 || gameStage === 6 || (gameStage === 7 && !universeBossDefeated) || (gameStage === 8 && !cosmicBossDefeated) || (gameStage === 9 && !dinoBossDefeated))
+                        (gameStage === 3 || gameStage === 5 || gameStage === 6 || (gameStage === 7 && !universeBossDefeated) || (gameStage === 8 && !cosmicBossDefeated))
                         ? 'block'
                         : 'none';
 
@@ -7546,11 +7291,11 @@
                     }
 
                     setBossArenaSkybox(
-                        gameStage === 5 || gameStage === 6 || gameStage === 7 || gameStage === 8 || gameStage === 9
+                        gameStage === 5 || gameStage === 6 || gameStage === 7 || gameStage === 8
                     );
 
                     universeFloor.visible =
-                        (gameStage === 7 || gameStage === 8 || gameStage === 9);
+                        gameStage === 7;
 
                     document.getElementById(
                         'val-power'
@@ -8036,23 +7781,15 @@
                             !universeBossActive &&
                             !universeBossDefeated
                         ) {
-                            universeWorldMsg.style.display = 'block';
-                        } else {
-                            universeWorldMsg.style.display = 'none';
-                        }
 
-                        const dinoMsgEl = document.getElementById('dino-boss-msg');
-                        if (dinoMsgEl) {
-                            if (
-                                gameStage === 4 &&
-                                (universeBossDefeated || hasUniverseTitle || hasCosmicTitle || supremeBossDefeated) &&
-                                !dinoBossActive &&
-                                !dinoBossDefeated
-                            ) {
-                                dinoMsgEl.style.display = 'block';
-                            } else {
-                                dinoMsgEl.style.display = 'none';
-                            }
+                            universeWorldMsg.style.display =
+                                'block';
+
+                        } else {
+
+                            universeWorldMsg.style.display =
+                                'none';
+
                         }
 
                         if (
@@ -8249,20 +7986,28 @@
 
                                 saveCurrentAccount();
 
-                            } else if (dinoBossDefeated) {
+                            } else {
 
-                                isGameEnded = true;
-                                document.getElementById('victory-screen').style.display = 'flex';
-                                document.getElementById('win-title').innerText = "END GAME";
-                                document.getElementById('win-desc').innerText =
+                                isGameEnded =
+                                    true;
+
+                                document.getElementById(
+                                    'victory-screen'
+                                ).style.display =
+                                    'flex';
+
+                                document.getElementById(
+                                    'win-title'
+                                ).innerText =
+                                    "END GAME";
+
+                                document.getElementById(
+                                    'win-desc'
+                                ).innerText =
                                     currentLang === 'vi'
                                     ? "✨ CHÚC MỪNG! BẠN ĐÃ HOÀN THÀNH TẤT CẢ THỬ THÁCH VÀ CHINH PHỤC MYSTIC TEMPLE! ✨"
                                     : "✨ CONGRATULATIONS! YOU COMPLETED ALL MYSTIC TEMPLE CHALLENGES! ✨";
 
-                            } else {
-                                // còn boss khủng long — hiện gợi ý nhấn N
-                                const dinoMsgEl2 = document.getElementById('dino-boss-msg');
-                                if (dinoMsgEl2) dinoMsgEl2.style.display = 'block';
                             }
 
                         } else if (
@@ -8289,9 +8034,6 @@
                             'universe-world-msg'
                         ).style.display =
                             'none';
-
-                        const dinoMsg = document.getElementById('dino-boss-msg');
-                        if (dinoMsg) dinoMsg.style.display = 'none';
 
                     }
 
@@ -8465,18 +8207,6 @@
 
                     }
 
-                    if (dinoBossMonster && dinoBossMonster.visible) {
-                        dinoBossMonster.rotation.y += 0.01;
-                        dinoBossMonster.position.y = Math.sin(performance.now() * 0.0025) * 0.15;
-                        const dxD = playerGroup.position.x - dinoBossMonster.position.x;
-                        const dzD = playerGroup.position.z - dinoBossMonster.position.z;
-                        const distD = Math.hypot(dxD, dzD);
-                        if (distD > 6) {
-                            dinoBossMonster.position.x += (dxD / distD) * 0.02;
-                            dinoBossMonster.position.z += (dzD / distD) * 0.02;
-                        }
-                    }
-
                     /* =========================
                        BOSS PHẢN ĐÒN NGƯỜI CHƠI
                        (đứng vào 1 trong 4 góc tường
@@ -8520,8 +8250,7 @@
                         gameStage === 3 ||
                         gameStage === 5 ||
                         gameStage === 6 ||
-                        gameStage === 7 ||
-                        gameStage === 9) &&
+                        gameStage === 7) &&
                         (nowTime - lastBossAttackTime > 1500)
                     ) {
 
@@ -8617,8 +8346,7 @@
                         gameStage === 2 ||
                         gameStage === 3 ||
                         gameStage === 5 ||
-                        gameStage === 6 ||
-                        gameStage === 9);
+                        gameStage === 6);
 
                     if (
                         isAfkNow &&
