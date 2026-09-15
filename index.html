@@ -6426,7 +6426,15 @@
                                     universeBossActive = false;
                                     hasUniverseTitle = true;
 
+                                    gameStage = 4;
+                                    playerGroup.position.x = 0;
+                                    playerGroup.position.z = -15.5;
                                     universeBossMonster.visible = false;
+                                    finalBossMonster.visible = false;
+                                    cosmicBossMonster.visible = false;
+                                    oldCharacterBossMonster.visible = false;
+                                    document.getElementById('victory-screen').style.display = 'none';
+                                    document.getElementById('universe-world-msg').style.display = 'block';
 
                                     document.getElementById(
                                         'boss-hp-bar'
