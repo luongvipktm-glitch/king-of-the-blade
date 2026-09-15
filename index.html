@@ -1578,6 +1578,30 @@
                 let hasUniverseTitle = false;
 
                 /* =========================
+                   COSMIC WORLD - THẾ GIỚI MỚI
+                   Boss da vũ trụ, mắt trắng, hình chàng trai
+                   và boss hình nhân vật cũ
+                ========================= */
+
+                let cosmicWorldUnlocked = false;
+                let cosmicBossActive = false;
+                let cosmicBossDefeated = false;
+                let cosmicBossHP = universeBossMaxHP * 10000000;
+                let cosmicBossKillCount = 0;
+
+                const COSMIC_BOSS_MAX_HP =
+                    universeBossMaxHP * 10000000;
+
+                const COSMIC_BOSS_KILLS_NEEDED = 9;
+
+                const COSMIC_BOSS_POWER_RATE = 1.019;
+                const COSMIC_OLD_CHARACTER_POWER_RATE = 1.015;
+
+                let cosmicBossType = 0;
+
+                let hasCosmicTitle = false;
+
+                /* =========================
                    FORMAT SỐ: 10000 -> 10k,
                    1000000 -> 1m, 1000000000 -> 1b
                 ========================= */
@@ -1589,6 +1613,16 @@
                     const sign = n < 0 ? '-' : '';
 
                     n = Math.abs(n);
+
+                    if (n >= 1000000000000000000000000000) {
+
+                        return sign +
+                            (n / 1000000000000000000000000000)
+                                .toFixed(
+                                    (n % 1000000000000000000000000000 === 0) ? 0 : 2
+                                ) + 'oc';
+
+                    }
 
                     if (n >= 1000000000000000000000) {
 
@@ -3075,6 +3109,59 @@
                 );
 
                 /* =========================
+                   COSMIC WORLD BOSSES
+                   Boss 1: da vũ trụ + mắt trắng
+                   Boss 2: bản sao nhân vật cũ
+                ========================= */
+
+                const cosmicBossMonster =
+                    universeBossMonster.clone(true);
+
+                cosmicBossMonster.position.set(
+                    0,
+                    0,
+                    -7
+                );
+
+                cosmicBossMonster.scale.set(
+                    10,
+                    10,
+                    10
+                );
+
+                cosmicBossMonster.visible = false;
+
+                const oldCharacterBossMonster =
+                    playerGroup.clone(true);
+
+                oldCharacterBossMonster.position.set(
+                    0,
+                    0,
+                    -7
+                );
+
+                oldCharacterBossMonster.scale.set(
+                    10,
+                    10,
+                    10
+                );
+
+                oldCharacterBossMonster.visible = false;
+
+                oldCharacterBossMonster.traverse(
+                    child => {
+                        if (child.isMesh && child.material) {
+                            child.material = child.material.clone();
+                        }
+                    }
+                );
+
+                scene.add(
+                    cosmicBossMonster,
+                    oldCharacterBossMonster
+                );
+
+                /* =========================
                    RED MONSTER
                 ========================= */
 
@@ -3774,6 +3861,51 @@
 
                 playerGroup.add(
                     universeTitleSprite
+                );
+
+                function createCosmicTitleSprite() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 512;
+                    canvas.height = 96;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, 512, 96);
+                    ctx.font = 'bold 48px Impact, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.lineWidth = 7;
+                    ctx.strokeStyle = 'rgba(255,255,255,0.9)';
+                    ctx.strokeText('[COSMIC]', 256, 50);
+
+                    const g = ctx.createLinearGradient(0, 0, 512, 0);
+                    g.addColorStop(0, '#ffffff');
+                    g.addColorStop(0.25, '#00ffff');
+                    g.addColorStop(0.5, '#ffffff');
+                    g.addColorStop(0.75, '#aa88ff');
+                    g.addColorStop(1, '#ffffff');
+
+                    ctx.fillStyle = g;
+                    ctx.fillText('[COSMIC]', 256, 50);
+
+                    const tex = new THREE.CanvasTexture(canvas);
+                    const mat = new THREE.SpriteMaterial({
+                        map: tex,
+                        transparent: true,
+                        depthTest: false
+                    });
+
+                    const sprite = new THREE.Sprite(mat);
+                    sprite.scale.set(3.2, 0.6, 1);
+                    sprite.position.set(0, 3.45, 0);
+                    sprite.visible = false;
+                    return sprite;
+                }
+
+                const cosmicTitleSprite =
+                    createCosmicTitleSprite();
+
+                playerGroup.add(
+                    cosmicTitleSprite
                 );
 
                 const bossTitleSprite =
@@ -6094,6 +6226,119 @@
                             }
 
                         } else if (
+                            gameStage === 8
+                        ) {
+
+                            cosmicBossHP -= totalDmg;
+
+                            if (cosmicBossType === 0) {
+                                power *= COSMIC_BOSS_POWER_RATE;
+                            } else {
+                                power *= COSMIC_OLD_CHARACTER_POWER_RATE;
+                            }
+
+                            power = Math.max(1, power);
+
+                            document.getElementById(
+                                'val-power'
+                            ).innerText =
+                                formatNum(power);
+
+                            if (cosmicBossHP < 0)
+                                cosmicBossHP = 0;
+
+                            const cosmicHpPercent =
+                                Math.max(
+                                    0,
+                                    (cosmicBossHP / COSMIC_BOSS_MAX_HP) * 100
+                                );
+
+                            document.getElementById(
+                                'boss-hp-inner'
+                            ).style.width =
+                                cosmicHpPercent + '%';
+
+                            document.getElementById(
+                                'boss-hp-text'
+                            ).innerText =
+                                `${formatNum(cosmicBossHP)} / ${formatNum(COSMIC_BOSS_MAX_HP)}`;
+
+                            if (cosmicBossHP <= 0) {
+
+                                cosmicBossKillCount++;
+
+                                cosmicBossHP =
+                                    COSMIC_BOSS_MAX_HP;
+
+                                if (
+                                    cosmicBossKillCount >=
+                                    COSMIC_BOSS_KILLS_NEEDED
+                                ) {
+
+                                    cosmicBossKillCount =
+                                        COSMIC_BOSS_KILLS_NEEDED;
+
+                                    cosmicBossDefeated = true;
+                                    cosmicBossActive = false;
+                                    hasCosmicTitle = true;
+
+                                    cosmicBossMonster.visible = false;
+                                    oldCharacterBossMonster.visible = false;
+
+                                    bossTitleSprite.visible = false;
+                                    universeTitleSprite.visible = false;
+                                    cosmicTitleSprite.visible = true;
+
+                                    document.getElementById(
+                                        'boss-hp-bar'
+                                    ).style.display = 'none';
+
+                                    document.getElementById(
+                                        'victory-screen'
+                                    ).style.display = 'flex';
+
+                                    document.getElementById(
+                                        'win-title'
+                                    ).innerText =
+                                        '[COSMIC]';
+
+                                    document.getElementById(
+                                        'win-desc'
+                                    ).innerText =
+                                        currentLang === 'vi'
+                                        ? '🌌✨ BẠN ĐÃ HẠ ĐỦ 9 BOSS CỦA THẾ GIỚI MỚI VÀ NHẬN DANH HIỆU [COSMIC]! DANH HIỆU [GoD] VÀ [Universe] ĐÃ BỊ XÓA.'
+                                        : '🌌✨ YOU DEFEATED ALL 9 BOSSES OF THE NEW WORLD AND EARNED THE [COSMIC] TITLE! [GoD] AND [Universe] TITLES HAVE BEEN REMOVED.';
+
+                                    playGoDFusionSound();
+                                    saveCurrentAccount();
+
+                                } else {
+
+                                    cosmicBossType =
+                                        cosmicBossType === 0 ? 1 : 0;
+
+                                    cosmicBossMonster.visible =
+                                        cosmicBossType === 0;
+
+                                    oldCharacterBossMonster.visible =
+                                        cosmicBossType === 1;
+
+                                    showToast(
+                                        currentLang === 'vi'
+                                        ? `🌌 HẠ BOSS ${cosmicBossKillCount}/${COSMIC_BOSS_KILLS_NEEDED}! ${cosmicBossType === 0 ? 'BOSS DA VŨ TRỤ' : 'BOSS NHÂN VẬT CŨ'} TIẾP THEO!`
+                                        : `🌌 BOSS ${cosmicBossKillCount}/${COSMIC_BOSS_KILLS_NEEDED} DEFEATED! ${cosmicBossType === 0 ? 'COSMIC SKIN BOSS' : 'OLD CHARACTER BOSS'} NEXT!`
+                                    );
+
+                                    document.getElementById(
+                                        'boss-title'
+                                    ).innerText =
+                                        currentLang === 'vi'
+                                        ? `${cosmicBossType === 0 ? '🌌 BOSS DA VŨ TRỤ' : '👤 BOSS NHÂN VẬT CŨ'} (${formatNum(COSMIC_BOSS_MAX_HP)} HP) - ${cosmicBossKillCount}/${COSMIC_BOSS_KILLS_NEEDED}`
+                                        : `${cosmicBossType === 0 ? '🌌 COSMIC SKIN BOSS' : '👤 OLD CHARACTER BOSS'} (${formatNum(COSMIC_BOSS_MAX_HP)} HP) - ${cosmicBossKillCount}/${COSMIC_BOSS_KILLS_NEEDED}`;
+                                }
+                            }
+
+                        } else if (
                             gameStage === 7
                         ) {
 
@@ -6507,6 +6752,14 @@
 
                         hasUniverseTitle: hasUniverseTitle,
 
+                        cosmicWorldUnlocked: cosmicWorldUnlocked,
+                        cosmicBossActive: cosmicBossActive,
+                        cosmicBossDefeated: cosmicBossDefeated,
+                        cosmicBossHP: cosmicBossHP,
+                        cosmicBossKillCount: cosmicBossKillCount,
+                        cosmicBossType: cosmicBossType,
+                        hasCosmicTitle: hasCosmicTitle,
+
                         playerHP: playerHP,
 
                         playerMaxHP: playerMaxHP,
@@ -6632,6 +6885,29 @@
                     hasUniverseTitle =
                         data.hasUniverseTitle || false;
 
+                    cosmicWorldUnlocked =
+                        data.cosmicWorldUnlocked || false;
+
+                    cosmicBossActive =
+                        data.cosmicBossActive || false;
+
+                    cosmicBossDefeated =
+                        data.cosmicBossDefeated || false;
+
+                    cosmicBossHP =
+                        (typeof data.cosmicBossHP === 'number')
+                        ? data.cosmicBossHP
+                        : COSMIC_BOSS_MAX_HP;
+
+                    cosmicBossKillCount =
+                        data.cosmicBossKillCount || 0;
+
+                    cosmicBossType =
+                        data.cosmicBossType || 0;
+
+                    hasCosmicTitle =
+                        data.hasCosmicTitle || false;
+
                     refreshPlayerMaxHP();
 
                     if (
@@ -6685,7 +6961,7 @@
 
                     skinMat.needsUpdate = true;
 
-                    if (hasHackSword && (gameStage === 7 || universeWorldUnlocked)) {
+                    if (hasHackSword && (gameStage === 7 || gameStage === 8 || universeWorldUnlocked)) {
 
                         swordMat.color.set('white');
 
@@ -6785,8 +7061,26 @@
                     universeBossMonster.visible =
                         (gameStage === 7 && !universeBossDefeated);
 
+                    cosmicBossMonster.visible =
+                        (gameStage === 8 && cosmicBossType === 0 && !cosmicBossDefeated);
+
+                    oldCharacterBossMonster.visible =
+                        (gameStage === 8 && cosmicBossType === 1 && !cosmicBossDefeated);
+
                     universeFloor.visible =
-                        (gameStage === 7);
+                        (gameStage === 7 || gameStage === 8);
+
+                    if (gameStage === 8) {
+
+                        const activeCosmicBoss =
+                            cosmicBossType === 0
+                            ? cosmicBossMonster
+                            : oldCharacterBossMonster;
+
+                        activeCosmicBoss.position.set(0, 0, -7);
+                        activeCosmicBoss.scale.set(10, 10, 10);
+
+                    }
 
                     if (gameStage === 7) {
 
@@ -6813,11 +7107,36 @@
                     document.getElementById(
                         'boss-hp-bar'
                     ).style.display =
-                        (gameStage === 3 || gameStage === 5 || gameStage === 6 || (gameStage === 7 && !universeBossDefeated))
+                        (gameStage === 3 || gameStage === 5 || gameStage === 6 || (gameStage === 7 && !universeBossDefeated) || (gameStage === 8 && !cosmicBossDefeated))
                         ? 'block'
                         : 'none';
 
-                    if (gameStage === 7) {
+                    if (gameStage === 8) {
+
+                        document.getElementById(
+                            'boss-title'
+                        ).innerText =
+                            currentLang === 'vi'
+                            ? `${cosmicBossType === 0 ? '🌌 BOSS DA VŨ TRỤ' : '👤 BOSS NHÂN VẬT CŨ'} (${formatNum(COSMIC_BOSS_MAX_HP)} HP) - ${cosmicBossKillCount}/${COSMIC_BOSS_KILLS_NEEDED}`
+                            : `${cosmicBossType === 0 ? '🌌 COSMIC SKIN BOSS' : '👤 OLD CHARACTER BOSS'} (${formatNum(COSMIC_BOSS_MAX_HP)} HP) - ${cosmicBossKillCount}/${COSMIC_BOSS_KILLS_NEEDED}`;
+
+                        const cosmicHpPercent =
+                            Math.max(
+                                0,
+                                (cosmicBossHP / COSMIC_BOSS_MAX_HP) * 100
+                            );
+
+                        document.getElementById(
+                            'boss-hp-inner'
+                        ).style.width =
+                            cosmicHpPercent + '%';
+
+                        document.getElementById(
+                            'boss-hp-text'
+                        ).innerText =
+                            `${formatNum(cosmicBossHP)} / ${formatNum(COSMIC_BOSS_MAX_HP)}`;
+
+                    } else if (gameStage === 7) {
 
                         document.getElementById(
                             'boss-title'
@@ -6920,10 +7239,18 @@
                     }
 
                     bossTitleSprite.visible =
-                        hasBossTitle && !hasUniverseTitle;
+                        hasBossTitle && !hasUniverseTitle && !cosmicWorldUnlocked;
 
                     universeTitleSprite.visible =
-                        hasUniverseTitle;
+                        hasUniverseTitle && !cosmicWorldUnlocked;
+
+                    cosmicTitleSprite.visible =
+                        hasCosmicTitle;
+
+                    if (cosmicWorldUnlocked) {
+                        bossTitleSprite.visible = false;
+                        universeTitleSprite.visible = false;
+                    }
 
                     if (supremeBossDefeated) {
 
@@ -6940,7 +7267,7 @@
                     }
 
                     setBossArenaSkybox(
-                        gameStage === 5 || gameStage === 6 || gameStage === 7
+                        gameStage === 5 || gameStage === 6 || gameStage === 7 || gameStage === 8
                     );
 
                     universeFloor.visible =
@@ -7575,6 +7902,66 @@
                                 universeWorldMsg.style.display =
                                     'block';
 
+                            } else if (
+                                universeBossDefeated &&
+                                !cosmicWorldUnlocked
+                            ) {
+
+                                cosmicWorldUnlocked = true;
+                                cosmicBossActive = true;
+                                gameStage = 8;
+
+                                power = Math.max(1, power * 0.01);
+
+                                cosmicBossHP =
+                                    COSMIC_BOSS_MAX_HP;
+
+                                cosmicBossType = 0;
+
+                                setBossArenaSkybox(true);
+                                universeFloor.visible = true;
+
+                                universeBossMonster.visible = false;
+                                finalBossMonster.visible = false;
+                                bossMonster.visible = false;
+                                redMonster.visible = false;
+                                octopusMonster.visible = false;
+
+                                cosmicBossMonster.visible = true;
+                                oldCharacterBossMonster.visible = false;
+
+                                cosmicBossMonster.position.set(0, 0, -7);
+                                cosmicBossMonster.scale.set(10, 10, 10);
+
+                                playerGroup.position.z = 7;
+
+                                cosmicTitleSprite.visible = false;
+                                universeTitleSprite.visible = false;
+                                bossTitleSprite.visible = false;
+
+                                document.getElementById(
+                                    'universe-world-msg'
+                                ).style.display = 'none';
+
+                                document.getElementById(
+                                    'boss-hp-bar'
+                                ).style.display = 'block';
+
+                                document.getElementById(
+                                    'boss-title'
+                                ).innerText =
+                                    currentLang === 'vi'
+                                    ? `🌌 BOSS VŨ TRỤ MỚI (${formatNum(COSMIC_BOSS_MAX_HP)} HP) - 0/${COSMIC_BOSS_KILLS_NEEDED}`
+                                    : `🌌 NEW COSMIC BOSS (${formatNum(COSMIC_BOSS_MAX_HP)} HP) - 0/${COSMIC_BOSS_KILLS_NEEDED}`;
+
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? `🌌 THẾ GIỚI MỚI! POWER CHỈ CÒN 1%! BOSS DA VŨ TRỤ XUẤT HIỆN! +1.9% POWER/MỖI ĐÒN`
+                                    : `🌌 NEW WORLD! POWER IS REDUCED TO 1%! COSMIC SKIN BOSS APPEARED! +1.9% POWER/HIT`
+                                );
+
+                                saveCurrentAccount();
+
                             } else {
 
                                 isGameEnded =
@@ -7758,6 +8145,44 @@
 
                     }
 
+                    if (
+                        cosmicBossMonster.visible ||
+                        oldCharacterBossMonster.visible
+                    ) {
+
+                        const activeCosmicBoss =
+                            cosmicBossType === 0
+                            ? cosmicBossMonster
+                            : oldCharacterBossMonster;
+
+                        activeCosmicBoss.rotation.y += 0.006;
+
+                        activeCosmicBoss.position.y =
+                            Math.sin(performance.now() * 0.002) * 0.12;
+
+                        const dxC =
+                            playerGroup.position.x -
+                            activeCosmicBoss.position.x;
+
+                        const dzC =
+                            playerGroup.position.z -
+                            activeCosmicBoss.position.z;
+
+                        const distC =
+                            Math.hypot(dxC, dzC);
+
+                        if (distC > 7) {
+
+                            activeCosmicBoss.position.x +=
+                                (dxC / distC) * 0.016;
+
+                            activeCosmicBoss.position.z +=
+                                (dzC / distC) * 0.016;
+
+                        }
+
+                    }
+
                     /* =========================
                        BOSS PHẢN ĐÒN NGƯỜI CHƠI
                        (đứng vào 1 trong 4 góc tường
@@ -7917,10 +8342,15 @@
                        Đại Boss Tối Thượng (không cycle màu)
                     */
 
-                    if (supremeBossDefeated) {
+                    if (hasCosmicTitle) {
 
-                        bossTitleSprite.visible =
-                            true;
+                        cosmicTitleSprite.visible = true;
+                        bossTitleSprite.visible = false;
+                        universeTitleSprite.visible = false;
+
+                    } else if (supremeBossDefeated) {
+
+                        bossTitleSprite.visible = true;
 
                     } else if (hasBossTitle) {
 
