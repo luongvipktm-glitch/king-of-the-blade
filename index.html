@@ -510,6 +510,16 @@
     </div>
 
     <div
+        id="atomic-boss-msg"
+        class="lang-txt"
+        data-vi="⚛️ BOSS HẠT NGUYÊN TỬ ĐÃ MỞ KHÓA! NHẤN [H] ĐỂ ĐỐI ĐẦU!"
+        data-en="⚛️ ATOMIC BOSS UNLOCKED! PRESS [H] TO FIGHT!"
+        style="border-color:#00ff66;color:#ffffff;box-shadow:0 0 18px rgba(0,255,102,0.8);"
+    >
+        ⚛️ BOSS HẠT NGUYÊN TỬ ĐÃ MỞ KHÓA! NHẤN [H] ĐỂ ĐỐI ĐẦU!
+    </div>
+
+    <div
         id="supreme-boss-msg"
         class="lang-txt"
         data-vi="🌌 NHIỆM VỤ MỚI MỞ KHOÁ: ĐẠI BOSS TỐI THƯỢNG! NHẤN [D]!"
@@ -1600,6 +1610,15 @@
                 let cosmicBossType = 0;
 
                 let hasCosmicTitle = false;
+
+                let atomicBossActive = false;
+                let atomicBossDefeated = false;
+
+                const atomicBossMaxHP =
+                    10000000000 * 1000000000000000000000000000;
+
+                let atomicBossHP =
+                    atomicBossMaxHP;
 
                 /* =========================
                    FORMAT SỐ: 10000 -> 10k,
@@ -3160,6 +3179,88 @@
                     cosmicBossMonster,
                     oldCharacterBossMonster
                 );
+
+                /* =========================
+                   ATOMIC BOSS 3D
+                   Hạt nhân + 3 quỹ đạo + electron
+                ========================= */
+
+                const atomicBossMonster =
+                    new THREE.Group();
+
+                const atomicCoreMat =
+                    new THREE.MeshStandardMaterial({
+                        color: 0xff3366,
+                        emissive: 0x660022,
+                        emissiveIntensity: 1.8,
+                        metalness: 0.35,
+                        roughness: 0.25
+                    });
+
+                const atomicCore =
+                    new THREE.Mesh(
+                        new THREE.SphereGeometry(1.05, 32, 24),
+                        atomicCoreMat
+                    );
+
+                atomicBossMonster.add(atomicCore);
+
+                const atomicRingMats = [
+                    new THREE.MeshBasicMaterial({color: 0x00ffff}),
+                    new THREE.MeshBasicMaterial({color: 0xff00ff}),
+                    new THREE.MeshBasicMaterial({color: 0xffff00})
+                ];
+
+                const atomicRingAngles = [
+                    [0, 0, 0],
+                    [Math.PI / 2, 0, 0],
+                    [Math.PI / 4, Math.PI / 4, 0]
+                ];
+
+                for (let i = 0; i < 3; i++) {
+
+                    const ring =
+                        new THREE.Mesh(
+                            new THREE.TorusGeometry(2.15, 0.08, 12, 64),
+                            atomicRingMats[i]
+                        );
+
+                    ring.rotation.set(
+                        atomicRingAngles[i][0],
+                        atomicRingAngles[i][1],
+                        atomicRingAngles[i][2]
+                    );
+
+                    atomicBossMonster.add(ring);
+
+                    const electron =
+                        new THREE.Mesh(
+                            new THREE.SphereGeometry(0.22, 16, 12),
+                            atomicRingMats[i]
+                        );
+
+                    electron.position.set(2.15, 0, 0);
+                    ring.add(electron);
+                }
+
+                const atomicAura =
+                    new THREE.Mesh(
+                        new THREE.SphereGeometry(2.7, 24, 24),
+                        new THREE.MeshBasicMaterial({
+                            color: 0x00ff66,
+                            transparent: true,
+                            opacity: 0.12,
+                            side: THREE.BackSide
+                        })
+                    );
+
+                atomicBossMonster.add(atomicAura);
+
+                atomicBossMonster.position.set(0, 2.2, -7);
+                atomicBossMonster.scale.set(2.5, 2.5, 2.5);
+                atomicBossMonster.visible = false;
+
+                scene.add(atomicBossMonster);
 
                 /* =========================
                    RED MONSTER
@@ -5639,6 +5740,65 @@
 
                         }
 
+                        if (k === 'h') {
+
+                            const distToGateForAtomic =
+                                Math.hypot(
+                                    playerGroup.position.x,
+                                    playerGroup.position.z + 15.5
+                                );
+
+                            if (
+                                distToGateForAtomic < 3.5 &&
+                                gameStage === 4 &&
+                                cosmicBossDefeated &&
+                                !atomicBossActive &&
+                                !atomicBossDefeated
+                            ) {
+
+                                atomicBossActive = true;
+                                gameStage = 9;
+                                atomicBossHP = atomicBossMaxHP;
+
+                                setBossArenaSkybox(true);
+                                universeFloor.visible = true;
+
+                                redMonster.visible = false;
+                                octopusMonster.visible = false;
+                                bossMonster.visible = false;
+                                finalBossMonster.visible = false;
+                                universeBossMonster.visible = false;
+                                cosmicBossMonster.visible = false;
+                                oldCharacterBossMonster.visible = false;
+                                atomicBossMonster.visible = true;
+
+                                atomicBossMonster.position.set(0, 2.2, -7);
+                                playerGroup.position.z = 7;
+
+                                document.getElementById('atomic-boss-msg').style.display = 'none';
+                                document.getElementById('victory-screen').style.display = 'none';
+                                document.getElementById('boss-hp-bar').style.display = 'block';
+
+                                document.getElementById('boss-title').innerText =
+                                    currentLang === 'vi'
+                                    ? '⚛️ BOSS HẠT NGUYÊN TỬ (10 TỶ OC HP)'
+                                    : '⚛️ ATOMIC BOSS (10 BILLION OC HP)';
+
+                                document.getElementById('boss-hp-inner').style.width = '100%';
+
+                                document.getElementById('boss-hp-text').innerText =
+                                    `${formatNum(atomicBossHP)} / ${formatNum(atomicBossMaxHP)}`;
+
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? '⚛️ BOSS HẠT NGUYÊN TỬ 3D XUẤT HIỆN! 10 TỶ OC HP!'
+                                    : '⚛️ 3D ATOMIC BOSS APPEARED! 10 BILLION OC HP!'
+                                );
+
+                                saveCurrentAccount();
+                            }
+                        }
+
                         if (k === 'f') {
 
                             if (
@@ -6326,6 +6486,8 @@
                                         : '🌌✨ YOU DEFEATED ALL 9 BOSSES OF THE NEW WORLD AND EARNED THE [COSMIC] TITLE! [GoD] AND [Universe] TITLES HAVE BEEN REMOVED.';
 
                                     playGoDFusionSound();
+                                    document.getElementById('atomic-boss-msg').style.display = 'block';
+
                                     saveCurrentAccount();
 
                                 } else {
@@ -6352,6 +6514,70 @@
                                         ? `${cosmicBossType === 0 ? '🌌 BOSS DA VŨ TRỤ' : '👤 BOSS NHÂN VẬT CŨ'} (${formatNum(COSMIC_BOSS_MAX_HP)} HP) - ${cosmicBossKillCount}/${COSMIC_BOSS_KILLS_NEEDED}`
                                         : `${cosmicBossType === 0 ? '🌌 COSMIC SKIN BOSS' : '👤 OLD CHARACTER BOSS'} (${formatNum(COSMIC_BOSS_MAX_HP)} HP) - ${cosmicBossKillCount}/${COSMIC_BOSS_KILLS_NEEDED}`;
                                 }
+                            }
+
+                        } else if (
+                            gameStage === 9
+                        ) {
+
+                            atomicBossHP -=
+                                totalDmg;
+
+                            power +=
+                                Math.max(
+                                    1,
+                                    Math.floor(totalDmg / 500)
+                                );
+
+                            document.getElementById('val-power').innerText =
+                                formatNum(power);
+
+                            if (atomicBossHP < 0)
+                                atomicBossHP = 0;
+
+                            const atomicHpPercent =
+                                Math.max(
+                                    0,
+                                    (atomicBossHP / atomicBossMaxHP) * 100
+                                );
+
+                            document.getElementById('boss-hp-inner').style.width =
+                                atomicHpPercent + '%';
+
+                            document.getElementById('boss-hp-text').innerText =
+                                `${formatNum(atomicBossHP)} / ${formatNum(atomicBossMaxHP)}`;
+
+                            if (atomicBossHP <= 0) {
+
+                                atomicBossDefeated = true;
+                                atomicBossActive = false;
+                                atomicBossMonster.visible = false;
+
+                                document.getElementById('boss-hp-bar').style.display = 'none';
+
+                                setBossArenaSkybox(false);
+
+                                gameStage = 4;
+                                playerGroup.position.x = 0;
+                                playerGroup.position.z = -15.5;
+
+                                document.getElementById('atomic-boss-msg').style.display = 'none';
+                                document.getElementById('victory-screen').style.display = 'flex';
+
+                                document.getElementById('win-title').innerText = '[ATOMIC]';
+
+                                document.getElementById('win-desc').innerText =
+                                    currentLang === 'vi'
+                                    ? '⚛️ BẠN ĐÃ HẠ GỤC BOSS HẠT NGUYÊN TỬ 3D VỚI 10 TỶ OC HP!'
+                                    : '⚛️ YOU DEFEATED THE 3D ATOMIC BOSS WITH 10 BILLION OC HP!';
+
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? '⚛️ BOSS HẠT NGUYÊN TỬ ĐÃ BỊ HẠ!'
+                                    : '⚛️ ATOMIC BOSS DEFEATED!'
+                                );
+
+                                saveCurrentAccount();
                             }
 
                         } else if (
@@ -6784,6 +7010,10 @@
                         cosmicBossType: cosmicBossType,
                         hasCosmicTitle: hasCosmicTitle,
 
+                        atomicBossActive: atomicBossActive,
+                        atomicBossDefeated: atomicBossDefeated,
+                        atomicBossHP: atomicBossHP,
+
                         playerHP: playerHP,
 
                         playerMaxHP: playerMaxHP,
@@ -6931,6 +7161,17 @@
 
                     hasCosmicTitle =
                         data.hasCosmicTitle || false;
+
+                    atomicBossActive =
+                        data.atomicBossActive || false;
+
+                    atomicBossDefeated =
+                        data.atomicBossDefeated || false;
+
+                    atomicBossHP =
+                        (typeof data.atomicBossHP === 'number')
+                        ? data.atomicBossHP
+                        : atomicBossMaxHP;
 
                     refreshPlayerMaxHP();
 
@@ -7091,8 +7332,11 @@
                     oldCharacterBossMonster.visible =
                         (gameStage === 8 && cosmicBossType === 1 && !cosmicBossDefeated);
 
+                    atomicBossMonster.visible =
+                        (gameStage === 9 && atomicBossActive && !atomicBossDefeated);
+
                     universeFloor.visible =
-                        (gameStage === 7 || gameStage === 8);
+                        (gameStage === 7 || gameStage === 8 || gameStage === 9);
 
                     if (gameStage === 8) {
 
@@ -7131,11 +7375,35 @@
                     document.getElementById(
                         'boss-hp-bar'
                     ).style.display =
-                        (gameStage === 3 || gameStage === 5 || gameStage === 6 || (gameStage === 7 && !universeBossDefeated) || (gameStage === 8 && !cosmicBossDefeated))
+                        (gameStage === 3 || gameStage === 5 || gameStage === 6 || (gameStage === 7 && !universeBossDefeated) || (gameStage === 8 && !cosmicBossDefeated) || (gameStage === 9 && atomicBossActive && !atomicBossDefeated))
                         ? 'block'
                         : 'none';
 
-                    if (gameStage === 8) {
+                    if (gameStage === 9) {
+
+                        atomicBossMonster.position.set(0, 2.2, -7);
+                        atomicBossMonster.rotation.y += 0.01;
+
+                        document.getElementById(
+                            'boss-title'
+                        ).innerText =
+                            currentLang === 'vi'
+                            ? '⚛️ BOSS HẠT NGUYÊN TỬ (10 TỶ OC HP)'
+                            : '⚛️ ATOMIC BOSS (10 BILLION OC HP)';
+
+                        const atomicHpPercent =
+                            Math.max(
+                                0,
+                                (atomicBossHP / atomicBossMaxHP) * 100
+                            );
+
+                        document.getElementById('boss-hp-inner').style.width =
+                            atomicHpPercent + '%';
+
+                        document.getElementById('boss-hp-text').innerText =
+                            `${formatNum(atomicBossHP)} / ${formatNum(atomicBossMaxHP)}`;
+
+                    } else if (gameStage === 8) {
 
                         document.getElementById(
                             'boss-title'
@@ -7291,7 +7559,7 @@
                     }
 
                     setBossArenaSkybox(
-                        gameStage === 5 || gameStage === 6 || gameStage === 7 || gameStage === 8
+                        gameStage === 5 || gameStage === 6 || gameStage === 7 || gameStage === 8 || gameStage === 9
                     );
 
                     universeFloor.visible =
@@ -8250,7 +8518,8 @@
                         gameStage === 3 ||
                         gameStage === 5 ||
                         gameStage === 6 ||
-                        gameStage === 7) &&
+                        gameStage === 7 ||
+                        gameStage === 9) &&
                         (nowTime - lastBossAttackTime > 1500)
                     ) {
 
@@ -8276,6 +8545,10 @@
                                 gameStage === 6
                             )
                                 bossDmg = 50000000;
+                            else if (
+                                gameStage === 9
+                            )
+                                bossDmg = 1000000000;
 
                             playerHP -=
                                 bossDmg;
