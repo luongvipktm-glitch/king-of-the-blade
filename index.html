@@ -1620,6 +1620,11 @@
                 let atomicBossHP =
                     atomicBossMaxHP;
 
+                const ATOMIC_POWER_PER_HIT = 1.01555;
+                let atomicNextRushTime = performance.now() + 5000 + Math.random() * 5000;
+                let atomicRushActive = false;
+                let atomicRushEndTime = 0;
+
                 /* =========================
                    FORMAT SỐ: 10000 -> 10k,
                    1000000 -> 1m, 1000000000 -> 1b
@@ -5759,6 +5764,8 @@
                                 atomicBossActive = true;
                                 gameStage = 9;
                                 atomicBossHP = atomicBossMaxHP;
+                                atomicRushActive = false;
+                                atomicNextRushTime = performance.now() + 5000 + Math.random() * 5000;
 
                                 setBossArenaSkybox(true);
                                 universeFloor.visible = true;
@@ -6578,10 +6585,10 @@
                             atomicBossHP -=
                                 totalDmg;
 
-                            power +=
+                            power =
                                 Math.max(
                                     1,
-                                    Math.floor(totalDmg / 500)
+                                    power * ATOMIC_POWER_PER_HIT
                                 );
 
                             document.getElementById('val-power').innerText =
@@ -8046,6 +8053,71 @@
                     upgradeNPC.position.y =
                         Math.sin(time) *
                         0.04;
+
+                    /* =========================
+                       ATOMIC BOSS: BAY + RUSH + HÚT
+                       Mỗi 5-10 giây lao cực nhanh một lần
+                    ========================= */
+
+                    if (gameStage === 9 && atomicBossActive && !atomicBossDefeated) {
+
+                        atomicBossMonster.position.y =
+                            2.2 + Math.sin(time * 2.2) * 1.15;
+
+                        atomicBossMonster.rotation.y += 0.035;
+                        atomicBossMonster.rotation.z += 0.012;
+
+                        const nowAtomic = performance.now();
+
+                        if (!atomicRushActive && nowAtomic >= atomicNextRushTime) {
+                            atomicRushActive = true;
+                            atomicRushEndTime = nowAtomic + 900;
+                            atomicNextRushTime = nowAtomic + 5000 + Math.random() * 5000;
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? '⚛️ NGUYÊN TỬ BIẾN MẤT! NÓ ĐANG LAO TỚI VỚI TỐC ĐỘ CỰC ĐẠI!'
+                                : '⚛️ ATOM DISAPPEARS! IT IS RUSHING AT EXTREME SPEED!'
+                            );
+                        }
+
+                        if (atomicRushActive) {
+
+                            const dx =
+                                playerGroup.position.x - atomicBossMonster.position.x;
+
+                            const dz =
+                                playerGroup.position.z - atomicBossMonster.position.z;
+
+                            const dist =
+                                Math.hypot(dx, dz);
+
+                            if (dist > 0.35) {
+
+                                const rushSpeed = 4.5;
+
+                                atomicBossMonster.position.x +=
+                                    (dx / dist) * rushSpeed;
+
+                                atomicBossMonster.position.z +=
+                                    (dz / dist) * rushSpeed;
+
+                                playerGroup.position.x +=
+                                    (atomicBossMonster.position.x - playerGroup.position.x) * 0.07;
+
+                                playerGroup.position.z +=
+                                    (atomicBossMonster.position.z - playerGroup.position.z) * 0.07;
+                            }
+
+                            if (nowAtomic >= atomicRushEndTime) {
+                                atomicRushActive = false;
+                                atomicBossMonster.position.x =
+                                    Math.max(-8, Math.min(8, atomicBossMonster.position.x));
+                                atomicBossMonster.position.z =
+                                    Math.max(-8, Math.min(8, atomicBossMonster.position.z));
+                            }
+                        }
+                    }
 
                     const npcCrystal =
                         upgradeNPC.children[
