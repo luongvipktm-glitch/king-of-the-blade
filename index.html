@@ -5799,6 +5799,57 @@
                             }
                         }
 
+                        if (k === 's') {
+
+                            const distToGateForWorld3 =
+                                Math.hypot(
+                                    playerGroup.position.x,
+                                    playerGroup.position.z + 15.5
+                                );
+
+                            if (
+                                distToGateForWorld3 < 3.5 &&
+                                gameStage === 4 &&
+                                supremeBossDefeated &&
+                                !universeBossActive &&
+                                !universeBossDefeated
+                            ) {
+
+                                universeWorldUnlocked = true;
+                                universeBossActive = true;
+                                gameStage = 7;
+                                universeBossHP = universeBossMaxHP;
+                                setBossArenaSkybox(true);
+                                universeFloor.visible = true;
+                                platformGroup.visible = true;
+
+                                finalBossMonster.visible = false;
+                                bossMonster.visible = false;
+                                redMonster.visible = false;
+                                octopusMonster.visible = false;
+                                universeBossMonster.visible = true;
+                                universeBossMonster.position.set(0, 0, -7);
+                                universeBossMonster.scale.set(10, 10, 10);
+                                playerGroup.position.z = 7;
+
+                                document.getElementById('boss-hp-bar').style.display = 'block';
+                                document.getElementById('boss-title').innerText =
+                                    currentLang === 'vi'
+                                    ? `🌌 BOSS VŨ TRỤ (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`
+                                    : `🌌 UNIVERSE BOSS (${formatNum(universeBossMaxHP)} HP) - ${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED}`;
+                                document.getElementById('boss-hp-inner').style.width = '100%';
+                                document.getElementById('boss-hp-text').innerText =
+                                    `${formatNum(universeBossHP)} / ${formatNum(universeBossMaxHP)}`;
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? '🌌 BOSS 3: BẤM [S] ĐÃ VÀO THẾ GIỚI VŨ TRỤ!'
+                                    : '🌌 BOSS 3: PRESS [S] TO ENTER THE UNIVERSE WORLD!'
+                                );
+                                return;
+                            }
+
+                        }
+
                         if (k === 'f') {
 
                             if (
@@ -6471,7 +6522,11 @@
 
                                     document.getElementById(
                                         'victory-screen'
-                                    ).style.display = 'flex';
+                                    ).style.display = 'none';
+
+                                    gameStage = 4;
+                                    playerGroup.position.x = 0;
+                                    playerGroup.position.z = -15.5;
 
                                     document.getElementById(
                                         'win-title'
@@ -6482,8 +6537,8 @@
                                         'win-desc'
                                     ).innerText =
                                         currentLang === 'vi'
-                                        ? '🌌✨ BẠN ĐÃ HẠ ĐỦ 9 BOSS CỦA THẾ GIỚI MỚI VÀ NHẬN DANH HIỆU [COSMIC]! DANH HIỆU [GoD] VÀ [Universe] ĐÃ BỊ XÓA.'
-                                        : '🌌✨ YOU DEFEATED ALL 9 BOSSES OF THE NEW WORLD AND EARNED THE [COSMIC] TITLE! [GoD] AND [Universe] TITLES HAVE BEEN REMOVED.';
+                                        ? '🌌✨ ĐÃ HẠ XONG BOSS THẾ GIỚI 3! HÃY ĐẾN CÁNH CỔNG VÀ BẤM [H] ĐỂ VÀO BOSS HẠT NGUYÊN TỬ.'
+                                        : '🌌✨ WORLD 3 BOSS DEFEATED! GO TO THE GATE AND PRESS [H] TO ENTER THE ATOMIC BOSS.';
 
                                     playGoDFusionSound();
                                     document.getElementById('atomic-boss-msg').style.display = 'block';
