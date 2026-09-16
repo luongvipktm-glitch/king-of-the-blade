@@ -1613,6 +1613,9 @@
 
                 let atomicBossActive = false;
                 let atomicBossDefeated = false;
+                let atomicBossKillCount = 0;
+                let hasAtomicTitle = false;
+                const ATOMIC_BOSS_KILLS_NEEDED = 1000000000;
 
                 const atomicBossMaxHP =
                     10000000000 * 1000000000000000000000000000;
@@ -4013,6 +4016,36 @@
                 playerGroup.add(
                     cosmicTitleSprite
                 );
+
+                function createAtomicTitleSprite() {
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 700;
+                    canvas.height = 120;
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, 700, 120);
+                    ctx.font = 'bold 64px Impact, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.lineWidth = 8;
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.strokeText('[↪🔱↩]', 350, 60);
+                    const g = ctx.createLinearGradient(0, 0, 700, 0);
+                    g.addColorStop(0, '#00ffff');
+                    g.addColorStop(0.5, '#ffffff');
+                    g.addColorStop(1, '#ff00ff');
+                    ctx.fillStyle = g;
+                    ctx.fillText('[↪🔱↩]', 350, 60);
+                    const tex = new THREE.CanvasTexture(canvas);
+                    const mat = new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false });
+                    const sprite = new THREE.Sprite(mat);
+                    sprite.scale.set(4.2, 0.72, 1);
+                    sprite.position.set(0, 3.55, 0);
+                    sprite.visible = false;
+                    return sprite;
+                }
+
+                const atomicTitleSprite = createAtomicTitleSprite();
+                playerGroup.add(atomicTitleSprite);
 
                 const bossTitleSprite =
                     createBossTitleSprite();
@@ -6611,35 +6644,59 @@
 
                             if (atomicBossHP <= 0) {
 
-                                atomicBossDefeated = true;
-                                atomicBossActive = false;
-                                atomicBossMonster.visible = false;
+                                atomicBossKillCount++;
+                                atomicBossHP = atomicBossMaxHP;
+                                atomicBossDefeated = false;
+                                atomicBossActive = true;
 
-                                document.getElementById('boss-hp-bar').style.display = 'none';
+                                atomicNextRushTime = performance.now() + 5000 + Math.random() * 5000;
+                                atomicRushActive = false;
 
-                                setBossArenaSkybox(false);
+                                document.getElementById('boss-hp-inner').style.width = '100%';
+                                document.getElementById('boss-hp-text').innerText =
+                                    `${formatNum(atomicBossHP)} / ${formatNum(atomicBossMaxHP)}`;
 
-                                gameStage = 4;
-                                playerGroup.position.x = 0;
-                                playerGroup.position.z = -15.5;
+                                if (atomicBossKillCount >= ATOMIC_BOSS_KILLS_NEEDED) {
 
-                                document.getElementById('atomic-boss-msg').style.display = 'none';
-                                document.getElementById('victory-screen').style.display = 'flex';
+                                    atomicBossKillCount = ATOMIC_BOSS_KILLS_NEEDED;
+                                    atomicBossDefeated = true;
+                                    atomicBossActive = false;
+                                    hasAtomicTitle = true;
+                                    atomicBossMonster.visible = false;
 
-                                document.getElementById('win-title').innerText = '[ATOMIC]';
+                                    document.getElementById('boss-hp-bar').style.display = 'none';
+                                    setBossArenaSkybox(false);
+                                    gameStage = 4;
+                                    playerGroup.position.x = 0;
+                                    playerGroup.position.z = -15.5;
+                                    document.getElementById('atomic-boss-msg').style.display = 'none';
+                                    document.getElementById('victory-screen').style.display = 'flex';
+                                    document.getElementById('win-title').innerText = '[↪🔱↩]';
+                                    document.getElementById('win-desc').innerText =
+                                        currentLang === 'vi'
+                                        ? '⚛️ BẠN ĐÃ HẠ 1 TỶ BOSS HẠT NGUYÊN TỬ VÀ NHẬN DANH HIỆU [↪🔱↩]!'
+                                        : '⚛️ YOU DEFEATED 1 BILLION ATOMIC BOSSES AND EARNED [↪🔱↩]!';
+                                    showToast(
+                                        currentLang === 'vi'
+                                        ? '🔱 ĐÃ ĐỦ 1 TỶ BOSS! NHẬN DANH HIỆU [↪🔱↩]!'
+                                        : '🔱 1 BILLION BOSSES DEFEATED! TITLE [↪🔱↩] EARNED!'
+                                    );
+                                    saveCurrentAccount();
 
-                                document.getElementById('win-desc').innerText =
-                                    currentLang === 'vi'
-                                    ? '⚛️ BẠN ĐÃ HẠ GỤC BOSS HẠT NGUYÊN TỬ 3D VỚI 10 TỶ OC HP!'
-                                    : '⚛️ YOU DEFEATED THE 3D ATOMIC BOSS WITH 10 BILLION OC HP!';
+                                } else {
 
-                                showToast(
-                                    currentLang === 'vi'
-                                    ? '⚛️ BOSS HẠT NGUYÊN TỬ ĐÃ BỊ HẠ!'
-                                    : '⚛️ ATOMIC BOSS DEFEATED!'
-                                );
+                                    document.getElementById('boss-title').innerText =
+                                        currentLang === 'vi'
+                                        ? `⚛️ BOSS HẠT NGUYÊN TỬ (10 TỶ OC HP) - ${formatNum(atomicBossKillCount)}/${formatNum(ATOMIC_BOSS_KILLS_NEEDED)}`
+                                        : `⚛️ ATOMIC BOSS (10 BILLION OC HP) - ${formatNum(atomicBossKillCount)}/${formatNum(ATOMIC_BOSS_KILLS_NEEDED)}`;
 
-                                saveCurrentAccount();
+                                    showToast(
+                                        currentLang === 'vi'
+                                        ? `⚛️ ĐÃ HẠ ${formatNum(atomicBossKillCount)} BOSS HẠT NGUYÊN TỬ!`
+                                        : `⚛️ ${formatNum(atomicBossKillCount)} ATOMIC BOSSES DEFEATED!`
+                                    );
+                                    saveCurrentAccount();
+                                }
                             }
 
                         } else if (
@@ -7075,6 +7132,8 @@
                         atomicBossActive: atomicBossActive,
                         atomicBossDefeated: atomicBossDefeated,
                         atomicBossHP: atomicBossHP,
+                        atomicBossKillCount: atomicBossKillCount,
+                        hasAtomicTitle: hasAtomicTitle,
 
                         playerHP: playerHP,
 
@@ -7234,6 +7293,12 @@
                         (typeof data.atomicBossHP === 'number')
                         ? data.atomicBossHP
                         : atomicBossMaxHP;
+
+                    atomicBossKillCount =
+                        data.atomicBossKillCount || 0;
+
+                    hasAtomicTitle =
+                        data.hasAtomicTitle || false;
 
                     refreshPlayerMaxHP();
 
@@ -7600,6 +7665,9 @@
 
                     cosmicTitleSprite.visible =
                         hasCosmicTitle;
+
+                    atomicTitleSprite.visible =
+                        hasAtomicTitle;
 
                     if (cosmicWorldUnlocked) {
                         bossTitleSprite.visible = false;
@@ -8766,7 +8834,14 @@
                        Đại Boss Tối Thượng (không cycle màu)
                     */
 
-                    if (hasCosmicTitle) {
+                    if (hasAtomicTitle) {
+
+                        atomicTitleSprite.visible = true;
+                        cosmicTitleSprite.visible = false;
+                        bossTitleSprite.visible = false;
+                        universeTitleSprite.visible = false;
+
+                    } else if (hasCosmicTitle) {
 
                         cosmicTitleSprite.visible = true;
                         bossTitleSprite.visible = false;
