@@ -5687,12 +5687,12 @@
 
                 function openCosmicDinoBossByCommand() {
 
-                    if (!cosmicDinoUnlocked) {
+                    if (universeBossKillCount < UNIVERSE_BOSS_KILLS_NEEDED) {
 
                         showToast(
                             currentLang === 'vi'
-                            ? '🔒 HÃY HẠ BOSS CUỐI TRƯỚC!'
-                            : '🔒 DEFEAT THE FINAL BOSS FIRST!'
+                            ? `🔒 HÃY HẠ ${UNIVERSE_BOSS_KILLS_NEEDED} BOSS VŨ TRỤ TRƯỚC! (${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED})`
+                            : `🔒 DEFEAT ${UNIVERSE_BOSS_KILLS_NEEDED} UNIVERSE BOSSES FIRST! (${universeBossKillCount}/${UNIVERSE_BOSS_KILLS_NEEDED})`
                         );
 
                         return;
@@ -6609,7 +6609,6 @@
 
                                     finalBossKillCount++;
 
-                                    cosmicDinoUnlocked = true;
 
                                     document.getElementById(
                                         'boss-command'
@@ -6619,16 +6618,6 @@
                                         finalBossMaxHP;
 
                                 }
-
-                            }
-
-                            if (finalBossKillCount >= 1) {
-
-                                cosmicDinoUnlocked = true;
-
-                                document.getElementById(
-                                    'boss-command'
-                                ).style.display = 'block';
 
                             }
 
@@ -7165,6 +7154,15 @@
                                     universeBossActive = false;
                                     hasUniverseTitle = true;
 
+                                    cosmicDinoUnlocked = true;
+                                    cosmicDinoDefeated = false;
+
+                                    const commandBox =
+                                        document.getElementById('boss-command');
+
+                                    if (commandBox)
+                                        commandBox.style.display = 'block';
+
                                     gameStage = 4;
                                     playerGroup.position.x = 0;
                                     playerGroup.position.z = -15.5;
@@ -7656,6 +7654,9 @@
                     universeBossKillCount =
                         data.universeBossKillCount || 0;
 
+                    cosmicDinoUnlocked =
+                        universeBossKillCount >= UNIVERSE_BOSS_KILLS_NEEDED;
+
                     hasUniverseTitle =
                         data.hasUniverseTitle || false;
 
@@ -7700,7 +7701,7 @@
                         data.hasAtomicTitle || false;
 
                     cosmicDinoUnlocked =
-                        data.cosmicDinoUnlocked || false;
+                        universeBossKillCount >= UNIVERSE_BOSS_KILLS_NEEDED;
 
                     cosmicDinoActive =
                         data.cosmicDinoActive || false;
