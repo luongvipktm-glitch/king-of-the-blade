@@ -1662,13 +1662,13 @@
                 let cosmicDinoDefeated = false;
 
                 const COSMIC_DINO_MAX_HP =
-                    1000000000000000000000000000;
+                    10n ** 100n;
 
                 let cosmicDinoHP =
                     COSMIC_DINO_MAX_HP;
 
                 const COSMIC_DINO_POWER_RATE =
-                    1.0189;
+                    1.023;
 
                 const atomicBossMaxHP =
                     10000000000 * 1000000000000000000000000000;
@@ -1687,6 +1687,17 @@
                 ========================= */
 
                 function formatNum(n) {
+
+                    if (typeof n === 'bigint') {
+                        const text = n.toString();
+                        if (text === '1' + '0'.repeat(100)) return '1 googol';
+                        if (text.length >= 4) {
+                            const exponent = text.length - 1;
+                            const lead = text.slice(0, 3);
+                            return (Number(lead) / 100).toFixed(2).replace(/\.00$/, '') + 'e' + exponent;
+                        }
+                        return text;
+                    }
 
                     n = Math.floor(n);
 
@@ -7009,7 +7020,7 @@
                         ) {
 
                             cosmicDinoHP -=
-                                totalDmg;
+                                BigInt(Math.max(1, Math.floor(totalDmg)));
 
                             power =
                                 Math.max(
@@ -7022,8 +7033,8 @@
                             ).innerText =
                                 formatNum(power);
 
-                            if (cosmicDinoHP < 0)
-                                cosmicDinoHP = 0;
+                            if (cosmicDinoHP < 0n)
+                                cosmicDinoHP = 0n;
 
                             const dinoHpPercent =
                                 Math.max(
@@ -7049,7 +7060,7 @@
                                 : '🦖 +2.3% POWER!'
                             );
 
-                            if (cosmicDinoHP <= 0) {
+                            if (cosmicDinoHP <= 0n) {
 
                                 cosmicDinoDefeated = true;
                                 cosmicDinoActive = false;
@@ -7530,7 +7541,7 @@
                         cosmicDinoUnlocked: cosmicDinoUnlocked,
                         cosmicDinoActive: cosmicDinoActive,
                         cosmicDinoDefeated: cosmicDinoDefeated,
-                        cosmicDinoHP: cosmicDinoHP,
+                        cosmicDinoHP: cosmicDinoHP.toString(),
 
                         playerHP: playerHP,
 
@@ -7710,9 +7721,11 @@
                         data.cosmicDinoDefeated || false;
 
                     cosmicDinoHP =
-                        (typeof data.cosmicDinoHP === 'number')
-                        ? data.cosmicDinoHP
-                        : COSMIC_DINO_MAX_HP;
+                        typeof data.cosmicDinoHP === 'string'
+                        ? BigInt(data.cosmicDinoHP)
+                        : (typeof data.cosmicDinoHP === 'number'
+                            ? BigInt(Math.max(0, Math.floor(data.cosmicDinoHP)))
+                            : COSMIC_DINO_MAX_HP);
 
                     if (cosmicDinoUnlocked) {
                         document.getElementById('boss-command').style.display = 'block';
