@@ -171,6 +171,37 @@
             text-align: center;
         }
 
+        #boss-command {
+            position: absolute;
+            bottom: 55px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 25;
+            display: none;
+            width: min(520px, 88vw);
+            background: rgba(5, 0, 15, 0.94);
+            border: 2px solid #ff00ff;
+            border-radius: 12px;
+            padding: 8px;
+            box-shadow: 0 0 18px rgba(255,0,255,0.55);
+        }
+
+        #boss-command input {
+            width: 100%;
+            padding: 11px 14px;
+            border: 1px solid #ff00ff;
+            border-radius: 8px;
+            outline: none;
+            background: #08000f;
+            color: #fff;
+            font-size: 15px;
+            text-align: center;
+        }
+
+        #boss-command input::placeholder {
+            color: #aaa;
+        }
+
         #instructions {
             position: absolute;
             bottom: 15px;
@@ -1008,6 +1039,15 @@
 
     </div>
 
+    <div id="boss-command">
+        <input
+            id="boss-command-input"
+            type="text"
+            placeholder="Nhập //boss rồi Enter"
+            autocomplete="off"
+        >
+    </div>
+
     <div id="instructions" onclick="toggleLanguage()">
 
         🌐
@@ -1616,6 +1656,19 @@
                 let atomicBossKillCount = 0;
                 let hasAtomicTitle = false;
                 const ATOMIC_BOSS_KILLS_NEEDED = 1000000000;
+
+                let cosmicDinoUnlocked = false;
+                let cosmicDinoActive = false;
+                let cosmicDinoDefeated = false;
+
+                const COSMIC_DINO_MAX_HP =
+                    1000000000000000000000000000;
+
+                let cosmicDinoHP =
+                    COSMIC_DINO_MAX_HP;
+
+                const COSMIC_DINO_POWER_RATE =
+                    1.0189;
 
                 const atomicBossMaxHP =
                     10000000000 * 1000000000000000000000000000;
@@ -3187,6 +3240,160 @@
                     cosmicBossMonster,
                     oldCharacterBossMonster
                 );
+
+                const cosmicDinoMonster =
+                    new THREE.Group();
+
+                const dinoBodyMat =
+                    new THREE.MeshStandardMaterial({
+                        color: 0x35105f,
+                        emissive: 0x16002e,
+                        emissiveIntensity: 1.2,
+                        roughness: 0.35,
+                        metalness: 0.35
+                    });
+
+                const dinoGlowMat =
+                    new THREE.MeshBasicMaterial({
+                        color: 0xff00ff
+                    });
+
+                const dinoEyeMat =
+                    new THREE.MeshBasicMaterial({
+                        color: 0xffffff
+                    });
+
+                const dinoBody =
+                    new THREE.Mesh(
+                        new THREE.SphereGeometry(2.5, 32, 24),
+                        dinoBodyMat
+                    );
+
+                dinoBody.scale.set(1.35, 1, 1.7);
+                dinoBody.position.y = 2.1;
+                cosmicDinoMonster.add(dinoBody);
+
+                const dinoNeck =
+                    new THREE.Mesh(
+                        new THREE.CylinderGeometry(1.15, 1.55, 3.4, 20),
+                        dinoBodyMat
+                    );
+
+                dinoNeck.position.set(0, 4.1, -0.25);
+                dinoNeck.rotation.x = -0.35;
+                cosmicDinoMonster.add(dinoNeck);
+
+                const dinoHead =
+                    new THREE.Mesh(
+                        new THREE.SphereGeometry(1.8, 28, 22),
+                        dinoBodyMat
+                    );
+
+                dinoHead.scale.set(1.25, 0.95, 1.5);
+                dinoHead.position.set(0, 5.8, -1.05);
+                cosmicDinoMonster.add(dinoHead);
+
+                const dinoJaw =
+                    new THREE.Mesh(
+                        new THREE.BoxGeometry(2.5, 0.65, 2.2),
+                        dinoBodyMat
+                    );
+
+                dinoJaw.position.set(0, 4.95, -2.05);
+                cosmicDinoMonster.add(dinoJaw);
+
+                const dinoEyeL =
+                    new THREE.Mesh(
+                        new THREE.SphereGeometry(0.3, 16, 16),
+                        dinoEyeMat
+                    );
+
+                const dinoEyeR = dinoEyeL.clone();
+
+                dinoEyeL.position.set(-0.72, 6.1, -2.15);
+                dinoEyeR.position.set(0.72, 6.1, -2.15);
+
+                cosmicDinoMonster.add(
+                    dinoEyeL,
+                    dinoEyeR
+                );
+
+                const dinoHornL =
+                    new THREE.Mesh(
+                        new THREE.ConeGeometry(0.45, 2.5, 12),
+                        dinoGlowMat
+                    );
+
+                const dinoHornR = dinoHornL.clone();
+
+                dinoHornL.position.set(-1.15, 7.25, -0.85);
+                dinoHornR.position.set(1.15, 7.25, -0.85);
+
+                dinoHornL.rotation.z = -0.25;
+                dinoHornR.rotation.z = 0.25;
+
+                cosmicDinoMonster.add(
+                    dinoHornL,
+                    dinoHornR
+                );
+
+                for (let i = 0; i < 7; i++) {
+
+                    const tooth =
+                        new THREE.Mesh(
+                            new THREE.ConeGeometry(0.13, 0.6, 8),
+                            dinoEyeMat
+                        );
+
+                    tooth.position.set(
+                        -0.9 + i * 0.3,
+                        5.05,
+                        -3.05
+                    );
+
+                    tooth.rotation.x = Math.PI;
+
+                    cosmicDinoMonster.add(tooth);
+                }
+
+                for (let i = 0; i < 6; i++) {
+
+                    const spike =
+                        new THREE.Mesh(
+                            new THREE.ConeGeometry(0.22, 1.2, 8),
+                            dinoGlowMat
+                        );
+
+                    spike.position.set(
+                        -1.25 + i * 0.5,
+                        4.1,
+                        1.6
+                    );
+
+                    spike.rotation.x = -Math.PI / 2;
+
+                    cosmicDinoMonster.add(spike);
+                }
+
+                const dinoAura =
+                    new THREE.Mesh(
+                        new THREE.SphereGeometry(5.5, 24, 20),
+                        new THREE.MeshBasicMaterial({
+                            color: 0x8a00ff,
+                            transparent: true,
+                            opacity: 0.12,
+                            side: THREE.BackSide
+                        })
+                    );
+
+                dinoAura.position.y = 3;
+                cosmicDinoMonster.add(dinoAura);
+
+                cosmicDinoMonster.position.set(0, 0, -8);
+                cosmicDinoMonster.scale.set(1.8, 1.8, 1.8);
+                cosmicDinoMonster.visible = false;
+
+                scene.add(cosmicDinoMonster);
 
                 /* =========================
                    ATOMIC BOSS 3D
@@ -5478,6 +5685,99 @@
 
                 const keys = {};
 
+                function openCosmicDinoBossByCommand() {
+
+                    if (!cosmicDinoUnlocked) {
+
+                        showToast(
+                            currentLang === 'vi'
+                            ? '🔒 HÃY HẠ BOSS CUỐI TRƯỚC!'
+                            : '🔒 DEFEAT THE FINAL BOSS FIRST!'
+                        );
+
+                        return;
+                    }
+
+                    cosmicDinoActive = true;
+                    cosmicDinoDefeated = false;
+                    cosmicDinoHP = COSMIC_DINO_MAX_HP;
+                    gameStage = 10;
+
+                    finalBossActive = false;
+                    supremeBossActive = false;
+                    universeBossActive = false;
+                    cosmicBossActive = false;
+                    atomicBossActive = false;
+
+                    redMonster.visible = false;
+                    octopusMonster.visible = false;
+                    bossMonster.visible = false;
+                    finalBossMonster.visible = false;
+                    universeBossMonster.visible = false;
+                    cosmicBossMonster.visible = false;
+                    oldCharacterBossMonster.visible = false;
+                    atomicBossMonster.visible = false;
+                    cosmicDinoMonster.visible = true;
+
+                    cosmicDinoMonster.position.set(0, 0, -8);
+                    cosmicDinoMonster.scale.set(1.8, 1.8, 1.8);
+
+                    playerGroup.position.x = 0;
+                    playerGroup.position.z = 7;
+
+                    setBossArenaSkybox(true);
+
+                    document.getElementById(
+                        'boss-hp-bar'
+                    ).style.display = 'block';
+
+                    document.getElementById(
+                        'boss-command'
+                    ).style.display = 'block';
+
+                    showToast(
+                        currentLang === 'vi'
+                        ? '🦖🌌 KHỦNG LONG DA VŨ TRỤ ĐÃ XUẤT HIỆN!'
+                        : '🦖🌌 COSMIC DINOSAUR HAS APPEARED!'
+                    );
+
+                    saveCurrentAccount();
+                }
+
+                const bossCommandInput =
+                    document.getElementById(
+                        'boss-command-input'
+                    );
+
+                bossCommandInput.addEventListener(
+                    'keydown',
+                    e => {
+
+                        if (e.key !== 'Enter')
+                            return;
+
+                        const command =
+                            bossCommandInput.value.trim().toLowerCase();
+
+                        if (command === '//boss') {
+
+                            openCosmicDinoBossByCommand();
+
+                        } else {
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? '❌ LỆNH KHÔNG HỢP LỆ!'
+                                : '❌ INVALID COMMAND!'
+                            );
+
+                        }
+
+                        bossCommandInput.value = '';
+
+                    }
+                );
+
                 let isInvOpen = false;
 
                 let isColorOpen = false;
@@ -6309,10 +6609,26 @@
 
                                     finalBossKillCount++;
 
+                                    cosmicDinoUnlocked = true;
+
+                                    document.getElementById(
+                                        'boss-command'
+                                    ).style.display = 'block';
+
                                     finalBossHP =
                                         finalBossMaxHP;
 
                                 }
+
+                            }
+
+                            if (finalBossKillCount >= 1) {
+
+                                cosmicDinoUnlocked = true;
+
+                                document.getElementById(
+                                    'boss-command'
+                                ).style.display = 'block';
 
                             }
 
@@ -6697,6 +7013,84 @@
                                     );
                                     saveCurrentAccount();
                                 }
+                            }
+
+                        } else if (
+                            gameStage === 10
+                        ) {
+
+                            cosmicDinoHP -=
+                                totalDmg;
+
+                            power =
+                                Math.max(
+                                    1,
+                                    power * COSMIC_DINO_POWER_RATE
+                                );
+
+                            document.getElementById(
+                                'val-power'
+                            ).innerText =
+                                formatNum(power);
+
+                            if (cosmicDinoHP < 0)
+                                cosmicDinoHP = 0;
+
+                            const dinoHpPercent =
+                                Math.max(
+                                    0,
+                                    (cosmicDinoHP /
+                                    COSMIC_DINO_MAX_HP) *
+                                    100
+                                );
+
+                            document.getElementById(
+                                'boss-hp-inner'
+                            ).style.width =
+                                dinoHpPercent + '%';
+
+                            document.getElementById(
+                                'boss-hp-text'
+                            ).innerText =
+                                `${formatNum(cosmicDinoHP)} / ${formatNum(COSMIC_DINO_MAX_HP)}`;
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? '🦖 +1.89% POWER!'
+                                : '🦖 +1.89% POWER!'
+                            );
+
+                            if (cosmicDinoHP <= 0) {
+
+                                cosmicDinoDefeated = true;
+                                cosmicDinoActive = false;
+                                cosmicDinoHP = COSMIC_DINO_MAX_HP;
+
+                                cosmicDinoMonster.visible = false;
+
+                                document.getElementById(
+                                    'boss-hp-bar'
+                                ).style.display = 'none';
+
+                                document.getElementById(
+                                    'boss-command'
+                                ).style.display = 'none';
+
+                                gameStage = 4;
+
+                                playerGroup.position.x = 0;
+                                playerGroup.position.z = -15.5;
+
+                                setBossArenaSkybox(false);
+
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? '🌌🦖 BẠN ĐÃ HẠ KHỦNG LONG DA VŨ TRỤ!'
+                                    : '🌌🦖 COSMIC DINOSAUR DEFEATED!'
+                                );
+
+                                saveCurrentAccount();
+
                             }
 
                         } else if (
@@ -7135,6 +7529,11 @@
                         atomicBossKillCount: atomicBossKillCount,
                         hasAtomicTitle: hasAtomicTitle,
 
+                        cosmicDinoUnlocked: cosmicDinoUnlocked,
+                        cosmicDinoActive: cosmicDinoActive,
+                        cosmicDinoDefeated: cosmicDinoDefeated,
+                        cosmicDinoHP: cosmicDinoHP,
+
                         playerHP: playerHP,
 
                         playerMaxHP: playerMaxHP,
@@ -7300,6 +7699,24 @@
                     hasAtomicTitle =
                         data.hasAtomicTitle || false;
 
+                    cosmicDinoUnlocked =
+                        data.cosmicDinoUnlocked || false;
+
+                    cosmicDinoActive =
+                        data.cosmicDinoActive || false;
+
+                    cosmicDinoDefeated =
+                        data.cosmicDinoDefeated || false;
+
+                    cosmicDinoHP =
+                        (typeof data.cosmicDinoHP === 'number')
+                        ? data.cosmicDinoHP
+                        : COSMIC_DINO_MAX_HP;
+
+                    if (cosmicDinoUnlocked) {
+                        document.getElementById('boss-command').style.display = 'block';
+                    }
+
                     refreshPlayerMaxHP();
 
                     if (
@@ -7462,8 +7879,11 @@
                     atomicBossMonster.visible =
                         (gameStage === 9 && atomicBossActive && !atomicBossDefeated);
 
+                    cosmicDinoMonster.visible =
+                        (gameStage === 10 && cosmicDinoActive && !cosmicDinoDefeated);
+
                     universeFloor.visible =
-                        (gameStage === 7 || gameStage === 8 || gameStage === 9);
+                        (gameStage === 7 || gameStage === 8 || gameStage === 9 || gameStage === 10);
 
                     if (gameStage === 8) {
 
@@ -7474,6 +7894,25 @@
 
                         activeCosmicBoss.position.set(0, 0, -7);
                         activeCosmicBoss.scale.set(10, 10, 10);
+
+                    }
+
+                    if (gameStage === 10) {
+
+                        cosmicDinoMonster.position.set(
+                            0,
+                            0,
+                            -8
+                        );
+
+                        cosmicDinoMonster.scale.set(
+                            1.8,
+                            1.8,
+                            1.8
+                        );
+
+                        cosmicDinoMonster.rotation.y +=
+                            0.004;
 
                     }
 
@@ -7554,6 +7993,31 @@
                             'boss-hp-text'
                         ).innerText =
                             `${formatNum(cosmicBossHP)} / ${formatNum(COSMIC_BOSS_MAX_HP)}`;
+
+                    } else if (gameStage === 10) {
+
+                        document.getElementById(
+                            'boss-title'
+                        ).innerText =
+                            currentLang === 'vi'
+                            ? `🦖 KHỦNG LONG DA VŨ TRỤ (${formatNum(COSMIC_DINO_MAX_HP)} HP)`
+                            : `🦖 COSMIC DINOSAUR (${formatNum(COSMIC_DINO_MAX_HP)} HP)`;
+
+                        const dinoHpPercent =
+                            Math.max(
+                                0,
+                                (cosmicDinoHP / COSMIC_DINO_MAX_HP) * 100
+                            );
+
+                        document.getElementById(
+                            'boss-hp-inner'
+                        ).style.width =
+                            dinoHpPercent + '%';
+
+                        document.getElementById(
+                            'boss-hp-text'
+                        ).innerText =
+                            `${formatNum(cosmicDinoHP)} / ${formatNum(COSMIC_DINO_MAX_HP)}`;
 
                     } else if (gameStage === 7) {
 
@@ -7689,11 +8153,11 @@
                     }
 
                     setBossArenaSkybox(
-                        gameStage === 5 || gameStage === 6 || gameStage === 7 || gameStage === 8 || gameStage === 9
+                        gameStage === 5 || gameStage === 6 || gameStage === 7 || gameStage === 8 || gameStage === 9 || gameStage === 10
                     );
 
                     universeFloor.visible =
-                        gameStage === 7;
+                        gameStage === 7 || gameStage === 8 || gameStage === 9 || gameStage === 10;
 
                     document.getElementById(
                         'val-power'
@@ -7713,9 +8177,11 @@
                     document.getElementById(
                         'val-world'
                     ).innerText =
-                        gameStage === 7
+                        gameStage === 10
+                        ? 'Cosmic Dino'
+                        : (gameStage === 7
                         ? 'Universe'
-                        : '1';
+                        : '1');
 
                     if (equippedItemType) {
 
