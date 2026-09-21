@@ -997,16 +997,16 @@
         <p
             class="lang-txt"
             style="font-size:12px;color:#ccc;"
-            data-vi="Nhập tên/mã (vd: vv/6726). Nếu tài khoản đã tồn tại, tiến trình cũ sẽ được tải lại. Nếu chưa có, tiến trình hiện tại sẽ được lưu vào tài khoản này."
-            data-en="Enter name/code (e.g. vv/6726). If the account already exists, your saved progress will be loaded. If not, your current progress will be saved to this account."
+            data-vi="Nhập tên/mã (vd: vv/6726). Để đổi mật khẩu, nhập: ii//11>ii/45445"
+            data-en="Enter name/code (e.g. vv/6726). To change a password, enter: ii//11>ii/45445"
         >
-            Nhập tên/mã (vd: vv/6726). Nếu tài khoản đã tồn tại, tiến trình cũ sẽ được tải lại. Nếu chưa có, tiến trình hiện tại sẽ được lưu vào tài khoản này.
+            Nhập tên/mã (vd: vv/6726). Để đổi mật khẩu, nhập: ii//11>ii/45445
         </p>
 
         <input
             type="text"
             id="login-input"
-            placeholder="vv/6726"
+            placeholder="vv/6726 hoặc ii//11>ii/45445"
             autocomplete="off"
         >
 
@@ -3406,6 +3406,129 @@
 
                 scene.add(cosmicDinoMonster);
 
+                let dinoNextFireTime = 0;
+                const dinoFireEffects = [];
+
+                function isPlayerInCorner() {
+                    return (
+                        Math.abs(playerGroup.position.x) > 13 &&
+                        Math.abs(playerGroup.position.z) > 13
+                    );
+                }
+
+                function fireCosmicDinoSkill(nowTime) {
+
+                    if (
+                        !cosmicDinoActive ||
+                        gameStage !== 10
+                    )
+                        return;
+
+                    const start =
+                        new THREE.Vector3(
+                            cosmicDinoMonster.position.x,
+                            cosmicDinoMonster.position.y + 5.1,
+                            cosmicDinoMonster.position.z - 2.6
+                        );
+
+                    const target =
+                        new THREE.Vector3(
+                            playerGroup.position.x,
+                            playerGroup.position.y + 1.2,
+                            playerGroup.position.z
+                        );
+
+                    const direction =
+                        target.clone().sub(start);
+
+                    const distance =
+                        direction.length();
+
+                    if (distance <= 0.01)
+                        return;
+
+                    direction.normalize();
+
+                    const flameMat =
+                        new THREE.MeshBasicMaterial({
+                            color: 0xff5500,
+                            transparent: true,
+                            opacity: 0.88
+                        });
+
+                    const flame =
+                        new THREE.Mesh(
+                            new THREE.ConeGeometry(
+                                1.15,
+                                Math.min(8, Math.max(3, distance)),
+                                20,
+                                1,
+                                true
+                            ),
+                            flameMat
+                        );
+
+                    flame.position.copy(start);
+
+                    flame.quaternion.setFromUnitVectors(
+                        new THREE.Vector3(0, 1, 0),
+                        direction
+                    );
+
+                    scene.add(flame);
+
+                    dinoFireEffects.push({
+                        mesh: flame,
+                        startTime: nowTime,
+                        endTime: nowTime + 650
+                    });
+
+                    if (!isPlayerInCorner()) {
+
+                        playerHP -= 250000;
+
+                        lastDamageTakenTime =
+                            nowTime;
+
+                        if (playerHP <= 0) {
+
+                            playerHP =
+                                playerMaxHP;
+
+                            power =
+                                Math.floor(
+                                    power * 0.9
+                                );
+
+                            document.getElementById(
+                                'val-power'
+                            ).innerText =
+                                formatNum(power);
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? '🔥 KHỦNG LONG PHUN LỬA! BẠN GỤC VÀ MẤT 10% POWER!'
+                                : '🔥 THE DINOSAUR BREATHED FIRE! YOU LOST 10% POWER!'
+                            );
+
+                        } else {
+
+                            showToast(
+                                currentLang === 'vi'
+                                ? '🔥 KHỦNG LONG PHUN LỬA!'
+                                : '🔥 COSMIC DINOSAUR FIRE BREATH!'
+                            );
+
+                        }
+
+                        updatePlayerHPUI();
+                    }
+
+                    dinoNextFireTime =
+                        nowTime + 3500;
+                }
+
+
                 /* =========================
                    ATOMIC BOSS 3D
                    Hạt nhân + 3 quỹ đạo + electron
@@ -5732,6 +5855,18 @@
 
                     cosmicDinoMonster.position.set(0, 0, -8);
                     cosmicDinoMonster.scale.set(1.8, 1.8, 1.8);
+                    dinoNextFireTime =
+                        performance.now() + 1800;
+
+                    dinoFireEffects.forEach(effect => {
+                        scene.remove(effect.mesh);
+                        if (effect.mesh.material)
+                            effect.mesh.material.dispose();
+                        if (effect.mesh.geometry)
+                            effect.mesh.geometry.dispose();
+                    });
+
+                    dinoFireEffects.length = 0;
 
                     playerGroup.position.x = 0;
                     playerGroup.position.z = 7;
@@ -5748,8 +5883,8 @@
 
                     showToast(
                         currentLang === 'vi'
-                        ? '🦖🌌 KHỦNG LONG DA VŨ TRỤ ĐÃ XUẤT HIỆN!'
-                        : '🦖🌌 COSMIC DINOSAUR HAS APPEARED!'
+                        ? '🦖🌌 KHỦNG LONG DA VŨ TRỤ ĐÃ XUẤT HIỆN! 1 GOOGOL HP'
+                        : '🦖🌌 COSMIC DINOSAUR HAS APPEARED! 1 GOOGOL HP'
                     );
 
                     saveCurrentAccount();
@@ -7037,11 +7172,9 @@
                                 cosmicDinoHP = 0n;
 
                             const dinoHpPercent =
-                                Math.max(
-                                    0,
-                                    (cosmicDinoHP /
-                                    COSMIC_DINO_MAX_HP) *
-                                    100
+                                Number(
+                                    cosmicDinoHP * 100n /
+                                    COSMIC_DINO_MAX_HP
                                 );
 
                             document.getElementById(
@@ -7067,6 +7200,16 @@
                                 cosmicDinoHP = COSMIC_DINO_MAX_HP;
 
                                 cosmicDinoMonster.visible = false;
+
+                                dinoFireEffects.forEach(effect => {
+                                    scene.remove(effect.mesh);
+                                    if (effect.mesh.material)
+                                        effect.mesh.material.dispose();
+                                    if (effect.mesh.geometry)
+                                        effect.mesh.geometry.dispose();
+                                });
+
+                                dinoFireEffects.length = 0;
 
                                 document.getElementById(
                                     'boss-hp-bar'
@@ -8262,6 +8405,126 @@
 
                     };
 
+                function changeAccountPassword(raw) {
+
+                    const text =
+                        raw.trim();
+
+                    let match =
+                        text.match(
+                            /^([^\/<>]+)\/\/([^<>]+)>([^\/<>]+)\/([^<>]+)$/
+                        );
+
+                    if (!match) {
+
+                        match =
+                            text.match(
+                                /^([^\/<>]+)\/([^<>]+)>([^\/<>]+)\/([^<>]+)$/
+                            );
+                    }
+
+                    if (!match)
+                        return false;
+
+                    const oldName =
+                        match[1].trim();
+
+                    const oldPass =
+                        match[2].trim();
+
+                    const newName =
+                        match[3].trim();
+
+                    const newPass =
+                        match[4].trim();
+
+                    const oldKey =
+                        getSaveKey(
+                            oldName,
+                            oldPass
+                        );
+
+                    const newKey =
+                        getSaveKey(
+                            newName,
+                            newPass
+                        );
+
+                    const saved =
+                        localStorage.getItem(oldKey);
+
+                    if (!saved) {
+
+                        document.getElementById(
+                            'login-status'
+                        ).innerText =
+                            currentLang === 'vi'
+                            ? '❌ KHÔNG TÌM THẤY TÀI KHOẢN/MẬT KHẨU CŨ!'
+                            : '❌ OLD ACCOUNT/PASSWORD NOT FOUND!';
+
+                        return true;
+                    }
+
+                    if (
+                        oldKey !== newKey &&
+                        localStorage.getItem(newKey)
+                    ) {
+
+                        document.getElementById(
+                            'login-status'
+                        ).innerText =
+                            currentLang === 'vi'
+                            ? '❌ TÀI KHOẢN/MẬT KHẨU MỚI ĐÃ TỒN TẠI!'
+                            : '❌ NEW ACCOUNT/PASSWORD ALREADY EXISTS!';
+
+                        return true;
+                    }
+
+                    localStorage.setItem(
+                        newKey,
+                        saved
+                    );
+
+                    if (oldKey !== newKey)
+                        localStorage.removeItem(oldKey);
+
+                    if (
+                        currentAccountName &&
+                        currentAccountPass &&
+                        oldName.toLowerCase() ===
+                            currentAccountName.toLowerCase() &&
+                        oldPass ===
+                            currentAccountPass
+                    ) {
+
+                        currentAccountName =
+                            newName;
+
+                        currentAccountPass =
+                            newPass;
+
+                        document.getElementById(
+                            'val-account'
+                        ).innerText =
+                            newName.toUpperCase();
+                    }
+
+                    document.getElementById(
+                        'login-status'
+                    ).innerText =
+                        currentLang === 'vi'
+                        ? `✅ ĐỔI MẬT KHẨU THÀNH CÔNG: ${newName}/${newPass}`
+                        : `✅ PASSWORD CHANGED: ${newName}/${newPass}`;
+
+                    showToast(
+                        currentLang === 'vi'
+                        ? '🔑 ĐỔI MẬT KHẨU THÀNH CÔNG!'
+                        : '🔑 PASSWORD CHANGED SUCCESSFULLY!'
+                    );
+
+                    return true;
+                }
+
                 window.loginAccount =
                     function() {
 
@@ -8269,6 +8532,9 @@
                             document.getElementById(
                                 'login-input'
                             ).value;
+
+                        if (changeAccountPassword(raw))
+                            return;
 
                         if (raw.trim() === 'vv/6726') {
 
@@ -9158,6 +9424,54 @@
 
                     const nowTime =
                         performance.now();
+
+                    if (
+                        cosmicDinoActive &&
+                        gameStage === 10
+                    ) {
+
+                        if (nowTime >= dinoNextFireTime)
+                            fireCosmicDinoSkill(nowTime);
+
+                        for (
+                            let i = dinoFireEffects.length - 1;
+                            i >= 0;
+                            i--
+                        ) {
+
+                            const effect =
+                                dinoFireEffects[i];
+
+                            const life =
+                                (nowTime - effect.startTime) /
+                                (effect.endTime - effect.startTime);
+
+                            effect.mesh.material.opacity =
+                                Math.max(
+                                    0,
+                                    0.88 * (1 - life)
+                                );
+
+                            effect.mesh.scale.set(
+                                1 + life * 0.35,
+                                1,
+                                1 + life * 0.35
+                            );
+
+                            if (nowTime >= effect.endTime) {
+
+                                scene.remove(effect.mesh);
+
+                                if (effect.mesh.material)
+                                    effect.mesh.material.dispose();
+
+                                if (effect.mesh.geometry)
+                                    effect.mesh.geometry.dispose();
+
+                                dinoFireEffects.splice(i, 1);
+                            }
+                        }
+                    }
 
                     /*
                        Kiểm tra lại máu tối đa mỗi khung hình
