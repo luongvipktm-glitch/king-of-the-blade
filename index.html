@@ -3408,6 +3408,8 @@
 
                 let dinoNextFireTime = 0;
                 const dinoFireEffects = [];
+                let dinoMoveTarget = new THREE.Vector3(0, 0, -8);
+                let dinoNextMoveTime = 0;
 
                 function isPlayerInCorner() {
                     return (
@@ -5855,6 +5857,16 @@
 
                     cosmicDinoMonster.position.set(0, 0, -8);
                     cosmicDinoMonster.scale.set(1.8, 1.8, 1.8);
+
+                    dinoMoveTarget.set(
+                        -10 + Math.random() * 20,
+                        0,
+                        -10 + Math.random() * 20
+                    );
+
+                    dinoNextMoveTime =
+                        performance.now() + 800;
+
                     dinoNextFireTime =
                         performance.now() + 1800;
 
@@ -7199,6 +7211,9 @@
                                 cosmicDinoActive = false;
                                 cosmicDinoHP = COSMIC_DINO_MAX_HP;
 
+                                inventory.legendary += 1000000;
+                                itemLevels.legendary = 1;
+
                                 cosmicDinoMonster.visible = false;
 
                                 dinoFireEffects.forEach(effect => {
@@ -7228,10 +7243,11 @@
 
                                 showToast(
                                     currentLang === 'vi'
-                                    ? '🌌🦖 BẠN ĐÃ HẠ KHỦNG LONG DA VŨ TRỤ!'
-                                    : '🌌🦖 COSMIC DINOSAUR DEFEATED!'
+                                    ? '🌌🦖 HẠ NGỤC KHỦNG LONG! +1.000.000 LEGENDARY SWORD LV.1!'
+                                    : '🌌🦖 COSMIC DINOSAUR DEFEATED! +1,000,000 LEGENDARY SWORDS LV.1!'
                                 );
 
+                                updateInventoryUI();
                                 saveCurrentAccount();
 
                             }
@@ -8056,20 +8072,76 @@
 
                     if (gameStage === 10) {
 
-                        cosmicDinoMonster.position.set(
-                            0,
-                            0,
-                            -8
-                        );
-
                         cosmicDinoMonster.scale.set(
                             1.8,
                             1.8,
                             1.8
                         );
 
-                        cosmicDinoMonster.rotation.y +=
-                            0.004;
+                        if (
+                            cosmicDinoActive &&
+                            !cosmicDinoDefeated
+                        ) {
+
+                            if (nowTime >= dinoNextMoveTime) {
+
+                                dinoMoveTarget.set(
+                                    -12 + Math.random() * 24,
+                                    0,
+                                    -12 + Math.random() * 24
+                                );
+
+                                dinoNextMoveTime =
+                                    nowTime +
+                                    1200 +
+                                    Math.random() * 1800;
+
+                            }
+
+                            const moveDirection =
+                                dinoMoveTarget.clone().sub(
+                                    cosmicDinoMonster.position
+                                );
+
+                            moveDirection.y = 0;
+
+                            if (moveDirection.length() > 0.25) {
+
+                                moveDirection.normalize();
+
+                                cosmicDinoMonster.position.x +=
+                                    moveDirection.x * 0.12;
+
+                                cosmicDinoMonster.position.z +=
+                                    moveDirection.z * 0.12;
+
+                                cosmicDinoMonster.rotation.y =
+                                    Math.atan2(
+                                        moveDirection.x,
+                                        moveDirection.z
+                                    );
+
+                            }
+
+                            cosmicDinoMonster.position.x =
+                                Math.max(
+                                    -13,
+                                    Math.min(
+                                        13,
+                                        cosmicDinoMonster.position.x
+                                    )
+                                );
+
+                            cosmicDinoMonster.position.z =
+                                Math.max(
+                                    -13,
+                                    Math.min(
+                                        13,
+                                        cosmicDinoMonster.position.z
+                                    )
+                                );
+
+                        }
 
                     }
 
