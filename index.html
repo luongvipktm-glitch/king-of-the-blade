@@ -572,6 +572,11 @@
             🔑
         </div>
 
+        <div class="qa-btn" id="qa-password" onclick="togglePasswordModal()">
+            <span class="qa-badge">Y</span>
+            🔐
+        </div>
+
         <div class="qa-btn" id="qa-music" onclick="toggleMusic()">
             <span class="qa-badge">M</span>
             🎵
@@ -636,6 +641,12 @@
             <span id="val-world">1</span>
         </div>
 
+        <div class="stat-box" id="level-box" style="border-color:#00ffff;color:#00ffff;">
+            ⭐
+            <span class="lang-txt" data-vi="CẤP" data-en="LV">CẤP</span>:
+            <span id="val-level">1</span>
+        </div>
+
         <div class="stat-box" id="account-box" style="border-color:#ffd700;color:#ffd700;">
             🔑
             <span class="lang-txt" data-vi="TK" data-en="ACC">
@@ -663,6 +674,28 @@
             2000000 / 2000000
         </div>
 
+    </div>
+
+    <div
+        id="password-modal"
+        class="modal-box"
+        style="border-color:#00ffff;display:none;"
+    >
+        <h3 style="color:#00ffff;">🔑 ĐỔI MẬT KHẨU</h3>
+        <p style="font-size:12px;color:#ccc;">
+            Nhập theo dạng: <b>ii/99&gt;ii/100</b>
+        </p>
+        <input
+            type="text"
+            id="password-change-input"
+            placeholder="ii/99&gt;ii/100"
+            autocomplete="off"
+        >
+        <button type="button" onclick="changePasswordFromMenu()">
+            Xác nhận đổi mật khẩu
+        </button>
+        <div id="password-change-status" style="text-align:center;font-size:12px;margin-top:8px;color:#ff6666;"></div>
+        <div style="text-align:center;font-size:11px;margin-top:12px;color:#aaa;">Nhấn [Y] để đóng</div>
     </div>
 
     <!-- INVENTORY -->
@@ -1005,8 +1038,22 @@
 
         <input
             type="text"
+            id="login-name"
+            placeholder="Tên tài khoản"
+            autocomplete="off"
+        >
+
+        <input
+            type="text"
+            id="login-pass"
+            placeholder="Mật khẩu"
+            autocomplete="off"
+        >
+
+        <input
+            type="text"
             id="login-input"
-            placeholder="vv/6726 hoặc ii//11>ii/45445"
+            placeholder="Hoặc nhập nhanh: ten/matkhau"
             autocomplete="off"
         >
 
@@ -1475,6 +1522,9 @@
                 let killCount = 0;
 
                 let swordLevel = 0;
+
+                let playerLevel = 1;
+                let cosmicLevel1000Unlocked = false;
 
                 let luckMultiplier = 1;
 
@@ -7435,6 +7485,52 @@
                    SWORD UPGRADE
                 ========================= */
 
+                function hasDefeatedAllNonDinoBosses() {
+
+                    return (
+                        hasBossTitle &&
+                        supremeBossDefeated &&
+                        universeBossDefeated &&
+                        cosmicBossDefeated &&
+                        atomicBossDefeated
+                    );
+
+                }
+
+                function checkCosmicLevel1000() {
+
+                    const accountHasCosmic =
+                        currentAccountName &&
+                        currentAccountName.toLowerCase().includes('cosmic');
+
+                    const cosmicRequirement =
+                        hasCosmicTitle || accountHasCosmic;
+
+                    if (
+                        cosmicRequirement &&
+                        hasDefeatedAllNonDinoBosses() &&
+                        !cosmicDinoDefeated
+                    ) {
+
+                        const wasUnlocked = cosmicLevel1000Unlocked;
+                        cosmicLevel1000Unlocked = true;
+                        playerLevel = 1000;
+
+                        document.getElementById('val-level').innerText = '1000';
+
+                        if (!wasUnlocked) {
+                            showToast(
+                                currentLang === 'vi'
+                                ? '🌌 COSMIC LV.1000 ĐÃ MỞ! ĐÃ HẠ HẾT QUÁI/BOSS, KHÔNG TÍNH KHỦNG LONG!'
+                                : '🌌 COSMIC LV.1000 UNLOCKED! ALL NON-DINO MONSTERS/BOSSES DEFEATED!'
+                            );
+                            saveCurrentAccount();
+                        }
+
+                    }
+
+                }
+
                 function checkUpgradeSword() {
 
                     if (
@@ -7614,6 +7710,9 @@
 
                         swordLevel: swordLevel,
 
+                        playerLevel: playerLevel,
+                        cosmicLevel1000Unlocked: cosmicLevel1000Unlocked,
+
                         luckMultiplier: luckMultiplier,
 
                         gameLoop: gameLoop,
@@ -7736,6 +7835,14 @@
                     killCount = data.killCount;
 
                     swordLevel = data.swordLevel;
+
+                    playerLevel =
+                        (typeof data.playerLevel === 'number')
+                        ? data.playerLevel
+                        : 1;
+
+                    cosmicLevel1000Unlocked =
+                        data.cosmicLevel1000Unlocked || false;
 
                     luckMultiplier = data.luckMultiplier;
 
@@ -8406,6 +8513,11 @@
                         gameLoop;
 
                     document.getElementById(
+                        'val-level'
+                    ).innerText =
+                        playerLevel;
+
+                    document.getElementById(
                         'val-world'
                     ).innerText =
                         gameStage === 10
@@ -8602,10 +8714,26 @@
                 window.loginAccount =
                     function() {
 
-                        const raw =
+                        const quickRaw =
                             document.getElementById(
                                 'login-input'
-                            ).value;
+                            ).value.trim();
+
+                        const accountNameInput =
+                            document.getElementById(
+                                'login-name'
+                            ).value.trim();
+
+                        const accountPassInput =
+                            document.getElementById(
+                                'login-pass'
+                            ).value.trim();
+
+                        const raw =
+                            quickRaw ||
+                            (accountNameInput && accountPassInput
+                                ? `${accountNameInput}/${accountPassInput}`
+                                : '');
 
                         if (changeAccountPassword(raw))
                             return;
@@ -8701,6 +8829,8 @@
                         currentAccountPass =
                             pass;
 
+                        checkCosmicLevel1000();
+
                         document.getElementById(
                             'val-account'
                         ).innerText =
@@ -8718,11 +8848,66 @@
                         document.getElementById(
                             'login-input'
                         ).value = '';
+                        document.getElementById(
+                            'login-name'
+                        ).value = '';
+                        document.getElementById(
+                            'login-pass'
+                        ).value = '';
 
                         document.getElementById(
                             'login-status'
                         ).innerText = '';
                     };
+
+                window.changePasswordFromMenu =
+                    function() {
+
+                        const raw =
+                            document.getElementById(
+                                'password-change-input'
+                            ).value.trim();
+
+                        const status =
+                            document.getElementById(
+                                'password-change-status'
+                            );
+
+                        const handled =
+                            changeAccountPassword(raw);
+
+                        status.innerText =
+                            handled
+                            ? document.getElementById('login-status').innerText
+                            : (currentLang === 'vi'
+                                ? '❌ DÙNG DẠNG: ii/99>ii/100'
+                                : '❌ USE FORMAT: ii/99>ii/100');
+
+                    };
+
+                function togglePasswordModal() {
+
+                    isLoginOpen = false;
+                    document.getElementById('login-modal').style.display = 'none';
+
+                    const modal = document.getElementById('password-modal');
+                    const open = modal.style.display !== 'flex';
+                    modal.style.display = open ? 'flex' : 'none';
+
+                    if (open)
+                        document.getElementById('password-change-input').focus();
+
+                }
+
+                window.addEventListener(
+                    'keydown',
+                    e => {
+
+                        if (e.key.toLowerCase() === 'y' && !e.repeat)
+                            togglePasswordModal();
+
+                    }
+                );
 
                 window.addEventListener(
                     'beforeunload',
@@ -8736,6 +8921,7 @@
                 setInterval(
                     () => {
 
+                        checkCosmicLevel1000();
                         saveCurrentAccount();
 
                     },
