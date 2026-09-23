@@ -7703,7 +7703,11 @@
                             gameStage === 11
                         ) {
 
-                            if (errorBossActive) {
+                            /*
+                               BOSS ERROR: MỖI ĐÒN ĐÁNH (click) = +10% POWER
+                               Không cộng theo thời gian, không cộng khi AFK.
+                            */
+                            if (errorBossActive && !isAfk) {
 
                                 errorBossHPExponent =
                                     ERROR_BOSS_HP_EXPONENT;
@@ -7732,8 +7736,8 @@
 
                                 showToast(
                                     currentLang === 'vi'
-                                    ? '💻 ERROR BOSS! +10% POWER! LỖI HỆ THỐNG 1 GIÂY!'
-                                    : '💻 ERROR BOSS! +10% POWER! SYSTEM GLITCH FOR 1 SECOND!'
+                                    ? '💻 ĐÁNH BOSS ERROR! +10% POWER MỖI ĐÒN!'
+                                    : '💻 HIT ERROR BOSS! +10% POWER PER HIT!'
                                 );
 
                                 saveCurrentAccount();
