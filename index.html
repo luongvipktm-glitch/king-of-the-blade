@@ -394,6 +394,7 @@
         }
 
         #victory-screen {
+            display: none !important;
             position: absolute;
             top: 0;
             left: 0;
@@ -494,7 +495,14 @@
                 font-size: 60px;
             }
         }
-    </style>
+    @keyframes errorGlitch {
+                0% { transform:translate(0,0); filter:contrast(1); }
+                25% { transform:translate(-8px,2px); filter:contrast(2); }
+                50% { transform:translate(7px,-3px); filter:hue-rotate(90deg) contrast(1.8); }
+                75% { transform:translate(-3px,4px); filter:hue-rotate(220deg) contrast(2); }
+                100% { transform:translate(0,0); filter:contrast(1); }
+            }
+        </style>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
 </head>
@@ -1112,6 +1120,12 @@
 
     </div>
 
+    <div id="error-glitch-overlay" style="display:none;position:fixed;inset:0;z-index:99999;pointer-events:none;background:repeating-linear-gradient(0deg,rgba(255,0,0,.10) 0 2px,rgba(0,255,255,.08) 2px 4px,rgba(0,0,0,.18) 4px 7px);mix-blend-mode:screen;animation:errorGlitch .08s infinite;">
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:monospace;font-size:clamp(28px,6vw,90px);font-weight:900;color:#fff;text-shadow:4px 0 #f00,-4px 0 #0ff;transform:skewX(-8deg);">
+            ERROR // SYSTEM GLITCH
+        </div>
+    </div>
+
     <div id="victory-screen">
 
         <h1 id="win-title">
@@ -1719,6 +1733,16 @@
 
                 const COSMIC_DINO_POWER_RATE =
                     1.023;
+
+                let errorBossUnlocked = false;
+                let errorBossActive = false;
+                let errorBossDefeated = false;
+                let errorBossKillCount = 0;
+                const ERROR_BOSS_HP_EXPONENT = 9999999999;
+                let errorBossHPExponent = ERROR_BOSS_HP_EXPONENT;
+                let errorBossNextMoveTime = 0;
+                let errorBossMoveTarget = new THREE.Vector3(0, 0, -20);
+                let errorGlitchUntil = 0;
 
                 const atomicBossMaxHP =
                     10000000000 * 1000000000000000000000000000;
@@ -2603,6 +2627,49 @@
                     universeFloor
                 );
 
+                const errorFloorTextureCanvas =
+                    document.createElement('canvas');
+
+                errorFloorTextureCanvas.width = 256;
+                errorFloorTextureCanvas.height = 256;
+
+                const errorFloorCtx =
+                    errorFloorTextureCanvas.getContext('2d');
+
+                errorFloorCtx.fillStyle = '#030303';
+                errorFloorCtx.fillRect(0, 0, 256, 256);
+                errorFloorCtx.font = 'bold 18px monospace';
+                errorFloorCtx.fillStyle = '#00ff66';
+
+                for (let i = 0; i < 18; i++) {
+                    errorFloorCtx.fillText(
+                        ['ERROR','NULL','0xDEAD','GLITCH','SYSTEM'][i % 5],
+                        (i * 47) % 220,
+                        20 + ((i * 71) % 230)
+                    );
+                }
+
+                const errorFloorTexture =
+                    new THREE.CanvasTexture(errorFloorTextureCanvas);
+
+                errorFloorTexture.wrapS = THREE.RepeatWrapping;
+                errorFloorTexture.wrapT = THREE.RepeatWrapping;
+                errorFloorTexture.repeat.set(25, 25);
+
+                const errorFloor =
+                    new THREE.Mesh(
+                        new THREE.PlaneGeometry(500, 500),
+                        new THREE.MeshBasicMaterial({
+                            map: errorFloorTexture,
+                            side: THREE.DoubleSide
+                        })
+                    );
+
+                errorFloor.rotation.x = -Math.PI / 2;
+                errorFloor.position.y = 0.02;
+                errorFloor.visible = false;
+                scene.add(errorFloor);
+
                 /* =========================
                    COSMIC SKIN TEXTURE
                 ========================= */
@@ -3455,6 +3522,61 @@
                 cosmicDinoMonster.visible = false;
 
                 scene.add(cosmicDinoMonster);
+
+                const errorBossMonster =
+                    new THREE.Group();
+
+                const errorMat =
+                    new THREE.MeshBasicMaterial({
+                        color: 0x00ff66,
+                        wireframe: true
+                    });
+
+                const errorBlackMat =
+                    new THREE.MeshBasicMaterial({
+                        color: 0x050505
+                    });
+
+                const errorCore =
+                    new THREE.Mesh(
+                        new THREE.BoxGeometry(4.5, 4.5, 4.5),
+                        errorMat
+                    );
+
+                errorBossMonster.add(errorCore);
+
+                const errorInner =
+                    new THREE.Mesh(
+                        new THREE.BoxGeometry(2.8, 2.8, 2.8),
+                        errorBlackMat
+                    );
+
+                errorBossMonster.add(errorInner);
+
+                for (let i = 0; i < 12; i++) {
+                    const bar =
+                        new THREE.Mesh(
+                            new THREE.BoxGeometry(
+                                0.15 + Math.random() * 0.45,
+                                0.15 + Math.random() * 2.5,
+                                0.15
+                            ),
+                            errorMat
+                        );
+
+                    bar.position.set(
+                        (Math.random() - 0.5) * 6,
+                        (Math.random() - 0.5) * 6,
+                        (Math.random() - 0.5) * 6
+                    );
+
+                    errorBossMonster.add(bar);
+                }
+
+                errorBossMonster.position.set(0, 3, -20);
+                errorBossMonster.scale.set(2, 2, 2);
+                errorBossMonster.visible = false;
+                scene.add(errorBossMonster);
 
                 let dinoNextFireTime = 0;
                 const dinoFireEffects = [];
@@ -5996,11 +6118,13 @@
 
                         if (
                             e.target &&
-                            e.target.id ===
-                            'login-input'
+                            (e.target.tagName === 'INPUT' ||
+                            e.target.tagName === 'TEXTAREA' ||
+                            e.target.isContentEditable)
                         ) {
 
                             if (
+                                e.target.id === 'login-input' &&
                                 e.key === 'Enter'
                             ) {
 
@@ -7213,6 +7337,46 @@
                             }
 
                         } else if (
+                            gameStage === 11
+                        ) {
+
+                            if (errorBossActive) {
+
+                                errorBossHPExponent =
+                                    ERROR_BOSS_HP_EXPONENT;
+
+                                power =
+                                    Math.max(
+                                        1,
+                                        power * 1.10
+                                    );
+
+                                document.getElementById(
+                                    'val-power'
+                                ).innerText =
+                                    formatNum(power);
+
+                                const glitch =
+                                    document.getElementById(
+                                        'error-glitch-overlay'
+                                    );
+
+                                if (glitch) {
+                                    glitch.style.display = 'block';
+                                    errorGlitchUntil =
+                                        performance.now() + 1000;
+                                }
+
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? '💻 ERROR BOSS! +10% POWER! LỖI HỆ THỐNG 1 GIÂY!'
+                                    : '💻 ERROR BOSS! +10% POWER! SYSTEM GLITCH FOR 1 SECOND!'
+                                );
+
+                                saveCurrentAccount();
+                            }
+
+                        } else if (
                             gameStage === 10
                         ) {
 
@@ -7284,17 +7448,46 @@
                                     'boss-command'
                                 ).style.display = 'none';
 
-                                gameStage = 4;
+                                gameStage = 11;
+                                errorBossUnlocked = true;
+                                errorBossActive = true;
+                                errorBossDefeated = false;
+                                errorBossHPExponent = ERROR_BOSS_HP_EXPONENT;
+                                errorBossNextMoveTime = performance.now() + 1000;
 
                                 playerGroup.position.x = 0;
-                                playerGroup.position.z = -15.5;
+                                playerGroup.position.z = 35;
+
+                                errorFloor.visible = true;
+                                errorBossMonster.visible = true;
+                                errorBossMonster.position.set(0, 3, -20);
 
                                 setBossArenaSkybox(false);
 
+                                document.getElementById(
+                                    'boss-hp-bar'
+                                ).style.display = 'block';
+
+                                document.getElementById(
+                                    'boss-title'
+                                ).innerText =
+                                    currentLang === 'vi'
+                                    ? '💻 BOSS ERROR (10^9999999999 HP)'
+                                    : '💻 ERROR BOSS (10^9999999999 HP)';
+
+                                document.getElementById(
+                                    'boss-hp-inner'
+                                ).style.width = '100%';
+
+                                document.getElementById(
+                                    'boss-hp-text'
+                                ).innerText =
+                                    '10^9999999999 / 10^9999999999';
+
                                 showToast(
                                     currentLang === 'vi'
-                                    ? '🌌🦖 HẠ NGỤC KHỦNG LONG! +1.000.000 LEGENDARY SWORD LV.1!'
-                                    : '🌌🦖 COSMIC DINOSAUR DEFEATED! +1,000,000 LEGENDARY SWORDS LV.1!'
+                                    ? '💻 KHỦNG LONG BỊ HẠ! MỞ KHU VỰC ERROR SIÊU RỘNG! +1.000.000 LEGENDARY LV.1!'
+                                    : '💻 DINOSAUR DEFEATED! HUGE ERROR WORLD UNLOCKED! +1,000,000 LEGENDARY LV.1!'
                                 );
 
                                 updateInventoryUI();
@@ -7803,6 +7996,12 @@
                         cosmicDinoDefeated: cosmicDinoDefeated,
                         cosmicDinoHP: cosmicDinoHP.toString(),
 
+                        errorBossUnlocked: errorBossUnlocked,
+                        errorBossActive: errorBossActive,
+                        errorBossDefeated: errorBossDefeated,
+                        errorBossKillCount: errorBossKillCount,
+                        errorBossHPExponent: errorBossHPExponent,
+
                         playerHP: playerHP,
 
                         playerMaxHP: playerMaxHP,
@@ -7994,6 +8193,28 @@
                         : (typeof data.cosmicDinoHP === 'number'
                             ? BigInt(Math.max(0, Math.floor(data.cosmicDinoHP)))
                             : COSMIC_DINO_MAX_HP);
+
+                    errorBossUnlocked =
+                        data.errorBossUnlocked || false;
+
+                    errorBossActive =
+                        data.errorBossActive || false;
+
+                    errorBossDefeated =
+                        data.errorBossDefeated || false;
+
+                    errorBossKillCount =
+                        data.errorBossKillCount || 0;
+
+                    errorBossHPExponent =
+                        (typeof data.errorBossHPExponent === 'number')
+                        ? data.errorBossHPExponent
+                        : ERROR_BOSS_HP_EXPONENT;
+
+                    if (errorBossUnlocked && gameStage === 11) {
+                        errorFloor.visible = true;
+                        errorBossMonster.visible = true;
+                    }
 
                     if (cosmicDinoUnlocked) {
                         document.getElementById('boss-command').style.display = 'block';
@@ -8332,6 +8553,24 @@
                         ).innerText =
                             `${formatNum(cosmicBossHP)} / ${formatNum(COSMIC_BOSS_MAX_HP)}`;
 
+                    } else if (gameStage === 11) {
+
+                        document.getElementById(
+                            'boss-title'
+                        ).innerText =
+                            currentLang === 'vi'
+                            ? '💻 BOSS ERROR (10^9999999999 HP)'
+                            : '💻 ERROR BOSS (10^9999999999 HP)';
+
+                        document.getElementById(
+                            'boss-hp-inner'
+                        ).style.width = '100%';
+
+                        document.getElementById(
+                            'boss-hp-text'
+                        ).innerText =
+                            '10^9999999999 / 10^9999999999';
+
                     } else if (gameStage === 10) {
 
                         document.getElementById(
@@ -8520,11 +8759,13 @@
                     document.getElementById(
                         'val-world'
                     ).innerText =
-                        gameStage === 10
+                        gameStage === 11
+                        ? 'ERROR'
+                        : (gameStage === 10
                         ? 'Cosmic Dino'
                         : (gameStage === 7
                         ? 'Universe'
-                        : '1');
+                        : '1'));
 
                     if (equippedItemType) {
 
@@ -8903,6 +9144,17 @@
                     'keydown',
                     e => {
 
+                        if (
+                            e.key === '/' &&
+                            !e.repeat &&
+                            document.activeElement &&
+                            document.activeElement.tagName !== 'INPUT' &&
+                            document.activeElement.tagName !== 'TEXTAREA'
+                        ) {
+                            restartGame();
+                            return;
+                        }
+
                         if (e.key.toLowerCase() === 'y' && !e.repeat)
                             togglePasswordModal();
 
@@ -8935,7 +9187,57 @@
                 window.restartGame =
                     function() {
 
-                        window.location.reload();
+                        isGameEnded = false;
+
+                        document.getElementById(
+                            'victory-screen'
+                        ).style.display = 'none';
+
+                        finalBossActive = false;
+                        supremeBossActive = false;
+                        universeBossActive = false;
+                        cosmicBossActive = false;
+                        cosmicDinoActive = false;
+                        errorBossActive = false;
+
+                        gameStage = 1;
+                        killCount = 0;
+                        redMonsterHP = 50;
+                        octopusHP = 3000;
+                        bossHP = currentBossMaxHP;
+                        finalBossHP = finalBossMaxHP;
+                        supremeBossHP = supremeBossMaxHP;
+                        universeBossHP = universeBossMaxHP;
+                        cosmicBossHP = COSMIC_BOSS_MAX_HP;
+                        cosmicDinoHP = COSMIC_DINO_MAX_HP;
+
+                        redMonster.visible = true;
+                        octopusMonster.visible = false;
+                        bossMonster.visible = false;
+                        finalBossMonster.visible = false;
+                        supremeBossMonster.visible = false;
+                        universeBossMonster.visible = false;
+                        cosmicBossMonster.visible = false;
+                        oldCharacterBossMonster.visible = false;
+                        atomicBossMonster.visible = false;
+                        cosmicDinoMonster.visible = false;
+                        errorBossMonster.visible = false;
+                        universeFloor.visible = false;
+                        errorFloor.visible = false;
+
+                        document.getElementById(
+                            'boss-hp-bar'
+                        ).style.display = 'none';
+
+                        playerGroup.position.set(0, 0, 8);
+
+                        saveCurrentAccount();
+
+                        showToast(
+                            currentLang === 'vi'
+                            ? '↩️ CHƠI LẠI! POWER + KHO ĐỒ VẪN ĐƯỢC GIỮ.'
+                            : '↩️ RESTARTED! POWER + INVENTORY ARE KEPT.'
+                        );
 
                     };
 
@@ -8950,6 +9252,24 @@
                     requestAnimationFrame(
                         animate
                     );
+
+                    isGameEnded = false;
+
+                    const victoryScreen =
+                        document.getElementById('victory-screen');
+
+                    if (victoryScreen)
+                        victoryScreen.style.display = 'none';
+
+                    const glitchOverlay =
+                        document.getElementById('error-glitch-overlay');
+
+                    if (
+                        glitchOverlay &&
+                        performance.now() >= errorGlitchUntil
+                    ) {
+                        glitchOverlay.style.display = 'none';
+                    }
 
                     const speed =
                         0.12;
