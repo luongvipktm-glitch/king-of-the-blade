@@ -663,6 +663,14 @@
             <span id="val-account">--</span>
         </div>
 
+        <div class="stat-box" id="power-save-box" style="border-color:#00ff99;color:#00ff99;">
+            💾
+            <span class="lang-txt" data-vi="POWER ĐÃ LƯU" data-en="SAVED POWER">
+                POWER ĐÃ LƯU
+            </span>:
+            <span id="val-power-saved">--</span>
+        </div>
+
     </div>
 
     <div id="boss-hp-bar">
@@ -3236,6 +3244,9 @@
                     0
                 );
 
+                /* Sửa lỗi: swordMat chưa khai báo -> trỏ về vật liệu lưỡi kiếm */
+                var swordMat;
+
                 const swordGroup =
                     new THREE.Group();
 
@@ -3256,6 +3267,7 @@
                         swordBladeMat
                     );
 
+                swordMat = swordBladeMat;
                 swordBlade.position.y = 0.82;
 
                 const swordGuard =
@@ -3796,13 +3808,46 @@
 
                 scene.add(cosmicDinoMonster);
 
+                /* =========================
+                   BOSS ERROR: HÌNH NGƯỜI
+                   Da toàn chữ ERROR, mắt trắng bóc, không có miệng
+                ========================= */
+
                 const errorBossMonster =
                     new THREE.Group();
 
+                function makeErrorSkinTexture(bg, fg) {
+                    const c = document.createElement('canvas');
+                    c.width = 512;
+                    c.height = 512;
+                    const g = c.getContext('2d');
+                    g.fillStyle = bg;
+                    g.fillRect(0, 0, 512, 512);
+                    const words = ['ERROR', 'ERR0R', 'ERROR', '0xERROR', 'ERROR'];
+                    for (let row = 0; row < 26; row++) {
+                        const size = 14 + (row % 3) * 4;
+                        g.font = 'bold ' + size + 'px monospace';
+                        let x = -(row * 37) % 120;
+                        const y = 18 + row * 20;
+                        while (x < 512) {
+                            const w = words[(row + Math.floor(x)) % words.length];
+                            g.fillStyle = (Math.random() < 0.12) ? '#ffffff' : fg;
+                            g.fillText(w, x, y);
+                            x += g.measureText(w + ' ').width;
+                        }
+                    }
+                    const t = new THREE.CanvasTexture(c);
+                    t.wrapS = THREE.RepeatWrapping;
+                    t.wrapT = THREE.RepeatWrapping;
+                    return t;
+                }
+
+                const errorSkinTexture =
+                    makeErrorSkinTexture('#0a0000', '#ff2222');
+
                 const errorMat =
                     new THREE.MeshBasicMaterial({
-                        color: 0x00ff66,
-                        wireframe: true
+                        map: errorSkinTexture
                     });
 
                 const errorBlackMat =
@@ -3810,44 +3855,117 @@
                         color: 0x050505
                     });
 
-                const errorCore =
-                    new THREE.Mesh(
-                        new THREE.BoxGeometry(4.5, 4.5, 4.5),
-                        errorMat
-                    );
+                const errorEyeMat =
+                    new THREE.MeshBasicMaterial({
+                        color: 0xffffff
+                    });
 
-                errorBossMonster.add(errorCore);
+                const errorEyeGlowMat =
+                    new THREE.MeshBasicMaterial({
+                        color: 0xffffff,
+                        transparent: true,
+                        opacity: 0.35
+                    });
 
-                const errorInner =
-                    new THREE.Mesh(
-                        new THREE.BoxGeometry(2.8, 2.8, 2.8),
-                        errorBlackMat
-                    );
-
-                errorBossMonster.add(errorInner);
-
-                for (let i = 0; i < 12; i++) {
-                    const bar =
-                        new THREE.Mesh(
-                            new THREE.BoxGeometry(
-                                0.15 + Math.random() * 0.45,
-                                0.15 + Math.random() * 2.5,
-                                0.15
-                            ),
-                            errorMat
-                        );
-
-                    bar.position.set(
-                        (Math.random() - 0.5) * 6,
-                        (Math.random() - 0.5) * 6,
-                        (Math.random() - 0.5) * 6
-                    );
-
-                    errorBossMonster.add(bar);
+                function errorPart(geo, x, y, z, parent) {
+                    const m = new THREE.Mesh(geo, errorMat);
+                    m.position.set(x, y, z);
+                    (parent || errorBossMonster).add(m);
+                    return m;
                 }
 
-                errorBossMonster.position.set(0, 3, -20);
-                errorBossMonster.scale.set(2, 2, 2);
+                // Thân
+                const errorTorso =
+                    errorPart(new THREE.BoxGeometry(1.6, 2.2, 0.8), 0, 0.6, 0);
+
+                // Hông
+                errorPart(new THREE.BoxGeometry(1.4, 0.5, 0.75), 0, -0.75, 0);
+
+                // Đầu (không có miệng)
+                const errorHead =
+                    new THREE.Group();
+                errorHead.position.set(0, 2.25, 0);
+                errorBossMonster.add(errorHead);
+
+                errorPart(new THREE.BoxGeometry(1.0, 1.1, 1.0), 0, 0, 0, errorHead);
+
+                // Cổ
+                errorPart(new THREE.BoxGeometry(0.4, 0.3, 0.4), 0, 1.75, 0);
+
+                // Mắt trắng bóc (mặt quay về +z, phía người chơi)
+                const errorEyes = [];
+                [-0.24, 0.24].forEach(ex => {
+                    const eye = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.14, 16, 16),
+                        errorEyeMat
+                    );
+                    eye.position.set(ex, 0.12, 0.51);
+                    eye.scale.set(1.2, 0.8, 0.4);
+                    errorHead.add(eye);
+
+                    const glow = new THREE.Mesh(
+                        new THREE.SphereGeometry(0.26, 16, 16),
+                        errorEyeGlowMat
+                    );
+                    glow.position.set(ex, 0.12, 0.53);
+                    glow.scale.set(1.2, 0.8, 0.3);
+                    errorHead.add(glow);
+
+                    errorEyes.push(eye, glow);
+                });
+
+                // Tay
+                const errorArmL = new THREE.Group();
+                errorArmL.position.set(-1.05, 1.55, 0);
+                errorBossMonster.add(errorArmL);
+                errorPart(new THREE.BoxGeometry(0.45, 2.1, 0.45), 0, -1.0, 0, errorArmL);
+
+                const errorArmR = new THREE.Group();
+                errorArmR.position.set(1.05, 1.55, 0);
+                errorBossMonster.add(errorArmR);
+                errorPart(new THREE.BoxGeometry(0.45, 2.1, 0.45), 0, -1.0, 0, errorArmR);
+
+                // Chân
+                const errorLegL = new THREE.Group();
+                errorLegL.position.set(-0.4, -1.0, 0);
+                errorBossMonster.add(errorLegL);
+                errorPart(new THREE.BoxGeometry(0.55, 2.2, 0.55), 0, -1.1, 0, errorLegL);
+
+                const errorLegR = new THREE.Group();
+                errorLegR.position.set(0.4, -1.0, 0);
+                errorBossMonster.add(errorLegR);
+                errorPart(new THREE.BoxGeometry(0.55, 2.2, 0.55), 0, -1.1, 0, errorLegR);
+
+                function animateErrorBoss(t) {
+                    if (!errorBossMonster.visible) return;
+
+                    // Da chữ ERROR chạy liên tục
+                    errorSkinTexture.offset.y = (t * 0.00025) % 1;
+                    errorSkinTexture.offset.x = (Math.random() < 0.03) ? Math.random() : errorSkinTexture.offset.x;
+
+                    // Đứng lơ lửng, tay chân đung đưa nhẹ
+                    errorBossMonster.position.y = 4.4 + Math.sin(t * 0.0015) * 0.25;
+                    errorArmL.rotation.x = Math.sin(t * 0.0012) * 0.15;
+                    errorArmR.rotation.x = -Math.sin(t * 0.0012) * 0.15;
+                    errorLegL.rotation.x = Math.sin(t * 0.0009) * 0.06;
+                    errorLegR.rotation.x = -Math.sin(t * 0.0009) * 0.06;
+                    errorHead.rotation.z = (Math.random() < 0.02) ? (Math.random() - 0.5) * 0.4 : errorHead.rotation.z * 0.9;
+
+                    // Luôn nhìn về phía người chơi
+                    if (typeof playerGroup !== 'undefined') {
+                        const dx = playerGroup.position.x - errorBossMonster.position.x;
+                        const dz = playerGroup.position.z - errorBossMonster.position.z;
+                        errorBossMonster.rotation.y = Math.atan2(dx, dz);
+                    }
+
+                    // Mắt trắng nhấp nháy glitch
+                    const flick = (Math.random() < 0.04) ? 0.1 : 1;
+                    errorEyeGlowMat.opacity = (0.25 + Math.sin(t * 0.006) * 0.12) * flick;
+                    errorEyes.forEach(e => e.visible = flick > 0.5);
+                }
+
+                errorBossMonster.position.set(0, 4.4, -10);
+                errorBossMonster.scale.set(1.3, 1.3, 1.3);
                 errorBossMonster.visible = false;
                 scene.add(errorBossMonster);
 
@@ -7827,7 +7945,7 @@
 
                                 errorFloor.visible = true;
                                 errorBossMonster.visible = true;
-                                errorBossMonster.position.set(0, 3, -20);
+                                errorBossMonster.position.set(0, 4.4, -10);
 
                                 setBossArenaSkybox(false);
 
@@ -8249,6 +8367,62 @@
                 /* =========================
                    ACCOUNT SAVE / LOGIN
                 ========================= */
+
+                /* =========================
+                   LƯU POWER THEO TÊN
+                   Power được lưu cùng với tên tài khoản đã nhập,
+                   tự cập nhật mỗi 1 giây.
+                ========================= */
+
+                const POWER_BY_NAME_KEY =
+                    'mystic_temple_power_by_name';
+
+                function encodePower(v) {
+                    return Number.isFinite(v) ? v : 'Infinity';
+                }
+
+                function decodePower(v) {
+                    if (v === 'Infinity') return Infinity;
+                    const n = Number(v);
+                    return Number.isFinite(n) ? n : null;
+                }
+
+                function readPowerRecords() {
+                    try {
+                        return JSON.parse(localStorage.getItem(POWER_BY_NAME_KEY)) || {};
+                    } catch (e) {
+                        return {};
+                    }
+                }
+
+                function savePowerByName() {
+                    if (!currentAccountName) return;
+                    const records = readPowerRecords();
+                    records[currentAccountName.trim().toLowerCase()] = {
+                        name: currentAccountName,
+                        power: encodePower(power),
+                        updatedAt: Date.now()
+                    };
+                    try {
+                        localStorage.setItem(POWER_BY_NAME_KEY, JSON.stringify(records));
+                    } catch (e) {}
+                }
+
+                function loadPowerByName(name) {
+                    const rec = readPowerRecords()[name.trim().toLowerCase()];
+                    return rec ? decodePower(rec.power) : null;
+                }
+
+                setInterval(() => {
+                    const el = document.getElementById('val-power-saved');
+                    if (!currentAccountName) {
+                        if (el) el.innerText = '--';
+                        return;
+                    }
+                    savePowerByName();
+                    saveCurrentAccount();
+                    if (el) el.innerText = formatNum(power);
+                }, 1000);
 
                 function getSaveKey(name, pass) {
 
@@ -9437,6 +9611,20 @@
                         currentAccountPass =
                             pass;
 
+                        const savedPowerByName =
+                            loadPowerByName(name);
+
+                        if (
+                            saved &&
+                            savedPowerByName !== null
+                        ) {
+                            power = Math.max(1, savedPowerByName);
+                            document.getElementById('val-power').innerText =
+                                formatNum(power);
+                        }
+
+                        savePowerByName();
+
                         checkCosmicLevel1000();
 
                         document.getElementById(
@@ -9647,6 +9835,8 @@
                     ) {
                         glitchOverlay.style.display = 'none';
                     }
+
+                    animateErrorBoss(performance.now());
 
                     jumpVelocity -= 0.014;
                     playerGroup.position.y += jumpVelocity;
