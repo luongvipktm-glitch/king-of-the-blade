@@ -8745,19 +8745,6 @@
                         )
                             return;
 
-                        power = Math.max(
-                            1,
-                            power * 1.10
-                        );
-
-                        document.getElementById(
-                            'val-power'
-                        ).innerText =
-                            formatNum(power);
-
-                        if (currentAccountName)
-                            saveCurrentAccount();
-
                         performAttack(false);
 
                     }
