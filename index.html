@@ -651,7 +651,7 @@
             <span id="val-world">1</span>
         </div>
 
-        <div class="stat-box" id="level-box" style="border-color:#00ffff;color:#00ffff;">
+        <div class="stat-box" id="level-box" style="border-color:#00ffff;color:#00ffff;cursor:pointer;" title="Bấm để lưu Level và toàn bộ tiến trình" onclick="saveLevelProgress()">
             ⭐
             <span class="lang-txt" data-vi="CẤP" data-en="LV">CẤP</span>:
             <span id="val-level">1</span>
@@ -665,7 +665,7 @@
             <span id="val-account">--</span>
         </div>
 
-        <div class="stat-box" id="power-save-box" style="border-color:#00ff99;color:#00ff99;">
+        <div class="stat-box" id="power-save-box" style="border-color:#00ff99;color:#00ff99;cursor:pointer;" title="Bấm để lưu Power và toàn bộ tiến trình" onclick="saveSavedPower()">
             💾
             <span class="lang-txt" data-vi="POWER ĐÃ LƯU" data-en="SAVED POWER">
                 POWER ĐÃ LƯU
@@ -6961,6 +6961,27 @@
                         return;
                     }
 
+                    if (playerLevel <= 1000) {
+
+                        playerGroup.position.x = 0;
+                        playerGroup.position.z = 6;
+
+                        cosmicDinoActive = false;
+                        cosmicDinoMonster.visible = false;
+                        gameStage = 1;
+
+                        document.getElementById('boss-hp-bar').style.display = 'none';
+
+                        showToast(
+                            currentLang === 'vi'
+                            ? '🔒 CẦN LEVEL TRÊN 1000 MỚI ĐƯỢC VÀO BOSS T-REX! BẠN ĐÃ ĐƯỢC ĐƯA VỀ KHU VỰC BAN ĐẦU.'
+                            : '🔒 LEVEL MUST BE ABOVE 1000 TO ENTER THE T-REX BOSS! YOU WERE RETURNED TO THE STARTING AREA.'
+                        );
+
+                        saveCurrentAccount();
+                        return;
+                    }
+
                     cosmicDinoActive = true;
                     cosmicDinoDefeated = false;
                     cosmicDinoHP = COSMIC_DINO_MAX_HP;
@@ -8716,6 +8737,27 @@
 
                         initAudio();
 
+                        if (
+                            isGameEnded ||
+                            isInvOpen ||
+                            isColorOpen ||
+                            isLoginOpen
+                        )
+                            return;
+
+                        power = Math.max(
+                            1,
+                            power * 1.10
+                        );
+
+                        document.getElementById(
+                            'val-power'
+                        ).innerText =
+                            formatNum(power);
+
+                        if (currentAccountName)
+                            saveCurrentAccount();
+
                         performAttack(false);
 
                     }
@@ -8754,15 +8796,15 @@
 
                         const wasUnlocked = cosmicLevel1000Unlocked;
                         cosmicLevel1000Unlocked = true;
-                        playerLevel = 1000;
+                        playerLevel = 1001;
 
-                        document.getElementById('val-level').innerText = '1000';
+                        document.getElementById('val-level').innerText = playerLevel;
 
                         if (!wasUnlocked) {
                             showToast(
                                 currentLang === 'vi'
-                                ? '🌌 COSMIC LV.1000 ĐÃ MỞ! ĐÃ HẠ HẾT QUÁI/BOSS, KHÔNG TÍNH KHỦNG LONG!'
-                                : '🌌 COSMIC LV.1000 UNLOCKED! ALL NON-DINO MONSTERS/BOSSES DEFEATED!'
+                                ? '🌌 COSMIC LV.1001 ĐÃ MỞ! ĐÃ HẠ HẾT QUÁI/BOSS, KHÔNG TÍNH KHỦNG LONG!'
+                                : '🌌 COSMIC LV.1001 UNLOCKED! ALL NON-DINO MONSTERS/BOSSES DEFEATED!'
                             );
                             saveCurrentAccount();
                         }
@@ -8995,17 +9037,52 @@
                     return rec ? decodePower(rec.power) : null;
                 }
 
-                setInterval(() => {
-                    const el = document.getElementById('val-power-saved');
+                function saveSavedPower() {
                     if (!currentAccountName) {
-                        if (el) el.innerText = '--';
+                        showToast(
+                            currentLang === 'vi'
+                            ? '🔒 HÃY ĐĂNG NHẬP TRƯỚC!'
+                            : '🔒 PLEASE LOGIN FIRST!'
+                        );
                         return;
                     }
+
                     savePowerByName();
                     saveCurrentAccount();
+
+                    const el = document.getElementById('val-power-saved');
                     if (el) el.innerText = formatNum(power);
+
                     refreshAccountLabel();
-                }, 1000);
+
+                    showToast(
+                        currentLang === 'vi'
+                        ? `💾 ĐÃ LƯU POWER ${formatNum(power)} CHO ACC ${currentAccountName.toUpperCase()}!`
+                        : `💾 POWER ${formatNum(power)} SAVED FOR ${currentAccountName.toUpperCase()}!`
+                    );
+                }
+
+                function saveLevelProgress() {
+                    if (!currentAccountName) {
+                        showToast(
+                            currentLang === 'vi'
+                            ? '🔒 HÃY ĐĂNG NHẬP TRƯỚC!'
+                            : '🔒 PLEASE LOGIN FIRST!'
+                        );
+                        return;
+                    }
+
+                    saveCurrentAccount();
+
+                    const el = document.getElementById('val-level');
+                    if (el) el.innerText = playerLevel;
+
+                    showToast(
+                        currentLang === 'vi'
+                        ? `⭐ ĐÃ LƯU LEVEL ${playerLevel} CHO ACC ${currentAccountName.toUpperCase()}!`
+                        : `⭐ LEVEL ${playerLevel} SAVED FOR ${currentAccountName.toUpperCase()}!`
+                    );
+                }
 
                 function getSaveKey(name, pass) {
 
@@ -9153,11 +9230,34 @@
 
                 function applyGameState(data) {
 
-                    power = data.power;
+                    data = (data && typeof data === 'object') ? data : {};
+
+                    data.inventory = (data.inventory && typeof data.inventory === 'object')
+                        ? data.inventory
+                        : {};
+
+                    data.itemLevels = (data.itemLevels && typeof data.itemLevels === 'object')
+                        ? data.itemLevels
+                        : {};
+
+                    data.upgradeRates = (data.upgradeRates && typeof data.upgradeRates === 'object')
+                        ? data.upgradeRates
+                        : {};
+
+                    power = (typeof data.power === 'number' && Number.isFinite(data.power))
+                        ? Math.max(1, data.power)
+                        : 10;
+
+                    killCount = (typeof data.killCount === 'number' && Number.isFinite(data.killCount))
+                        ? Math.max(0, Math.floor(data.killCount))
+                        : 0;
 
                     killCount = data.killCount;
 
-                    swordLevel = data.swordLevel;
+                    swordLevel =
+                        (typeof data.swordLevel === 'number')
+                        ? Math.max(0, Math.min(3, Math.floor(data.swordLevel)))
+                        : 0;
 
                     playerLevel =
                         (typeof data.playerLevel === 'number')
@@ -9167,9 +9267,15 @@
                     cosmicLevel1000Unlocked =
                         data.cosmicLevel1000Unlocked || false;
 
-                    luckMultiplier = data.luckMultiplier;
+                    luckMultiplier =
+                        (typeof data.luckMultiplier === 'number' && Number.isFinite(data.luckMultiplier))
+                        ? data.luckMultiplier
+                        : 1;
 
-                    gameLoop = data.gameLoop;
+                    gameLoop =
+                        (typeof data.gameLoop === 'number' && Number.isFinite(data.gameLoop))
+                        ? Math.max(1, Math.floor(data.gameLoop))
+                        : 1;
 
                     hasGoDSword = data.hasGoDSword || false;
 
@@ -9186,20 +9292,20 @@
 
                     isCosmicSkinOn = data.isCosmicSkinOn;
 
-                    inventory.common = data.inventory.common;
-                    inventory.rare = data.inventory.rare;
-                    inventory.epic = data.inventory.epic;
-                    inventory.legendary = data.inventory.legendary;
+                    inventory.common = Number.isFinite(Number(data.inventory.common)) ? Math.max(0, Math.floor(Number(data.inventory.common))) : 0;
+                    inventory.rare = Number.isFinite(Number(data.inventory.rare)) ? Math.max(0, Math.floor(Number(data.inventory.rare))) : 0;
+                    inventory.epic = Number.isFinite(Number(data.inventory.epic)) ? Math.max(0, Math.floor(Number(data.inventory.epic))) : 0;
+                    inventory.legendary = Number.isFinite(Number(data.inventory.legendary)) ? Math.max(0, Math.floor(Number(data.inventory.legendary))) : 0;
 
-                    itemLevels.common = data.itemLevels.common;
-                    itemLevels.rare = data.itemLevels.rare;
-                    itemLevels.epic = data.itemLevels.epic;
-                    itemLevels.legendary = data.itemLevels.legendary;
+                    itemLevels.common = Number.isFinite(Number(data.itemLevels.common)) ? Math.max(1, Math.floor(Number(data.itemLevels.common))) : 1;
+                    itemLevels.rare = Number.isFinite(Number(data.itemLevels.rare)) ? Math.max(1, Math.floor(Number(data.itemLevels.rare))) : 1;
+                    itemLevels.epic = Number.isFinite(Number(data.itemLevels.epic)) ? Math.max(1, Math.floor(Number(data.itemLevels.epic))) : 1;
+                    itemLevels.legendary = Number.isFinite(Number(data.itemLevels.legendary)) ? Math.max(1, Math.floor(Number(data.itemLevels.legendary))) : 1;
 
-                    upgradeRates.common = data.upgradeRates.common;
-                    upgradeRates.rare = data.upgradeRates.rare;
-                    upgradeRates.epic = data.upgradeRates.epic;
-                    upgradeRates.legendary = data.upgradeRates.legendary;
+                    upgradeRates.common = Number.isFinite(Number(data.upgradeRates.common)) ? Number(data.upgradeRates.common) : 60;
+                    upgradeRates.rare = Number.isFinite(Number(data.upgradeRates.rare)) ? Number(data.upgradeRates.rare) : 45;
+                    upgradeRates.epic = Number.isFinite(Number(data.upgradeRates.epic)) ? Number(data.upgradeRates.epic) : 30;
+                    upgradeRates.legendary = Number.isFinite(Number(data.upgradeRates.legendary)) ? Number(data.upgradeRates.legendary) : 0.09;
 
                     equippedItemType = data.equippedItemType;
 
@@ -9880,6 +9986,15 @@
                     ).innerText =
                         playerLevel;
 
+                    const savedPowerEl =
+                        document.getElementById('val-power-saved');
+
+                    if (savedPowerEl)
+                        savedPowerEl.innerText =
+                            currentAccountName
+                            ? formatNum(power)
+                            : '--';
+
                     document.getElementById(
                         'val-world'
                     ).innerText =
@@ -10168,14 +10283,14 @@
 
                             } catch(e) {
 
-                                document.getElementById(
-                                    'login-status'
-                                ).innerText =
-                                    currentLang === 'vi'
-                                    ? "❌ LỖI DỮ LIỆU LƯU!"
-                                    : "❌ SAVE DATA ERROR!";
+                                localStorage.removeItem(key);
 
-                                return;
+                                showToast(
+                                    currentLang === 'vi'
+                                    ? '⚠️ DỮ LIỆU CŨ BỊ LỖI ĐÃ ĐƯỢC SỬA! ACC ĐƯỢC TẠO LẠI MÀ KHÔNG LÀM GAME BỊ KẸT.'
+                                    : '⚠️ OLD SAVE DATA WAS RECOVERED! THE ACCOUNT WAS REBUILT WITHOUT BLOCKING THE GAME.'
+                                );
+
                             }
 
                         } else {
@@ -10198,7 +10313,6 @@
                             loadPowerByName(name);
 
                         if (
-                            saved &&
                             savedPowerByName !== null
                         ) {
                             power = Math.max(1, savedPowerByName);
@@ -10207,6 +10321,12 @@
                         }
 
                         savePowerByName();
+
+                        const savedPowerEl =
+                            document.getElementById('val-power-saved');
+
+                        if (savedPowerEl)
+                            savedPowerEl.innerText = formatNum(power);
 
                         checkCosmicLevel1000();
 
@@ -11390,22 +11510,9 @@
                        (đứng yên >2s gần quái/boss)
                     ========================= */
 
-                    const isAfkNow =
-                        !isGameEnded &&
-                        !isInvOpen &&
-                        !isColorOpen &&
-                        !isLoginOpen &&
-                        (nowTime - lastMoveTime > 2000) &&
-                        (gameStage === 1 ||
-                        gameStage === 2 ||
-                        gameStage === 3 ||
-                        gameStage === 5 ||
-                        gameStage === 6);
+                    const isAfkNow = false;
 
-                    if (
-                        isAfkNow &&
-                        (nowTime - lastAfkAttackTime > 1000)
-                    ) {
+                    if (isAfkNow) {
 
                         lastAfkAttackTime =
                             nowTime;
