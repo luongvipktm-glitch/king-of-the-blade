@@ -8849,17 +8849,19 @@
 
                 function checkCosmicLevel1000() {
 
-                    const accountHasCosmic =
-                        currentAccountName &&
-                        currentAccountName.toLowerCase().includes('cosmic');
+                    const allRequiredBossesDefeated =
+                        hasBossTitle &&
+                        supremeBossDefeated &&
+                        universeBossDefeated &&
+                        cosmicBossDefeated &&
+                        atomicBossDefeated;
 
-                    const cosmicRequirement =
-                        hasCosmicTitle || accountHasCosmic;
+                    const excludedBossesStillAllowed =
+                        !cosmicDinoDefeated;
 
                     if (
-                        cosmicRequirement &&
-                        hasDefeatedAllNonDinoBosses() &&
-                        !cosmicDinoDefeated
+                        allRequiredBossesDefeated &&
+                        excludedBossesStillAllowed
                     ) {
 
                         const wasUnlocked = cosmicLevel1000Unlocked;
@@ -8871,8 +8873,8 @@
                         if (!wasUnlocked) {
                             showToast(
                                 currentLang === 'vi'
-                                ? '🌌 COSMIC LV.1001 ĐÃ MỞ! ĐÃ HẠ HẾT QUÁI/BOSS, KHÔNG TÍNH KHỦNG LONG!'
-                                : '🌌 COSMIC LV.1001 UNLOCKED! ALL NON-DINO MONSTERS/BOSSES DEFEATED!'
+                                ? '🌌 LV.1001 ĐÃ MỞ! ĐÃ HẠ TẤT CẢ BOSS TRỪ BOSS T-REX VÀ BOSS ERROR!'
+                                : '🌌 LV.1001 UNLOCKED! ALL BOSSES DEFEATED EXCEPT T-REX AND ERROR BOSS!'
                             );
                             saveCurrentAccount();
                         }
@@ -10266,6 +10268,10 @@
                 window.loginAccount =
                     function() {
 
+                        if (currentAccountName) {
+                            saveCurrentAccount();
+                        }
+
                         const quickRaw =
                             document.getElementById(
                                 'login-input'
@@ -10516,6 +10522,26 @@
                     () => {
 
                         saveCurrentAccount();
+
+                    }
+                );
+
+                window.addEventListener(
+                    'pagehide',
+                    () => {
+
+                        saveCurrentAccount();
+
+                    }
+                );
+
+                document.addEventListener(
+                    'visibilitychange',
+                    () => {
+
+                        if (document.visibilityState === 'hidden') {
+                            saveCurrentAccount();
+                        }
 
                     }
                 );
