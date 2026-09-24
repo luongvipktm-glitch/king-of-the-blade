@@ -1751,6 +1751,7 @@
                 let errorBossUnlocked = false;
                 let errorBossActive = false;
                 let errorBossDefeated = false;
+                let hasErrorTitle = false;
                 let errorBossKillCount = 0;
                 const ERROR_BOSS_HP_EXPONENT = 9999999999;
                 let errorBossHPExponent = ERROR_BOSS_HP_EXPONENT;
@@ -5440,6 +5441,81 @@
                     universeTitleSprite
                 );
 
+                function createErrorTitleSprite() {
+
+                    const canvas =
+                        document.createElement('canvas');
+
+                    canvas.width = 512;
+                    canvas.height = 96;
+
+                    const ctx = canvas.getContext('2d');
+                    ctx.clearRect(0, 0, 512, 96);
+                    ctx.font = 'bold 48px Impact, sans-serif';
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.lineWidth = 7;
+                    ctx.strokeStyle = 'rgba(255,255,255,0.95)';
+                    ctx.strokeText('[{-o-}]', 256, 50);
+
+                    const g = ctx.createLinearGradient(0, 0, 512, 0);
+                    g.addColorStop(0, '#ff0000');
+                    g.addColorStop(0.16, '#ff9900');
+                    g.addColorStop(0.33, '#ffff00');
+                    g.addColorStop(0.5, '#00ff00');
+                    g.addColorStop(0.66, '#00ffff');
+                    g.addColorStop(0.83, '#0088ff');
+                    g.addColorStop(1, '#aa00ff');
+                    ctx.fillStyle = g;
+                    ctx.fillText('[{-o-}]', 256, 50);
+
+                    const tex =
+                        new THREE.CanvasTexture(canvas);
+
+                    const mat =
+                        new THREE.SpriteMaterial({
+                            map: tex,
+                            transparent: true,
+                            depthTest: false
+                        });
+
+                    const sprite =
+                        new THREE.Sprite(mat);
+
+                    sprite.scale.set(3.0, 0.56, 1);
+                    sprite.position.set(0, 3.35, 0);
+                    sprite.visible = false;
+
+                    return sprite;
+                }
+
+                const errorTitleSprite =
+                    createErrorTitleSprite();
+
+                playerGroup.add(
+                    errorTitleSprite
+                );
+
+                function updateErrorTitleReward() {
+
+                    if (hasErrorTitle || errorBossDefeated) {
+
+                        hasErrorTitle = true;
+                        errorTitleSprite.visible = true;
+
+                        const t = performance.now() * 0.002;
+                        const hue = (t % 1) * 360;
+                        haloMat.color.setHSL(hue / 360, 1, 0.5);
+
+                    } else {
+
+                        errorTitleSprite.visible = false;
+
+                    }
+
+                }
+
+
                 function createCosmicTitleSprite() {
                     const canvas = document.createElement('canvas');
                     canvas.width = 512;
@@ -7763,6 +7839,11 @@
                             )
                                 monstersKilledInOneHit = 1;
 
+                            if (
+                                monstersKilledInOneHit > 999
+                            )
+                                monstersKilledInOneHit = 999;
+
                             killCount +=
                                 monstersKilledInOneHit;
 
@@ -8768,17 +8849,12 @@
 
                 function checkCosmicLevel1000() {
 
-                    const accountHasCosmic =
-                        currentAccountName &&
-                        currentAccountName.toLowerCase().includes('cosmic');
-
-                    const cosmicRequirement =
-                        hasCosmicTitle || accountHasCosmic;
+                    const cosmicBossRequirement =
+                        cosmicBossKillCount >=
+                        COSMIC_BOSS_KILLS_NEEDED;
 
                     if (
-                        cosmicRequirement &&
-                        hasDefeatedAllNonDinoBosses() &&
-                        !cosmicDinoDefeated
+                        cosmicBossRequirement
                     ) {
 
                         const wasUnlocked = cosmicLevel1000Unlocked;
@@ -8790,8 +8866,8 @@
                         if (!wasUnlocked) {
                             showToast(
                                 currentLang === 'vi'
-                                ? '🌌 COSMIC LV.1001 ĐÃ MỞ! ĐÃ HẠ HẾT QUÁI/BOSS, KHÔNG TÍNH KHỦNG LONG!'
-                                : '🌌 COSMIC LV.1001 UNLOCKED! ALL NON-DINO MONSTERS/BOSSES DEFEATED!'
+                                ? '🌌 LV.1001 ĐÃ MỞ! ĐÃ HẠ ĐỦ 9 BOSS COSMIC!'
+                                : '🌌 LV.1001 UNLOCKED! DEFEATED ALL 9 COSMIC BOSSES!'
                             );
                             saveCurrentAccount();
                         }
@@ -9187,6 +9263,7 @@
                         errorBossUnlocked: errorBossUnlocked,
                         errorBossActive: errorBossActive,
                         errorBossDefeated: errorBossDefeated,
+                        hasErrorTitle: hasErrorTitle,
                         errorBossKillCount: errorBossKillCount,
                         errorBossHPExponent: errorBossHPExponent,
 
@@ -9419,6 +9496,9 @@
 
                     errorBossDefeated =
                         data.errorBossDefeated || false;
+
+                    hasErrorTitle =
+                        data.hasErrorTitle || errorBossDefeated || false;
 
                     errorBossKillCount =
                         data.errorBossKillCount || 0;
@@ -10181,6 +10261,10 @@
                 window.loginAccount =
                     function() {
 
+                        if (currentAccountName) {
+                            saveCurrentAccount();
+                        }
+
                         const quickRaw =
                             document.getElementById(
                                 'login-input'
@@ -10435,6 +10519,26 @@
                     }
                 );
 
+                window.addEventListener(
+                    'pagehide',
+                    () => {
+
+                        saveCurrentAccount();
+
+                    }
+                );
+
+                document.addEventListener(
+                    'visibilitychange',
+                    () => {
+
+                        if (document.visibilityState === 'hidden') {
+                            saveCurrentAccount();
+                        }
+
+                    }
+                );
+
                 setInterval(
                     () => {
 
@@ -10515,6 +10619,8 @@
                 let wasJumping = false;
 
                 function animate() {
+
+                    updateErrorTitleReward();
 
                     requestAnimationFrame(
                         animate
