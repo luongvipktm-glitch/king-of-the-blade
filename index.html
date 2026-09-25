@@ -1792,6 +1792,16 @@
                 let errorBossNextMoveTime = 0;
                 let errorBossMoveTarget = new THREE.Vector3(0, 0, -20);
                 let errorGlitchUntil = 0;
+                let errorChaseTriggered = false;
+                let errorChaseActive = false;
+                let errorChaseEndTime = 0;
+                let errorNextChaseCheckTime = 0;
+                let errorLaser = null;
+                let errorLaserActive = false;
+                let errorLaserSpeed = 0.45;
+                let errorLaserHitLock = false;
+                let errorReverseForm = false;
+                let errorReverseTexture = null;
 
                 const atomicBossMaxHP =
                     10000000000 * 1000000000000000000000000000;
@@ -3896,6 +3906,140 @@
                         color: 0x050505
                     });
 
+                errorReverseTexture =
+                    makeErrorSkinTexture('#f5f5f5', '#050505');
+
+                function setErrorSkinTexture(reverse) {
+                    const tex = reverse ? errorReverseTexture : errorSkinTexture;
+                    errorBossMonster.traverse(obj => {
+                        if (obj.isMesh && obj.material === errorMat) {
+                            obj.material.map = tex;
+                            obj.material.needsUpdate = true;
+                        }
+                    });
+                }
+
+                function createErrorLaserTexture(reverse) {
+                    const c = document.createElement('canvas');
+                    c.width = 768;
+                    c.height = 220;
+                    const g = c.getContext('2d');
+                    g.clearRect(0, 0, c.width, c.height);
+                    g.font = 'bold 118px monospace';
+                    g.textAlign = 'center';
+                    g.textBaseline = 'middle';
+                    g.shadowBlur = 28;
+                    g.shadowColor = reverse ? '#050505' : '#ff2020';
+                    g.fillStyle = reverse ? '#050505' : '#ff2020';
+                    g.fillText(reverse ? 'RORRE' : 'ERROR', c.width / 2, c.height / 2);
+                    const tex = new THREE.CanvasTexture(c);
+                    tex.needsUpdate = true;
+                    return tex;
+                }
+
+                function createErrorLaser() {
+                    if (errorLaser) {
+                        scene.remove(errorLaser);
+                        if (errorLaser.material) errorLaser.material.dispose();
+                        if (errorLaser.geometry) errorLaser.geometry.dispose();
+                    }
+
+                    const tex = createErrorLaserTexture(errorReverseForm);
+                    const mat = new THREE.SpriteMaterial({
+                        map: tex,
+                        transparent: true,
+                        depthWrite: false,
+                        blending: THREE.AdditiveBlending
+                    });
+                    errorLaser = new THREE.Sprite(mat);
+                    errorLaser.scale.set(4.2, 1.2, 1);
+                    errorLaser.position.copy(errorBossMonster.position);
+                    errorLaser.position.y += 1.5;
+                    errorLaser.userData.baseY = errorLaser.position.y;
+                    errorLaser.userData.phase = Math.random() * 10;
+                    scene.add(errorLaser);
+                    errorLaserActive = true;
+                    errorLaserHitLock = false;
+                }
+
+                function removeErrorLaser() {
+                    if (!errorLaser) return;
+                    scene.remove(errorLaser);
+                    if (errorLaser.material) {
+                        if (errorLaser.material.map) errorLaser.material.map.dispose();
+                        errorLaser.material.dispose();
+                    }
+                    errorLaser = null;
+                    errorLaserActive = false;
+                    errorLaserHitLock = false;
+                }
+
+                function triggerErrorChase() {
+                    if (errorChaseTriggered || !errorBossActive) return;
+                    errorChaseTriggered = true;
+                    errorChaseActive = true;
+                    errorChaseEndTime = performance.now() + 6500;
+                    errorNextChaseCheckTime = performance.now() + 1000;
+                    errorBossMoveTarget.copy(playerGroup.position);
+                    showToast(
+                        currentLang === 'vi'
+                        ? '⚠️ ERROR ĐANG RƯỢT ĐUỔI! Né ngay!'
+                        : '⚠️ ERROR IS CHASING YOU! Dodge now!'
+                    );
+                }
+
+                function updateErrorChaseAndLaser(t) {
+                    if (!errorBossActive || !errorBossMonster.visible) {
+                        removeErrorLaser();
+                        return;
+                    }
+
+                    if (!errorChaseTriggered && t >= errorNextChaseCheckTime) {
+                        errorNextChaseCheckTime = t + 1000;
+                        if (Math.random() < 0.0099) triggerErrorChase();
+                    }
+
+                    if (errorChaseActive) {
+                        errorBossMoveTarget.lerp(playerGroup.position, 0.75);
+                        const dx = playerGroup.position.x - errorBossMonster.position.x;
+                        const dz = playerGroup.position.z - errorBossMonster.position.z;
+                        const len = Math.max(0.001, Math.hypot(dx, dz));
+                        errorBossMonster.position.x += dx / len * 0.16;
+                        errorBossMonster.position.z += dz / len * 0.16;
+                        if (t >= errorChaseEndTime) {
+                            errorChaseActive = false;
+                            createErrorLaser();
+                            showToast(
+                                currentLang === 'vi'
+                                ? '💻 ERROR ĐÃ BẮN CHỮ LASER! BẮN TRÚNG CHỮ ĐỂ TIẾP TỤC!'
+                                : '💻 ERROR FIRED A LETTER LASER! HIT THE LETTER TO CONTINUE!'
+                            );
+                        }
+                    }
+
+                    if (errorLaserActive && errorLaser) {
+                        const target = playerGroup.position.clone();
+                        target.y += 1.2;
+                        const dx = target.x - errorLaser.position.x;
+                        const dy = target.y - errorLaser.position.y;
+                        const dz = target.z - errorLaser.position.z;
+                        const len = Math.max(0.001, Math.sqrt(dx * dx + dy * dy + dz * dz));
+                        errorLaser.position.x += dx / len * errorLaserSpeed;
+                        errorLaser.position.y += dy / len * errorLaserSpeed;
+                        errorLaser.position.z += dz / len * errorLaserSpeed;
+                        errorLaser.position.y += Math.sin(t * 0.012 + errorLaser.userData.phase) * 0.015;
+                        const dist = errorLaser.position.distanceTo(target);
+                        if (dist < 1.35) {
+                            removeErrorLaser();
+                            showToast(
+                                currentLang === 'vi'
+                                ? '💥 LASER ERROR TRÚNG BẠN! HÃY ĐÁNH ĐỂ PHẢN CÔNG!'
+                                : '💥 ERROR LASER HIT YOU! ATTACK TO FIGHT BACK!'
+                            );
+                        }
+                    }
+                }
+
                 const errorEyeMat =
                     new THREE.MeshBasicMaterial({
                         color: 0xffffff
@@ -4003,6 +4147,7 @@
                     const flick = (Math.random() < 0.04) ? 0.1 : 1;
                     errorEyeGlowMat.opacity = (0.25 + Math.sin(t * 0.006) * 0.12) * flick;
                     errorEyes.forEach(e => e.visible = flick > 0.5);
+                    updateErrorChaseAndLaser(t);
                 }
 
                 errorBossMonster.position.set(0, 4.4, -10);
@@ -8531,12 +8676,34 @@
                             */
                             if (errorBossActive && !isAfk) {
 
-                                /*
-                                   +10% MŨ:
-                                   10e100 -> 10e110
-                                   10e1000 -> 10e1100
-                                   Mỗi đòn: exponent = exponent * 1.10
-                                */
+                                if (errorLaserActive && errorLaser && !errorLaserHitLock) {
+                                    const cam = camera.position;
+                                    const laserDist = errorLaser.position.distanceTo(playerGroup.position.clone().setY(errorLaser.position.y));
+                                    if (laserDist < 18) {
+                                        errorLaserHitLock = true;
+                                        const heart = errorBossMonster.position.clone();
+                                        heart.y += 1.4;
+                                        const heartDist = errorLaser.position.distanceTo(heart);
+                                        removeErrorLaser();
+
+                                        if (heartDist < 3.2 && !errorReverseForm) {
+                                            errorReverseForm = true;
+                                            setErrorSkinTexture(true);
+                                            showToast(
+                                                currentLang === 'vi'
+                                                ? '💔 you can\'t win — ERROR ĐÃ ĐẢO NGƯỢC THÀNH RORRE!'
+                                                : '💔 you can\'t win — ERROR HAS REVERSED INTO RORRE!'
+                                            );
+                                        } else {
+                                            showToast(
+                                                currentLang === 'vi'
+                                                ? '🎯 BẮN TRÚNG CHỮ ERROR! TIẾP TỤC CHIẾN ĐẤU!'
+                                                : '🎯 ERROR LETTER HIT! CONTINUE THE FIGHT!'
+                                            );
+                                        }
+                                    }
+                                }
+
                                 increaseErrorPowerByTenPercentExponent();
 
                                 document.getElementById(
@@ -8646,6 +8813,13 @@
                                     getPowerExponent()
                                 );
                                 errorBossNextMoveTime = performance.now() + 1000;
+                                errorChaseTriggered = false;
+                                errorChaseActive = false;
+                                errorChaseEndTime = 0;
+                                errorNextChaseCheckTime = performance.now() + 1000;
+                                errorReverseForm = false;
+                                removeErrorLaser();
+                                setErrorSkinTexture(false);
 
                                 playerGroup.position.x = 0;
                                 playerGroup.position.z = 35;
@@ -10619,6 +10793,12 @@
                         cosmicBossActive = false;
                         cosmicDinoActive = false;
                         errorBossActive = false;
+                        errorChaseTriggered = false;
+                        errorChaseActive = false;
+                        errorChaseEndTime = 0;
+                        errorNextChaseCheckTime = 0;
+                        errorReverseForm = false;
+                        removeErrorLaser();
 
                         gameStage = 1;
                         killCount = 0;
