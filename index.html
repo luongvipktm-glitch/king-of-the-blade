@@ -1547,6 +1547,40 @@
 
                 let power = 10;
 
+                let errorPowerExponent = 1;
+
+                function getPowerExponent() {
+                    if (!Number.isFinite(power) || power <= 0)
+                        return Math.max(1, errorPowerExponent);
+
+                    return Math.max(0, Math.log10(power));
+                }
+
+                function formatExponentValue(n) {
+                    if (!Number.isFinite(n))
+                        return '∞';
+
+                    if (Math.abs(n) >= 1000000000)
+                        return n.toExponential(6).replace('+', '');
+
+                    if (Math.abs(n - Math.round(n)) < 0.000000001)
+                        return String(Math.round(n));
+
+                    return n.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+                }
+
+                function formatPowerDisplay() {
+                    if (gameStage === 11 && errorBossActive)
+                        return '10e' + formatExponentValue(errorPowerExponent);
+
+                    return formatNum(power);
+                }
+
+                function increaseErrorPowerByTenPercentExponent() {
+                    errorPowerExponent *= 1.10;
+                    return errorPowerExponent;
+                }
+
                 let killCount = 0;
 
                 let swordLevel = 0;
@@ -4241,18 +4275,24 @@
 
                     if (withHair) {
                         if (female) {
-                            // Tóc dài con gái: mái, hai bên dài, sau lưng dài
+                            // Tóc con gái dễ thương: mái gọn, tóc dài hai bên và nơ
                             mk(roundedBox(0.74, 0.14, 0.7, 0.06), mats.hair, 0, 0.8, 0, P.head);
-                            mk(box(0.72, 0.1, 0.06), mats.hair, 0, 0.73, 0.33, P.head);
+                            mk(box(0.72, 0.16, 0.08), mats.hair, 0, 0.70, 0.31, P.head);
+                            mk(box(0.22, 0.18, 0.08), mats.hair, -0.25, 0.63, 0.31, P.head);
+                            mk(box(0.22, 0.18, 0.08), mats.hair, 0.25, 0.63, 0.31, P.head);
                             mk(box(0.74, 0.95, 0.08), mats.hair, 0, 0.33, -0.34, P.head);
                             mk(box(0.08, 0.72, 0.5), mats.hair, -0.37, 0.4, -0.08, P.head);
                             mk(box(0.08, 0.72, 0.5), mats.hair, 0.37, 0.4, -0.08, P.head);
-                            // Nơ tóc
-                            mk(box(0.2, 0.12, 0.08), mats.bow, 0.22, 0.86, 0.2, P.head);
+                            mk(box(0.12, 0.12, 0.08), mats.bow, -0.43, 0.72, 0.22, P.head);
+                            mk(box(0.12, 0.12, 0.08), mats.bow, 0.43, 0.72, 0.22, P.head);
+                            mk(box(0.10, 0.10, 0.08), mats.bow, 0, 0.72, 0.22, P.head);
                         } else {
-                            // Tóc húi cua
-                            mk(roundedBox(0.7, 0.1, 0.66, 0.05), mats.hair, 0, 0.8, 0, P.head);
-                            mk(box(0.7, 0.34, 0.06), mats.hair, 0, 0.62, -0.31, P.head);
+                            // Tóc con trai đều đặn: mái và phần tóc trên đầu cân đối
+                            mk(roundedBox(0.72, 0.14, 0.68, 0.06), mats.hair, 0, 0.80, 0, P.head);
+                            mk(box(0.70, 0.18, 0.08), mats.hair, 0, 0.70, 0.31, P.head);
+                            mk(box(0.70, 0.10, 0.52), mats.hair, -0.02, 0.66, -0.10, P.head);
+                            mk(box(0.08, 0.30, 0.46), mats.hair, -0.34, 0.58, -0.02, P.head);
+                            mk(box(0.08, 0.30, 0.46), mats.hair, 0.34, 0.58, -0.02, P.head);
                         }
                     }
 
@@ -8491,19 +8531,18 @@
                             */
                             if (errorBossActive && !isAfk) {
 
-                                errorBossHPExponent =
-                                    ERROR_BOSS_HP_EXPONENT;
-
-                                power =
-                                    Math.max(
-                                        1,
-                                        power * 1.10
-                                    );
+                                /*
+                                   +10% MŨ:
+                                   10e100 -> 10e110
+                                   10e1000 -> 10e1100
+                                   Mỗi đòn: exponent = exponent * 1.10
+                                */
+                                increaseErrorPowerByTenPercentExponent();
 
                                 document.getElementById(
                                     'val-power'
                                 ).innerText =
-                                    formatNum(power);
+                                    formatPowerDisplay();
 
                                 const glitch =
                                     document.getElementById(
@@ -8602,6 +8641,10 @@
                                 errorBossActive = true;
                                 errorBossDefeated = false;
                                 errorBossHPExponent = ERROR_BOSS_HP_EXPONENT;
+                                errorPowerExponent = Math.max(
+                                    1,
+                                    getPowerExponent()
+                                );
                                 errorBossNextMoveTime = performance.now() + 1000;
 
                                 playerGroup.position.x = 0;
@@ -9266,6 +9309,7 @@
                         hasErrorTitle: hasErrorTitle,
                         errorBossKillCount: errorBossKillCount,
                         errorBossHPExponent: errorBossHPExponent,
+                        errorPowerExponent: errorPowerExponent,
 
                         playerHP: playerHP,
 
@@ -9507,6 +9551,13 @@
                         (typeof data.errorBossHPExponent === 'number')
                         ? data.errorBossHPExponent
                         : ERROR_BOSS_HP_EXPONENT;
+
+                    errorPowerExponent =
+                        (typeof data.errorPowerExponent === 'number' &&
+                         Number.isFinite(data.errorPowerExponent) &&
+                         data.errorPowerExponent > 0)
+                        ? data.errorPowerExponent
+                        : Math.max(1, getPowerExponent());
 
                     if (errorBossUnlocked && gameStage === 11) {
                         errorFloor.visible = true;
@@ -10036,7 +10087,7 @@
                     document.getElementById(
                         'val-power'
                     ).innerText =
-                        formatNum(power);
+                        formatPowerDisplay();
 
                     document.getElementById(
                         'val-kills'
@@ -10059,7 +10110,7 @@
                     if (savedPowerEl)
                         savedPowerEl.innerText =
                             currentAccountName
-                            ? formatNum(power)
+                            ? formatPowerDisplay()
                             : '--';
 
                     document.getElementById(
