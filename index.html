@@ -665,7 +665,7 @@
             <span id="val-account">--</span>
         </div>
 
-        <div class="stat-box" id="power-save-box" style="border-color:#00ff99;color:#00ff99;cursor:pointer;" title="Bấm để lưu Power và toàn bộ tiến trình" onclick="saveSavedPower()">
+        <div class="stat-box" id="power-save-box" style="border-color:#00ff99;color:#00ff99;cursor:pointer;" title="Bấm để dùng Power đã lưu thay cho Power hiện tại" onclick="useSavedPower()">
             💾
             <span class="lang-txt" data-vi="POWER ĐÃ LƯU" data-en="SAVED POWER">
                 POWER ĐÃ LƯU
@@ -1548,6 +1548,7 @@
                 let power = 10;
 
                 let errorPowerExponent = 1;
+                let errorDamageExponent = 1;
 
                 function getPowerExponent() {
                     if (!Number.isFinite(power) || power <= 0)
@@ -1578,7 +1579,12 @@
 
                 function increaseErrorPowerByTenPercentExponent() {
                     errorPowerExponent *= 1.10;
+                    errorDamageExponent *= 1.10;
                     return errorPowerExponent;
+                }
+
+                function formatErrorDamageDisplay() {
+                    return '10e' + formatExponentValue(errorDamageExponent);
                 }
 
                 let killCount = 0;
@@ -1791,6 +1797,10 @@
                 let errorBossHPExponent = ERROR_BOSS_HP_EXPONENT;
                 let errorBossNextMoveTime = 0;
                 let errorBossMoveTarget = new THREE.Vector3(0, 0, -20);
+                let errorBossRoamSpeed = 0.075;
+                const ERROR_MAP_NORMAL_SIZE = 500;
+                const ERROR_MAP_CHASE_SIZE = 1400;
+                let errorMapExpanded = false;
                 let errorGlitchUntil = 0;
                 let errorChaseTriggered = false;
                 let errorChaseActive = false;
@@ -3974,17 +3984,35 @@
                     errorLaserHitLock = false;
                 }
 
+                function setErrorMapExpanded(expanded) {
+                    errorMapExpanded = expanded;
+                    const size = expanded ? ERROR_MAP_CHASE_SIZE : ERROR_MAP_NORMAL_SIZE;
+                    const scale = size / ERROR_MAP_NORMAL_SIZE;
+                    errorFloor.scale.set(scale, scale, scale);
+                }
+
+                function chooseErrorBossRoamTarget() {
+                    const half = (errorMapExpanded ? ERROR_MAP_CHASE_SIZE : ERROR_MAP_NORMAL_SIZE) * 0.5 - 45;
+                    errorBossMoveTarget.set(
+                        THREE.MathUtils.randFloat(-half, half),
+                        4.4,
+                        THREE.MathUtils.randFloat(-half, half)
+                    );
+                    errorBossNextMoveTime = performance.now() + THREE.MathUtils.randFloat(2200, 5200);
+                }
+
                 function triggerErrorChase() {
                     if (errorChaseTriggered || !errorBossActive) return;
                     errorChaseTriggered = true;
                     errorChaseActive = true;
                     errorChaseEndTime = performance.now() + 6500;
                     errorNextChaseCheckTime = performance.now() + 1000;
+                    setErrorMapExpanded(true);
                     errorBossMoveTarget.copy(playerGroup.position);
                     showToast(
                         currentLang === 'vi'
-                        ? '⚠️ ERROR ĐANG RƯỢT ĐUỔI! Né ngay!'
-                        : '⚠️ ERROR IS CHASING YOU! Dodge now!'
+                        ? '⚠️ 0,99% — ERROR ĐANG RƯỢT ĐUỔI! MAP ĐÃ MỞ RỘNG!'
+                        : '⚠️ 0.99% — ERROR IS CHASING YOU! THE MAP EXPANDED!'
                     );
                 }
 
@@ -4000,20 +4028,33 @@
                     }
 
                     if (errorChaseActive) {
-                        errorBossMoveTarget.lerp(playerGroup.position, 0.75);
+                        errorBossMoveTarget.copy(playerGroup.position);
                         const dx = playerGroup.position.x - errorBossMonster.position.x;
                         const dz = playerGroup.position.z - errorBossMonster.position.z;
                         const len = Math.max(0.001, Math.hypot(dx, dz));
-                        errorBossMonster.position.x += dx / len * 0.16;
-                        errorBossMonster.position.z += dz / len * 0.16;
+                        errorBossMonster.position.x += dx / len * 0.28;
+                        errorBossMonster.position.z += dz / len * 0.28;
                         if (t >= errorChaseEndTime) {
                             errorChaseActive = false;
+                            chooseErrorBossRoamTarget();
                             createErrorLaser();
                             showToast(
                                 currentLang === 'vi'
                                 ? '💻 ERROR ĐÃ BẮN CHỮ LASER! BẮN TRÚNG CHỮ ĐỂ TIẾP TỤC!'
                                 : '💻 ERROR FIRED A LETTER LASER! HIT THE LETTER TO CONTINUE!'
                             );
+                        }
+                    } else if (!errorLaserActive) {
+                        if (t >= errorBossNextMoveTime) chooseErrorBossRoamTarget();
+                        const dx = errorBossMoveTarget.x - errorBossMonster.position.x;
+                        const dz = errorBossMoveTarget.z - errorBossMonster.position.z;
+                        const len = Math.hypot(dx, dz);
+                        if (len > 0.5) {
+                            const step = Math.min(errorBossRoamSpeed, len);
+                            errorBossMonster.position.x += dx / len * step;
+                            errorBossMonster.position.z += dz / len * step;
+                        } else {
+                            chooseErrorBossRoamTarget();
                         }
                     }
 
@@ -8001,7 +8042,7 @@
 
                         }
 
-                        if (!isAfk) {
+                        if (!isAfk && gameStage !== 11) {
 
                             showDmgPopup(
                                 totalDmg
@@ -8706,6 +8747,10 @@
 
                                 increaseErrorPowerByTenPercentExponent();
 
+                                showDmgPopup(
+                                    formatErrorDamageDisplay()
+                                );
+
                                 document.getElementById(
                                     'val-power'
                                 ).innerText =
@@ -8812,7 +8857,13 @@
                                     1,
                                     getPowerExponent()
                                 );
+                                errorDamageExponent = Math.max(
+                                    1,
+                                    getPowerExponent()
+                                );
                                 errorBossNextMoveTime = performance.now() + 1000;
+                                errorMapExpanded = false;
+                                setErrorMapExpanded(false);
                                 errorChaseTriggered = false;
                                 errorChaseActive = false;
                                 errorChaseEndTime = 0;
@@ -9218,7 +9269,9 @@
                     if (!el) return;
 
                     el.innerText =
-                        '-' + formatNum(dmg);
+                        typeof dmg === 'string'
+                        ? '-' + dmg
+                        : '-' + formatNum(dmg);
 
                     el.style.display =
                         'block';
@@ -9285,6 +9338,8 @@
                     records[currentAccountName.trim().toLowerCase()] = {
                         name: currentAccountName,
                         power: encodePower(power),
+                        errorPowerExponent: errorPowerExponent,
+                        errorDamageExponent: errorDamageExponent,
                         updatedAt: Date.now()
                     };
                     try {
@@ -9312,9 +9367,68 @@
                     });
                 }, 0);
 
+                function loadPowerRecordByName(name) {
+                    return readPowerRecords()[name.trim().toLowerCase()] || null;
+                }
+
                 function loadPowerByName(name) {
-                    const rec = readPowerRecords()[name.trim().toLowerCase()];
+                    const rec = loadPowerRecordByName(name);
                     return rec ? decodePower(rec.power) : null;
+                }
+
+                function useSavedPower() {
+                    if (!currentAccountName) {
+                        showToast(
+                            currentLang === 'vi'
+                            ? '🔒 HÃY ĐĂNG NHẬP TRƯỚC!'
+                            : '🔒 PLEASE LOGIN FIRST!'
+                        );
+                        return;
+                    }
+
+                    const rec = loadPowerRecordByName(currentAccountName);
+                    if (!rec) {
+                        showToast(
+                            currentLang === 'vi'
+                            ? '💾 CHƯA CÓ POWER ĐÃ LƯU!'
+                            : '💾 NO SAVED POWER YET!'
+                        );
+                        return;
+                    }
+
+                    const saved = decodePower(rec.power);
+
+                    if (gameStage === 11 && errorBossActive) {
+                        if (Number.isFinite(rec.errorPowerExponent) && rec.errorPowerExponent > 0) {
+                            errorPowerExponent = rec.errorPowerExponent;
+                        } else if (saved !== null && Number.isFinite(saved) && saved > 0) {
+                            errorPowerExponent = Math.max(1, Math.log10(saved));
+                        }
+
+                        if (Number.isFinite(rec.errorDamageExponent) && rec.errorDamageExponent > 0)
+                            errorDamageExponent = rec.errorDamageExponent;
+                        else
+                            errorDamageExponent = errorPowerExponent;
+
+                        document.getElementById('val-power').innerText = formatPowerDisplay();
+                        showDmgPopup(formatErrorDamageDisplay());
+                        showToast(
+                            currentLang === 'vi'
+                            ? '💾 ĐÃ DÙNG POWER ERROR ĐÃ LƯU: ' + formatPowerDisplay()
+                            : '💾 LOADED SAVED ERROR POWER: ' + formatPowerDisplay()
+                        );
+                    } else if (saved !== null && Number.isFinite(saved)) {
+                        power = Math.max(1, saved);
+                        document.getElementById('val-power').innerText = formatPowerDisplay();
+                        refreshAccountLabel();
+                        showToast(
+                            currentLang === 'vi'
+                            ? '💾 ĐÃ DÙNG POWER ĐÃ LƯU: ' + formatNum(power)
+                            : '💾 LOADED SAVED POWER: ' + formatNum(power)
+                        );
+                    }
+
+                    saveCurrentAccount();
                 }
 
                 function saveSavedPower() {
@@ -9331,7 +9445,13 @@
                     saveCurrentAccount();
 
                     const el = document.getElementById('val-power-saved');
-                    if (el) el.innerText = formatNum(power);
+                    if (el) {
+                        const rec = loadPowerRecordByName(currentAccountName);
+                        if (gameStage === 11 && rec && Number.isFinite(rec.errorPowerExponent))
+                            el.innerText = '10e' + formatExponentValue(rec.errorPowerExponent);
+                        else
+                            el.innerText = formatNum(power);
+                    }
 
                     refreshAccountLabel();
 
@@ -9484,6 +9604,7 @@
                         errorBossKillCount: errorBossKillCount,
                         errorBossHPExponent: errorBossHPExponent,
                         errorPowerExponent: errorPowerExponent,
+                        errorDamageExponent: errorDamageExponent,
 
                         playerHP: playerHP,
 
@@ -9733,9 +9854,18 @@
                         ? data.errorPowerExponent
                         : Math.max(1, getPowerExponent());
 
+                    errorDamageExponent =
+                        (typeof data.errorDamageExponent === 'number' &&
+                         Number.isFinite(data.errorDamageExponent) &&
+                         data.errorDamageExponent > 0)
+                        ? data.errorDamageExponent
+                        : errorPowerExponent;
+
                     if (errorBossUnlocked && gameStage === 11) {
                         errorFloor.visible = true;
                         errorBossMonster.visible = true;
+                        setErrorMapExpanded(errorMapExpanded);
+                        chooseErrorBossRoamTarget();
                     }
 
                     if (cosmicDinoUnlocked) {
@@ -10281,11 +10411,15 @@
                     const savedPowerEl =
                         document.getElementById('val-power-saved');
 
-                    if (savedPowerEl)
-                        savedPowerEl.innerText =
-                            currentAccountName
-                            ? formatPowerDisplay()
-                            : '--';
+                    if (savedPowerEl) {
+                        const rec = currentAccountName ? loadPowerRecordByName(currentAccountName) : null;
+                        if (gameStage === 11 && rec && Number.isFinite(rec.errorPowerExponent))
+                            savedPowerEl.innerText = '10e' + formatExponentValue(rec.errorPowerExponent);
+                        else if (rec && decodePower(rec.power) !== null)
+                            savedPowerEl.innerText = formatNum(decodePower(rec.power));
+                        else
+                            savedPowerEl.innerText = '--';
+                    }
 
                     document.getElementById(
                         'val-world'
@@ -10605,16 +10739,24 @@
                         currentAccountPass =
                             pass;
 
-                        const savedPowerByName =
-                            loadPowerByName(name);
+                        const savedPowerRecord =
+                            loadPowerRecordByName(name);
 
-                        if (
-                            savedPowerByName !== null
-                        ) {
+                        const savedPowerByName =
+                            savedPowerRecord ? decodePower(savedPowerRecord.power) : null;
+
+                        if (savedPowerByName !== null) {
                             power = Math.max(1, savedPowerByName);
-                            document.getElementById('val-power').innerText =
-                                formatNum(power);
                         }
+
+                        if (savedPowerRecord) {
+                            if (Number.isFinite(savedPowerRecord.errorPowerExponent) && savedPowerRecord.errorPowerExponent > 0)
+                                errorPowerExponent = savedPowerRecord.errorPowerExponent;
+                            if (Number.isFinite(savedPowerRecord.errorDamageExponent) && savedPowerRecord.errorDamageExponent > 0)
+                                errorDamageExponent = savedPowerRecord.errorDamageExponent;
+                        }
+
+                        document.getElementById('val-power').innerText = formatPowerDisplay();
 
                         savePowerByName();
 
@@ -10798,6 +10940,8 @@
                         errorChaseEndTime = 0;
                         errorNextChaseCheckTime = 0;
                         errorReverseForm = false;
+                        errorMapExpanded = false;
+                        setErrorMapExpanded(false);
                         removeErrorLaser();
 
                         gameStage = 1;
@@ -10977,6 +11121,12 @@
                         playerGroup.position.z +=
                             (moveDZ / len) * speed;
 
+                    }
+
+                    if (gameStage === 11) {
+                        const half = (errorMapExpanded ? ERROR_MAP_CHASE_SIZE : ERROR_MAP_NORMAL_SIZE) * 0.5 - 8;
+                        playerGroup.position.x = THREE.MathUtils.clamp(playerGroup.position.x, -half, half);
+                        playerGroup.position.z = THREE.MathUtils.clamp(playerGroup.position.z, -half, half);
                     }
 
                     if (isMoving && !wasJumping) {
