@@ -1561,40 +1561,13 @@
                     if (!Number.isFinite(n))
                         return '∞';
 
-                    let str = String(n);
+                    if (Math.abs(n) >= 1000000000)
+                        return n.toExponential(6).replace('+', '');
 
-                    if (str.includes('e')) {
-                        let parts = str.split('e');
-                        let mantissa = parts[0];
-                        let exponent = Number(parts[1]);
+                    if (Math.abs(n - Math.round(n)) < 0.000000001)
+                        return String(Math.round(n));
 
-                        if (Number.isFinite(exponent)) {
-                            let negative = mantissa.startsWith('-');
-                            if (negative) mantissa = mantissa.slice(1);
-
-                            let digits = mantissa.replace('.', '');
-                            let decimalPos = mantissa.includes('.')
-                                ? mantissa.indexOf('.')
-                                : mantissa.length;
-                            let targetPos = decimalPos + exponent;
-
-                            if (targetPos <= 0) {
-                                str = '0.' + '0'.repeat(-targetPos) + digits;
-                            } else if (targetPos >= digits.length) {
-                                str = digits + '0'.repeat(targetPos - digits.length);
-                            } else {
-                                str = digits.slice(0, targetPos) + '.' + digits.slice(targetPos);
-                            }
-
-                            if (negative) str = '-' + str;
-                        }
-                    }
-
-                    if (str.includes('.')) {
-                        str = str.replace(/0+$/, '').replace(/\.$/, '');
-                    }
-
-                    return str;
+                    return n.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
                 }
 
                 function formatPowerDisplay() {
@@ -9459,68 +9432,35 @@
                     const saved = decodePower(rec.power);
 
                     if (gameStage === 11 && errorBossActive) {
-                        const savedExp =
-                            Number.isFinite(rec.errorPowerExponent) && rec.errorPowerExponent > 0
-                            ? rec.errorPowerExponent
-                            : (saved !== null && Number.isFinite(saved) && saved > 0
-                                ? Math.max(1, Math.log10(saved))
-                                : 1);
-
-                        // Nếu Power hiện tại lớn hơn Power đã lưu, giữ Power hiện tại
-                        // và cập nhật Power đã lưu lên theo Power hiện tại.
-                        if (errorPowerExponent > savedExp) {
-                            rec.errorPowerExponent = errorPowerExponent;
-                            rec.errorDamageExponent = errorDamageExponent;
-                            rec.power = encodePower(power);
-                            rec.updatedAt = Date.now();
-                            const records = readPowerRecords();
-                            records[currentAccountName.trim().toLowerCase()] = rec;
-                            try {
-                                localStorage.setItem(POWER_BY_NAME_KEY, JSON.stringify(records));
-                            } catch (e) {}
-                        } else {
-                            // Nếu Power đã lưu lớn hơn hoặc bằng hiện tại, bấm 1 lần
-                            // sẽ dùng Power đã lưu thay cho Power hiện tại.
-                            errorPowerExponent = savedExp;
-                            errorDamageExponent =
-                                Number.isFinite(rec.errorDamageExponent) && rec.errorDamageExponent > 0
-                                ? rec.errorDamageExponent
-                                : errorPowerExponent;
+                        if (Number.isFinite(rec.errorPowerExponent) && rec.errorPowerExponent > 0) {
+                            errorPowerExponent = rec.errorPowerExponent;
+                        } else if (saved !== null && Number.isFinite(saved) && saved > 0) {
+                            errorPowerExponent = Math.max(1, Math.log10(saved));
                         }
+
+                        if (Number.isFinite(rec.errorDamageExponent) && rec.errorDamageExponent > 0)
+                            errorDamageExponent = rec.errorDamageExponent;
+                        else
+                            errorDamageExponent = errorPowerExponent;
 
                         document.getElementById('val-power').innerText = formatPowerDisplay();
                         showDmgPopup(formatErrorDamageDisplay());
                         showToast(
                             currentLang === 'vi'
-                            ? '💾 POWER ERROR ĐÃ ĐỒNG BỘ: ' + formatPowerDisplay()
-                            : '💾 ERROR POWER SYNCED: ' + formatPowerDisplay()
+                            ? '💾 ĐÃ DÙNG POWER ERROR ĐÃ LƯU: ' + formatPowerDisplay()
+                            : '💾 LOADED SAVED ERROR POWER: ' + formatPowerDisplay()
                         );
                     } else if (saved !== null && Number.isFinite(saved)) {
-                        // Power hiện tại nhỏ hơn Power đã lưu -> lấy Power đã lưu.
-                        // Power hiện tại lớn hơn Power đã lưu -> giữ Power hiện tại
-                        // và nâng Power đã lưu lên theo Power hiện tại.
-                        if (power < saved) {
-                            power = Math.max(1, saved);
-                        } else if (power > saved) {
-                            rec.power = encodePower(power);
-                            rec.updatedAt = Date.now();
-                            const records = readPowerRecords();
-                            records[currentAccountName.trim().toLowerCase()] = rec;
-                            try {
-                                localStorage.setItem(POWER_BY_NAME_KEY, JSON.stringify(records));
-                            } catch (e) {}
-                        }
-
+                        power = Math.max(1, saved);
                         document.getElementById('val-power').innerText = formatPowerDisplay();
                         refreshAccountLabel();
                         showToast(
                             currentLang === 'vi'
-                            ? '💾 POWER ĐÃ ĐỒNG BỘ: ' + formatNum(power)
-                            : '💾 POWER SYNCED: ' + formatNum(power)
+                            ? '💾 ĐÃ DÙNG POWER ĐÃ LƯU: ' + formatNum(power)
+                            : '💾 LOADED SAVED POWER: ' + formatNum(power)
                         );
                     }
 
-                    savePowerByName();
                     saveCurrentAccount();
                 }
 
@@ -10986,7 +10926,6 @@
                     'beforeunload',
                     () => {
 
-                        savePowerByName();
                         saveCurrentAccount();
 
                     }
@@ -10996,7 +10935,6 @@
                     'pagehide',
                     () => {
 
-                        savePowerByName();
                         saveCurrentAccount();
 
                     }
@@ -11007,8 +10945,7 @@
                     () => {
 
                         if (document.visibilityState === 'hidden') {
-                            savePowerByName();
-                        saveCurrentAccount();
+                            saveCurrentAccount();
                         }
 
                     }
@@ -11018,7 +10955,6 @@
                     () => {
 
                         checkCosmicLevel1000();
-                        savePowerByName();
                         saveCurrentAccount();
 
                     },
